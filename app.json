@@ -7,7 +7,6 @@
     "icon": "./assets/images/mechafrica.png",
     "scheme": "farmers",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
@@ -26,7 +25,11 @@
     "splash": {
       "image": "./assets/images/mechafrica.png",
       "resizeMode": "contain",
-      "backgroundColor": "#FCFF3B"
+      "backgroundColor": "#FCFF3B",
+      "dark": {
+        "image": "./assets/images/mechafrica-dark.png",
+        "backgroundColor": "#000000"
+      }
     },
     "plugins": ["expo-router", "expo-splash-screen"],
     "experiments": {
