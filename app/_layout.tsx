@@ -5,7 +5,6 @@ import { useEffect } from "react";
 import { View } from "react-native";
 import "./globals.css";
 
-// Keep splash screen visible until we hide it
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -15,15 +14,13 @@ export default function RootLayout() {
     MulishSemiBold: require("../assets/fonts/Mulish-SemiBold.ttf"),
   });
 
-  // Hide splash when fonts are loaded
   useEffect(() => {
     if (fontsLoaded) {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
 
-  // Show nothing until fonts load
   if (!fontsLoaded) return <View style={{ flex: 1 }} />;
 
-  return <Stack />;
+  return <Stack screenOptions={{ headerShown: false }} />;
 }
