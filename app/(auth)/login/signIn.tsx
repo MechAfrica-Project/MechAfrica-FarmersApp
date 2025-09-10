@@ -1,7 +1,7 @@
 import AuthLayout from "@/app/components/authScreens/AuthLayout";
 import PrimaryButton from "@/app/components/general/PrimaryButton";
 import { Feather } from "@expo/vector-icons";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
 
 export default function SignIn() {
   return (
@@ -33,11 +33,6 @@ export default function SignIn() {
           href="/(auth)/login/verifyPhone"
           // onPress={() => console.log("Logging in...")} // optional for logic
         />
-
-        {/* Forgot Password */}
-        <TouchableOpacity className="mt-4">
-          <Text className="text-center">Forgot password?</Text>
-        </TouchableOpacity>
       </View>
     </AuthLayout>
   );
