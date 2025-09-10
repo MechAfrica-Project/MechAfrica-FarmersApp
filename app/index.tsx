@@ -13,9 +13,9 @@ export default function Index() {
       />
 
       {/* Overlay */}
-      <View className="flex-1 justify-end p-6 pb-19">
+      <View className="flex-1 justify-end p-6 pb-19 bg-black/20">
         {/* Text */}
-        <View className="relative mb-8 items-center justify-center w-auto mx-[1.8%] bg-gradient-to-t from-black to-transparent">
+        <View className="relative mb-8 items-center justify-center w-auto mx-[1.8%]">
           <Text className="text-white font-mulish text-center text-[2rem] font-extrabold mb-2">
             Welcome to <Text className="text-accent-yellow">MechAfrica</Text>
           </Text>
@@ -25,24 +25,26 @@ export default function Index() {
           </Text>
 
           {/* Create Account Button */}
-          <TouchableOpacity className="bg-white rounded-xl w-full p-4  items-center mt-8">
-            <Link href="/auth/onboarding">
+          <Link href="/(auth)/onboarding/onboarding" asChild>
+            <TouchableOpacity className="bg-white rounded-xl w-full p-4  items-center mt-8">
               <Text className="text-black font-mulish text-base">
                 Create an account
               </Text>
-            </Link>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </Link>
 
           {/* Log In */}
           <View className="flex-row justify-center mt-4">
             <Text className="text-white font-semibold ">
               Already have an account?{" "}
             </Text>
-            <TouchableOpacity>
-              <Link href="/auth/signIn">
-                <Text className="text-yellow-400 font-semibold ">Log In</Text>
-              </Link>
-            </TouchableOpacity>
+            <Link href="/(auth)/login/signIn" asChild>
+              <TouchableOpacity>
+                <Text className="text-accent-yellow font-semibold ">
+                  Log In
+                </Text>
+              </TouchableOpacity>
+            </Link>
           </View>
         </View>
       </View>

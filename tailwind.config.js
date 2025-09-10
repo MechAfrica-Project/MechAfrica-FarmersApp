@@ -5,11 +5,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        "primary-green": "#00594C",
+         "primary-green": "#00594C",
         "accent-yellow": "#FCFF3B",
         "light-yellow": "#FDFFE0",
-        "light-gray": "#E5E7EB",
-        "medium-gray": "#6B7280",
+        "gray-color": "#605D67",
       },
       fontFamily:{
         mulish:["Mulish","sans-serif"]
