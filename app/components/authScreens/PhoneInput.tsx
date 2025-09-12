@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { View, Text, TouchableWithoutFeedback, Keyboard } from "react-native";
 import RNPhoneInput from "react-native-phone-number-input";
 
@@ -9,17 +9,15 @@ type PhoneValue = {
   valid: boolean;
 };
 
-type PhoneInputProps = {
-  label?: string;
-  onChange?: (value: PhoneValue) => void;
-  defaultValue?: string;
-};
-
 export default function PhoneInput({
   label,
   onChange,
   defaultValue,
-}: PhoneInputProps) {
+}: {
+  label?: string;
+  onChange?: (value: PhoneValue) => void;
+  defaultValue?: string;
+}) {
   const phoneInputRef = useRef<RNPhoneInput>(null);
   const [phoneNumber, setPhoneNumber] = useState(defaultValue || "");
   const [formattedValue, setFormattedValue] = useState("");
@@ -28,25 +26,17 @@ export default function PhoneInput({
   const handleValidation = (text: string) => {
     const checkValid = phoneInputRef.current?.isValidNumber(text) || false;
     const country = phoneInputRef.current?.getCountryCode() || "";
-
     setIsValid(checkValid);
     setPhoneNumber(text);
-
-    onChange?.({
-      raw: text,
-      formatted: formattedValue,
-      country,
-      valid: checkValid,
-    });
+    onChange?.({ raw: text, formatted: formattedValue, country, valid: checkValid });
   };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View className="mb-5">
-        {label && <Text className="text-gray-color mb-2 text-sm font-medium">{label}</Text>}
+      <View style={{ marginBottom: 20 }}>
+        {label && <Text style={{ color: "#6b7280", marginBottom: 6 }}>{label}</Text>}
 
-        <View className="relative w-full">
-          {/* @ts-ignore */}
+        <View style={{ position: "relative", width: "100%" }}>
           <RNPhoneInput
             ref={phoneInputRef}
             defaultCode="GH"
@@ -67,16 +57,9 @@ export default function PhoneInput({
               borderBottomRightRadius: 12,
               backgroundColor: "#fff",
             }}
-            withShadow
           />
-
-          {/* ✅ / ❌ symbols */}
           {phoneNumber.length > 0 && (
-            <Text
-              className={`absolute right-3 top-1/2 -translate-y-3 text-lg ${
-                isValid ? "text-green-600" : "text-red-500"
-              }`}
-            >
+            <Text style={{ position: "absolute", right: 12, top: "45%", transform: [{ translateY: -10 }], fontSize: 18, color: isValid ? "#16a34a" : "#ef4444" }}>
               {isValid ? "✅" : "❌"}
             </Text>
           )}

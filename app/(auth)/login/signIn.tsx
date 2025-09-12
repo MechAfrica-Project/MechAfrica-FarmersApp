@@ -1,76 +1,44 @@
-import { useForm, Controller } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+// app/(auth)/login/signIn.tsx
+import React from "react";
 import { View, Text } from "react-native";
-import { router } from "expo-router";
+import { useAuthStore } from "@/stores/authStore";
 import AuthLayout from "@/app/components/authScreens/AuthLayout";
-import PrimaryButton from "@/app/components/general/PrimaryButton";
 import PhoneInput from "@/app/components/authScreens/PhoneInput";
-import { CountryCode } from "react-native-country-picker-modal";
-
-const phoneSchema = z.object({
-  phone: z.object({
-    raw: z.string().min(7, "Phone number is too short"),
-    formatted: z.string(),
-    country: z.custom<CountryCode>(),
-    valid: z.boolean().refine((val) => val === true, {
-      message: "Invalid phone number",
-    }),
-  }),
-});
-
-type PhoneForm = z.infer<typeof phoneSchema>;
+import PrimaryButton from "@/app/components/general/PrimaryButton";
 
 export default function SignIn() {
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<PhoneForm>({
-    resolver: zodResolver(phoneSchema),
-    defaultValues: {
-      phone: { raw: "", formatted: "", country: "GH", valid: false },
-    },
-  });
-
-  const onSubmit = (data: PhoneForm) => {
-    const { formatted } = data.phone;
-    router.push({
-      pathname: "/(auth)/login/verifyPhone",
-      params: { phone: formatted },
-    });
-  };
+  const setPhone = useAuthStore((s) => s.setPhone);
+  const sendPhone = useAuthStore((s) => s.sendPhone);
+  const loading = useAuthStore((s) => s.loading);
+  const error = useAuthStore((s) => s.error);
 
   return (
     <AuthLayout
       backHref="/"
       title="Welcome back."
       subtitle={
-        <Text className="text-gray-color text-base font-mulish text-center">
+        <Text style={{ color: "#6b7280", fontSize: 16, textAlign: "center" }}>
           Ready to take your farming{"\n"}to the next level again?
         </Text>
       }
     >
       <View>
-        <Controller
-          name="phone"
-          control={control}
-          render={({ field: { onChange, value } }) => (
-            <PhoneInput
-              label="Telephone number"
-              onChange={onChange}
-              defaultValue={value?.raw}
-            />
-          )}
+        <PhoneInput
+          label="Telephone number"
+          onChange={(val) => {
+            setPhone(val.formatted, val.raw);
+          }}
         />
 
-        {errors.phone?.message && (
-          <Text className="text-red-500 mt-1 text-sm">
-            {errors.phone.message}
-          </Text>
+        {error && (
+          <Text style={{ color: "#ef4444", marginTop: 6 }}>{error}</Text>
         )}
 
-        <PrimaryButton title="Log in" onPress={handleSubmit(onSubmit)} />
+        <PrimaryButton
+          title="Log in"
+          onPress={() => sendPhone()}
+          disabled={loading}
+        />
       </View>
     </AuthLayout>
   );

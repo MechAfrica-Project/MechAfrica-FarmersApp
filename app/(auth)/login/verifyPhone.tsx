@@ -1,47 +1,35 @@
-import { useLocalSearchParams } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import React, { useRef, useState, useEffect } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import { useAuthStore } from "@/stores/authStore";
+import ShakeableView, {
+  ShakeableViewRef,
+} from "@/app/components/general/ShakeableView";
 import AuthLayout from "@/app/components/authScreens/AuthLayout";
 import OtpInput from "@/app/components/authScreens/OtpInput";
 import PrimaryButton from "@/app/components/general/PrimaryButton";
-import ShakeableView, { ShakeableViewRef } from "@/app/components/general/ShakeableView";
 
 export default function VerifyPhone() {
-  const { phone } = useLocalSearchParams<{ phone?: string }>();
-  const wrapperRef = useRef<ShakeableViewRef>(null);
+  const phone = useAuthStore((s) => s.phone);
+  const verifyOtp = useAuthStore((s) => s.verifyOtp);
+  const error = useAuthStore((s) => s.error);
+  const loading = useAuthStore((s) => s.loading);
 
   const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [timeLeft, setTimeLeft] = useState(30);
+  const wrapperRef = useRef<ShakeableViewRef>(null);
 
   useEffect(() => {
     if (timeLeft <= 0) return;
-    const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
-    return () => clearInterval(timer);
+    const t = setInterval(() => setTimeLeft((v) => v - 1), 1000);
+    return () => clearInterval(t);
   }, [timeLeft]);
 
   const handleVerify = async () => {
-    if (code.length === 5 && !loading) {
-      try {
-        setLoading(true);
-        setError("");
-        const success = code === "12345";
-        if (!success) {
-          setError("Invalid OTP, please try again.");
-          wrapperRef.current?.shake();
-        }
-      } finally {
-        setLoading(false);
-      }
+    const success = await verifyOtp(code);
+    if (!success) {
+      wrapperRef.current?.shake();
     }
-  };
-
-  const handleResend = () => {
-    setTimeLeft(30);
-    setError("");
-    setCode("");
-    // API: resend OTP to phone
+    // ✅ no navigation needed here — authStore handles redirect
   };
 
   return (
@@ -49,32 +37,43 @@ export default function VerifyPhone() {
       backHref="/(auth)/login/signIn"
       title="Verify your phone"
       subtitle={
-        <Text className="text-gray-color text-base font-mulish text-center">
+        <Text style={{ color: "#6b7280", fontSize: 16, textAlign: "center" }}>
           Please find a 5 digit code sent to{" "}
-          <Text className="font-semibold">{phone}</Text>
+          <Text style={{ fontWeight: "600" }}>{phone}</Text>
         </Text>
       }
     >
-      <View className="mb-8">
+      <View style={{ marginBottom: 32 }}>
         <ShakeableView ref={wrapperRef}>
           <OtpInput length={5} onCodeFilled={setCode} error={!!error} />
         </ShakeableView>
 
-        {error ? (
-          <Text className="text-red-500 mb-3 text-center">{error}</Text>
-        ) : null}
+        {error && (
+          <Text
+            style={{
+              color: "#ef4444",
+              marginBottom: 12,
+              textAlign: "center",
+            }}
+          >
+            {error}
+          </Text>
+        )}
 
-        <PrimaryButton
-          title={loading ? "Verifying..." : "Verify"}
-          onPress={handleVerify}
-        />
+        <PrimaryButton title="Log in" onPress={() => handleVerify()} />
 
-        <View className="flex-row justify-center mt-4">
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            marginTop: 16,
+          }}
+        >
           {timeLeft > 0 ? (
-            <Text className="text-gray-color">Resend in {timeLeft}s</Text>
+            <Text style={{ color: "#6b7280" }}>Resend in {timeLeft}s</Text>
           ) : (
-            <TouchableOpacity onPress={handleResend}>
-              <Text className="text-primary-green font-semibold">
+            <TouchableOpacity onPress={() => setTimeLeft(30)}>
+              <Text style={{ color: "#10B981", fontWeight: "600" }}>
                 Send code again
               </Text>
             </TouchableOpacity>
