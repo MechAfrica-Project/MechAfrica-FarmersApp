@@ -19,7 +19,11 @@ const Dashboard = () => {
         Welcome {phone || "Farmer"} 👋
       </Text>
 
-      <PrimaryButton title="Logout" onPress={logout} />
+      <PrimaryButton
+        title="Logout"
+        onPress={logout}
+        textClassName="text-white"
+      />
     </View>
   );
 };

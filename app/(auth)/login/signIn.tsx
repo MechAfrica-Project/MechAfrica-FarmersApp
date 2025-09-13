@@ -40,6 +40,7 @@ export default function SignIn() {
           title="Log in"
           onPress={() => sendPhone()}
           disabled={loading}
+          textClassName="text-white"
         />
       </View>
     </AuthLayout>

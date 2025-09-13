@@ -1,6 +1,7 @@
-
 import PrimaryButton from "@/app/components/general/PrimaryButton";
-import ShakeableView, { ShakeableViewRef } from "@/app/components/general/ShakeableView";
+import ShakeableView, {
+  ShakeableViewRef,
+} from "@/app/components/general/ShakeableView";
 import { useAuthStore } from "@/stores/authStore";
 import React, { useEffect, useRef, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -49,10 +50,16 @@ export default function VerifyPhone() {
         </ShakeableView>
 
         {error && (
-          <Text className="text-red-500 mb-3 text-center font-mulish">{error}</Text>
+          <Text className="text-red-500 mb-3 text-center font-mulish">
+            {error}
+          </Text>
         )}
 
-        <PrimaryButton title="Log in" onPress={handleVerify} />
+        <PrimaryButton
+          title="Log in"
+          onPress={handleVerify}
+          textClassName="text-white"
+        />
 
         <View className="flex flex-row justify-center mt-1">
           {timeLeft > 0 ? (
