@@ -56,8 +56,8 @@ export default function AuthLayout({
           </ScrollView>
         </KeyboardAvoidingView>
 
-        {/* Footer stays at bottom, hides behind keyboard */}
-        <FooterNote />
+        {/* Footer*/}
+        <FooterNote showText /> 
       </View>
     </TouchableWithoutFeedback>
   );

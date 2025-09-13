@@ -25,7 +25,7 @@ export default function Index() {
           </Text>
 
           {/* Create Account Button */}
-          <Link href="/(auth)/onboarding/onboarding" asChild>
+          <Link href="/(auth)/onboarding/OnboardingLayout" asChild>
             <TouchableOpacity className="bg-white rounded-xl w-full p-4  items-center mt-8">
               <Text className="text-black font-mulish text-base">
                 Create an account

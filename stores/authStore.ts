@@ -3,7 +3,6 @@ import { create } from "zustand";
 import * as SecureStore from "expo-secure-store";
 import { setAuthToken } from "@/lib/api";
 import { router } from "expo-router";
-import { StackActions } from "@react-navigation/native";
 
 interface User {
   id: string;
