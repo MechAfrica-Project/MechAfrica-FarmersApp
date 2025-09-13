@@ -1,10 +1,10 @@
 // app/(auth)/login/signIn.tsx
-import React from "react";
-import { View, Text } from "react-native";
-import { useAuthStore } from "@/stores/authStore";
-import AuthLayout from "@/app/components/authScreens/AuthLayout";
-import PhoneInput from "@/app/components/authScreens/PhoneInput";
 import PrimaryButton from "@/app/components/general/PrimaryButton";
+import { useAuthStore } from "@/stores/authStore";
+import React from "react";
+import { Text, View } from "react-native";
+import AuthLayout from "./components/AuthLayout";
+import PhoneInput from "./components/PhoneInput";
 
 export default function SignIn() {
   const setPhone = useAuthStore((s) => s.setPhone);
