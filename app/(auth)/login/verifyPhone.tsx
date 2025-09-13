@@ -1,9 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useAuthStore } from "@/stores/authStore";
-import ShakeableView, {
-  ShakeableViewRef,
-} from "@/app/components/general/ShakeableView";
+import ShakeableView, { ShakeableViewRef } from "@/app/components/general/ShakeableView";
 import AuthLayout from "@/app/components/authScreens/AuthLayout";
 import OtpInput from "@/app/components/authScreens/OtpInput";
 import PrimaryButton from "@/app/components/general/PrimaryButton";
@@ -35,45 +33,34 @@ export default function VerifyPhone() {
   return (
     <AuthLayout
       backHref="/(auth)/login/signIn"
-      title="Verify your phone"
+      title="Verify Phone number"
       subtitle={
-        <Text style={{ color: "#6b7280", fontSize: 16, textAlign: "center" }}>
-          Please find a 5 digit code sent to{" "}
-          <Text style={{ fontWeight: "600" }}>{phone}</Text>
+        <Text className="font-mulish text-center text-gray-400 font-medium">
+          Please find a 5 digit code to fill in the {"\n"}spaces with the OTP
+          message sent to
+          <Text className="font-medium"> {phone}</Text>
         </Text>
       }
     >
-      <View style={{ marginBottom: 32 }}>
+      <View className="mb-32">
         <ShakeableView ref={wrapperRef}>
           <OtpInput length={5} onCodeFilled={setCode} error={!!error} />
         </ShakeableView>
 
         {error && (
-          <Text
-            style={{
-              color: "#ef4444",
-              marginBottom: 12,
-              textAlign: "center",
-            }}
-          >
-            {error}
-          </Text>
+          <Text className="text-red-500 mb-3 text-center font-mulish">{error}</Text>
         )}
 
-        <PrimaryButton title="Log in" onPress={() => handleVerify()} />
+        <PrimaryButton title="Log in" onPress={handleVerify} />
 
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "center",
-            marginTop: 16,
-          }}
-        >
+        <View className="flex flex-row justify-center mt-1">
           {timeLeft > 0 ? (
-            <Text style={{ color: "#6b7280" }}>Resend in {timeLeft}s</Text>
+            <Text className="text-primary-green font-mulish font-medium">
+              Resend in {timeLeft}s
+            </Text>
           ) : (
             <TouchableOpacity onPress={() => setTimeLeft(30)}>
-              <Text style={{ color: "#10B981", fontWeight: "600" }}>
+              <Text className="text-primary-green font-mulish font-medium">
                 Send code again
               </Text>
             </TouchableOpacity>

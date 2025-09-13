@@ -1,32 +1,64 @@
-import { Text, View } from "react-native";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Text,
+  TouchableWithoutFeedback,
+  View,
+  Platform,
+  ScrollView,
+} from "react-native";
 import BackButton from "@/app/components/general/BackButton";
 import FooterNote from "@/app/components/general/FooterNote";
 import { Href } from "expo-router";
+
+interface AuthLayoutProps {
+  children: React.ReactNode;
+  title: string;
+  subtitle?: React.ReactNode;
+  backHref?: Href;
+}
 
 export default function AuthLayout({
   children,
   title,
   subtitle,
   backHref = "/",
-}: {
-  children: React.ReactNode;
-  title: string;
-  subtitle?: React.ReactNode;
-  backHref?: Href;
-}) {
+}: AuthLayoutProps) {
   return (
-    <View className="flex-1 bg-white pt-[8rem] justify-between">
-      <View className="mx-8 justify-between h-[70%]">
-        <BackButton />
-        <View className="my-15">
-          <Text className="text-[2rem] mb-2 font-mulish font-black text-center">
-            {title}
-          </Text>
-          {subtitle && <View className="mb-10">{subtitle}</View>}
-        </View>
-        {children}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View className="flex-1 bg-white">
+        {/* Scrollable area with keyboard avoiding */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={{ flex: 1 }}
+        >
+          <ScrollView
+            className="flex-1"
+            contentContainerStyle={{ flexGrow: 1 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View className="flex-1 pt-28 px-8">
+              {/* Back button */}
+              <BackButton />
+
+              {/* Header */}
+              <View className="my-[5rem]">
+                <Text className="text-[2rem] mb-2 font-mulish font-black text-center">
+                  {title}
+                </Text>
+                {subtitle && <View className="mb-10 ">{subtitle}</View>}
+              </View>
+
+              {/* Form / children */}
+              <View className="flex-1">{children}</View>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+
+        {/* Footer stays at bottom, hides behind keyboard */}
+        <FooterNote />
       </View>
-      <FooterNote />
-    </View>
+    </TouchableWithoutFeedback>
   );
 }

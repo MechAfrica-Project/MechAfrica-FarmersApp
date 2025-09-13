@@ -1,15 +1,13 @@
 import React, { useRef, useState } from "react";
 import { View, TextInput, NativeSyntheticEvent, TextInputKeyPressEventData } from "react-native";
 
-export default function OtpInput({
-  length = 5,
-  onCodeFilled,
-  error,
-}: {
+interface OtpInputProps {
   length?: number;
   onCodeFilled?: (code: string) => void;
   error?: boolean;
-}) {
+}
+
+export default function OtpInput({ length = 5, onCodeFilled, error }: OtpInputProps) {
   const inputs = useRef<(TextInput | null)[]>([]);
   const [values, setValues] = useState<string[]>(Array(length).fill(""));
 
@@ -17,6 +15,7 @@ export default function OtpInput({
     const newValues = [...values];
     newValues[index] = text;
     setValues(newValues);
+
     if (text && index < length - 1) inputs.current[index + 1]?.focus();
     if (!text && index > 0) inputs.current[index - 1]?.focus();
 
@@ -33,22 +32,16 @@ export default function OtpInput({
   };
 
   return (
-    <View style={{ flexDirection: "row", justifyContent: "space-between", marginHorizontal: 8, marginBottom: 12 }}>
+    <View className="flex-row justify-between mx-2 mb-3">
       {Array.from({ length }).map((_, i) => (
         <TextInput
           key={i}
-          ref={(ref) => (inputs.current[i] = ref)}
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: 12,
-            borderWidth: 1,
-            borderColor: error ? "#ef4444" : "#9ca3af",
-            textAlign: "center",
-            fontSize: 20,
-            backgroundColor: "#f3f4f6",
-            fontWeight: "700",
+          ref={(ref) => {
+            inputs.current[i] = ref; // ✅ TS-safe
           }}
+          className={`w-14 h-14 rounded-xl text-center text-lg font-extrabold bg-gray-100 border ${
+            error ? "border-red-500" : "border-gray-400"
+          }`}
           maxLength={1}
           keyboardType="numeric"
           value={values[i]}

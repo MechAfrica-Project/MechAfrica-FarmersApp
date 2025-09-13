@@ -17,7 +17,7 @@ export default function SignIn() {
       backHref="/"
       title="Welcome back."
       subtitle={
-        <Text style={{ color: "#6b7280", fontSize: 16, textAlign: "center" }}>
+        <Text className="font-mulish text-center text-gray-400 font-medium">
           Ready to take your farming{"\n"}to the next level again?
         </Text>
       }
@@ -31,7 +31,9 @@ export default function SignIn() {
         />
 
         {error && (
-          <Text style={{ color: "#ef4444", marginTop: 6 }}>{error}</Text>
+          <Text className="text-red-500 mt-1 font-mulish text-center">
+            {error}
+          </Text>
         )}
 
         <PrimaryButton

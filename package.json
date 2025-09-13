@@ -32,6 +32,7 @@
     "expo-system-ui": "~5.0.11",
     "expo-web-browser": "~14.2.0",
     "google-libphonenumber": "^3.2.42",
+    "libphonenumber-js": "^1.12.17",
     "nativewind": "^4.1.23",
     "react": "19.0.0",
     "react-dom": "19.0.0",

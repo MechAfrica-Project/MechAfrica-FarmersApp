@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  TouchableOpacity,
-  Text,
-  ActivityIndicator,
-  StyleSheet,
-} from "react-native";
+import { TouchableOpacity, Text, ActivityIndicator } from "react-native";
 import { useUIStore } from "@/stores/uiStore";
 
 type Props = {
@@ -18,34 +13,19 @@ const PrimaryButton = ({ title, onPress, disabled }: Props) => {
 
   return (
     <TouchableOpacity
-      style={[styles.button, (disabled || loading) && styles.disabled]}
+      className={`bg-primary-green py-4 rounded-lg items-center ${
+        disabled || loading ? "opacity-60" : ""
+      }`}
       onPress={onPress}
       disabled={disabled || loading}
     >
       {loading ? (
         <ActivityIndicator size="small" color="#fff" />
       ) : (
-        <Text style={styles.text}>{title}</Text>
+        <Text className="text-white font-semibold text-base">{title}</Text>
       )}
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  button: {
-    backgroundColor: "#4CAF50",
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  text: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  disabled: {
-    opacity: 0.6,
-  },
-});
 
 export default PrimaryButton;

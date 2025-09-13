@@ -33,33 +33,39 @@ export default function PhoneInput({
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={{ marginBottom: 20 }}>
-        {label && <Text style={{ color: "#6b7280", marginBottom: 6 }}>{label}</Text>}
+      <View className="mb-5 w-full">
+        {label && <Text className="text-gray-500 mb-2 font-mulish">{label}</Text>}
 
-        <View style={{ position: "relative", width: "100%" }}>
+        <View className="relative w-full">
           <RNPhoneInput
             ref={phoneInputRef}
             defaultCode="GH"
-            layout="first"
+            layout="second"
             value={phoneNumber}
             onChangeText={handleValidation}
             onChangeFormattedText={(text) => setFormattedValue(text)}
             containerStyle={{
               width: "100%",
               borderWidth: 1,
-              borderColor: "#ddd",
+              borderColor: "#E5E7EB",
               borderRadius: 12,
-              backgroundColor: "#fff",
+              backgroundColor: "#FFFFFF",
             }}
             textContainerStyle={{
               borderLeftWidth: 0,
               borderTopRightRadius: 12,
               borderBottomRightRadius: 12,
-              backgroundColor: "#fff",
+              backgroundColor:"#F3F4F6"
+              
             }}
           />
+
           {phoneNumber.length > 0 && (
-            <Text style={{ position: "absolute", right: 12, top: "45%", transform: [{ translateY: -10 }], fontSize: 18, color: isValid ? "#16a34a" : "#ef4444" }}>
+            <Text
+              className={`absolute right-3 top-1/4  text-lg ${
+                isValid ? "text-green-600" : "text-red-500"
+              }`}
+            >
               {isValid ? "✅" : "❌"}
             </Text>
           )}

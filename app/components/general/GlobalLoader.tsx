@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ActivityIndicator, Text, StyleSheet } from "react-native";
+import { View, ActivityIndicator, Text } from "react-native";
 import { useUIStore } from "@/stores/uiStore";
 
 const GlobalLoader = () => {
@@ -8,27 +8,11 @@ const GlobalLoader = () => {
   if (!loading) return null;
 
   return (
-    <View style={styles.overlay}>
+    <View className="absolute inset-0 bg-black/50 justify-center items-center z-50">
       <ActivityIndicator size="large" color="#fff" />
-      <Text style={styles.text}>Loading...</Text>
+      <Text className="mt-3 text-white text-base font-semibold">Loading...</Text>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 9999,
-  },
-  text: {
-    marginTop: 12,
-    fontSize: 16,
-    color: "#fff",
-    fontWeight: "600",
-  },
-});
 
 export default GlobalLoader;
