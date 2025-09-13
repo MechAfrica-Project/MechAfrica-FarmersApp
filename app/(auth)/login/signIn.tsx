@@ -1,43 +1,46 @@
+// app/(auth)/login/signIn.tsx
+import React from "react";
+import { View, Text } from "react-native";
+import { useAuthStore } from "@/stores/authStore";
 import AuthLayout from "@/app/components/authScreens/AuthLayout";
+import PhoneInput from "@/app/components/authScreens/PhoneInput";
 import PrimaryButton from "@/app/components/general/PrimaryButton";
-import { Feather } from "@expo/vector-icons";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function SignIn() {
+  const setPhone = useAuthStore((s) => s.setPhone);
+  const sendPhone = useAuthStore((s) => s.sendPhone);
+  const loading = useAuthStore((s) => s.loading);
+  const error = useAuthStore((s) => s.error);
+
   return (
     <AuthLayout
       backHref="/"
       title="Welcome back."
       subtitle={
-        <Text className="text-gray-color text-base font-mulish text-center">
+        <Text className="font-mulish text-center text-gray-400 font-medium">
           Ready to take your farming{"\n"}to the next level again?
         </Text>
       }
     >
       <View>
-        {/* Phone Input */}
-
-        <Text className="text-gray-color">Telephone number</Text>
-        <View className="flex-row items-center border border-gray-200 rounded-xl px-3 py-4 mb-6">
-          <Feather name="phone" size={20} color="gray" />
-          <TextInput
-            placeholder="+233 22 85 79 95"
-            keyboardType="phone-pad"
-            className="ml-3 flex-1 text-base"
-          />
-        </View>
-
-        {/* Login Button */}
-        <PrimaryButton
-          title="Log in"
-          href="/(auth)/login/verifyPhone"
-          // onPress={() => console.log("Logging in...")} // optional for logic
+        <PhoneInput
+          label="Telephone number"
+          onChange={(val) => {
+            setPhone(val.formatted, val.raw);
+          }}
         />
 
-        {/* Forgot Password */}
-        <TouchableOpacity className="mt-4">
-          <Text className="text-center">Forgot password?</Text>
-        </TouchableOpacity>
+        {error && (
+          <Text className="text-red-500 mt-1 font-mulish text-center">
+            {error}
+          </Text>
+        )}
+
+        <PrimaryButton
+          title="Log in"
+          onPress={() => sendPhone()}
+          disabled={loading}
+        />
       </View>
     </AuthLayout>
   );

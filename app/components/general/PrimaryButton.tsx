@@ -1,33 +1,31 @@
-import { Link, Href } from "expo-router";
-import { TouchableOpacity, Text } from "react-native";
+import React from "react";
+import { TouchableOpacity, Text, ActivityIndicator } from "react-native";
+import { useUIStore } from "@/stores/uiStore";
 
-export default function PrimaryButton({
-  title,
-  href,
-  onPress,
-}: {
+type Props = {
   title: string;
-  href?: Href;
-  onPress?: () => void;
-}) {
-  const ButtonContent = (
+  onPress: () => void | Promise<void>;
+  disabled?: boolean;
+};
+
+const PrimaryButton = ({ title, onPress, disabled }: Props) => {
+  const loading = useUIStore((s) => s.loading);
+
+  return (
     <TouchableOpacity
+      className={`bg-primary-green py-4 rounded-lg items-center ${
+        disabled || loading ? "opacity-60" : ""
+      }`}
       onPress={onPress}
-      className="bg-primary-green py-4 rounded-lg mt-8"
+      disabled={disabled || loading}
     >
-      <Text className="text-white text-center font-mulish font-semibold text-base">
-        {title}
-      </Text>
+      {loading ? (
+        <ActivityIndicator size="small" color="#fff" />
+      ) : (
+        <Text className="text-white font-semibold text-base">{title}</Text>
+      )}
     </TouchableOpacity>
   );
+};
 
-  if (href) {
-    return (
-      <Link href={href} asChild>
-        {ButtonContent}
-      </Link>
-    );
-  }
-
-  return ButtonContent;
-}
+export default PrimaryButton;

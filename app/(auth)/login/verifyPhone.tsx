@@ -1,83 +1,66 @@
+import React, { useRef, useState, useEffect } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import { useAuthStore } from "@/stores/authStore";
+import ShakeableView, { ShakeableViewRef } from "@/app/components/general/ShakeableView";
 import AuthLayout from "@/app/components/authScreens/AuthLayout";
 import OtpInput from "@/app/components/authScreens/OtpInput";
 import PrimaryButton from "@/app/components/general/PrimaryButton";
-import ShakeableView, {
-  ShakeableViewRef,
-} from "@/app/components/general/ShakeableView";
-import { useEffect, useRef, useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
 
 export default function VerifyPhone() {
-  const wrapperRef = useRef<ShakeableViewRef>(null);
-  const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [timeLeft, setTimeLeft] = useState(30);
+  const phone = useAuthStore((s) => s.phone);
+  const verifyOtp = useAuthStore((s) => s.verifyOtp);
+  const error = useAuthStore((s) => s.error);
+  const loading = useAuthStore((s) => s.loading);
 
-  // Countdown timer
+  const [code, setCode] = useState("");
+  const [timeLeft, setTimeLeft] = useState(30);
+  const wrapperRef = useRef<ShakeableViewRef>(null);
+
   useEffect(() => {
     if (timeLeft <= 0) return;
-    const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
-    return () => clearInterval(timer);
+    const t = setInterval(() => setTimeLeft((v) => v - 1), 1000);
+    return () => clearInterval(t);
   }, [timeLeft]);
 
   const handleVerify = async () => {
-    if (code.length === 5 && !loading) {
-      try {
-        setLoading(true);
-        setError("");
-        // TODO: Replace with API call
-        const success = code === "12345";
-        if (!success) {
-          setError("Invalid OTP, please try again.");
-          wrapperRef.current?.shake();
-        }
-      } finally {
-        setLoading(false);
-      }
+    const success = await verifyOtp(code);
+    if (!success) {
+      wrapperRef.current?.shake();
     }
-  };
-
-  const handleResend = () => {
-    setTimeLeft(30);
-    setError("");
-    setCode("");
+    // ✅ no navigation needed here — authStore handles redirect
   };
 
   return (
     <AuthLayout
       backHref="/(auth)/login/signIn"
-      title="Verify your phone"
+      title="Verify Phone number"
       subtitle={
-        <Text className="text-gray-color text-base font-mulish text-center">
-          Please find a 5 digit code to fill in the{"\n"}spaces with the OTP
-          message sent{"\n"}to your +233 545 232 343
+        <Text className="font-mulish text-center text-gray-400 font-medium">
+          Please find a 5 digit code to fill in the {"\n"}spaces with the OTP
+          message sent to
+          <Text className="font-medium"> {phone}</Text>
         </Text>
       }
     >
-      <View className="mb-8">
-        {/* OTP Input with Shake animation */}
+      <View className="mb-32">
         <ShakeableView ref={wrapperRef}>
           <OtpInput length={5} onCodeFilled={setCode} error={!!error} />
         </ShakeableView>
 
-        {error ? (
-          <Text className="text-red-500 mb-3 text-center">{error}</Text>
-        ) : null}
+        {error && (
+          <Text className="text-red-500 mb-3 text-center font-mulish">{error}</Text>
+        )}
 
-        {/* Verify Button */}
-        <PrimaryButton
-          title={loading ? "Verifying..." : "Verify"}
-          onPress={handleVerify}
-        />
+        <PrimaryButton title="Log in" onPress={handleVerify} />
 
-        {/* Resend Section */}
-        <View className="flex-row justify-center mt-4">
+        <View className="flex flex-row justify-center mt-1">
           {timeLeft > 0 ? (
-            <Text className="text-gray-color">Resend in {timeLeft}s</Text>
+            <Text className="text-primary-green font-mulish font-medium">
+              Resend in {timeLeft}s
+            </Text>
           ) : (
-            <TouchableOpacity onPress={handleResend}>
-              <Text className="text-primary-green font-semibold">
+            <TouchableOpacity onPress={() => setTimeLeft(30)}>
+              <Text className="text-primary-green font-mulish font-medium">
                 Send code again
               </Text>
             </TouchableOpacity>
