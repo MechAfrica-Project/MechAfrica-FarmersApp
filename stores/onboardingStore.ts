@@ -1,0 +1,186 @@
+// stores/onboardingStore.ts
+import { create } from "zustand";
+
+/**
+ * Onboarding data shape
+ */
+export type Equipment = {
+  equipment?: string;
+  coverage?: string;
+  price?: string;
+};
+
+export type OnboardingData = {
+  language?: string;
+  personalInfo: { name?: string; phone?: string };
+  moreInfo: { gender?: string; contactMethod?: string };
+  location: { region?: string; district?: string };
+  profilePicture?: string;
+  businessLocation?: string;
+  businessInfo: { businessName?: string; category?: string; service?: string };
+  equipments: Equipment[];
+};
+
+type ValidateResult = { valid: boolean; message?: string };
+
+type OnboardingState = {
+  currentStep: number;
+  totalSteps: number;
+  data: OnboardingData;
+
+  nextStep: () => void;
+  prevStep: () => void;
+  goToStep: (n: number) => void;
+
+  /**
+   * updateData accepts a partial of OnboardingData and merges deeply
+   * Example: updateData({ personalInfo: { name: 'Elvis' } })
+   */
+  updateData: (patch: Partial<OnboardingData>) => void;
+
+  reset: () => void;
+
+  /** validate a specific step (0-indexed) */
+  validateStep: (step?: number) => ValidateResult;
+};
+
+const defaultData: OnboardingData = {
+  language: undefined,
+  personalInfo: {},
+  moreInfo: {},
+  location: {},
+  profilePicture: undefined,
+  businessLocation: undefined,
+  businessInfo: {},
+  equipments: [],
+};
+
+export const useOnboardingStore = create<OnboardingState>((set, get) => {
+  // simple deep merge helper for nested objects (merges one level deep)
+  const deepMerge = (target: any, patch: any) => {
+    const out = { ...target };
+    for (const key in patch) {
+      const p = (patch as any)[key];
+      if (p && typeof p === "object" && !Array.isArray(p)) {
+        out[key] = { ...(target?.[key] ?? {}), ...p };
+      } else {
+        out[key] = p;
+      }
+    }
+    return out;
+  };
+
+  const TOTAL = 8;
+
+  const validate = (stepIndex: number): ValidateResult => {
+    const data = get().data;
+
+    switch (stepIndex) {
+      case 0: // Language
+        if (!data.language)
+          return { valid: false, message: "Please select a language." };
+        return { valid: true };
+
+      case 1: // Personal Info
+        if (!data.personalInfo?.name || data.personalInfo.name.trim() === "")
+          return { valid: false, message: "Please enter your full name." };
+        if (!data.personalInfo?.phone || data.personalInfo.phone.trim() === "")
+          return { valid: false, message: "Please enter a phone number." };
+        return { valid: true };
+
+      case 2: // More Info
+        if (!data.moreInfo?.gender || data.moreInfo.gender.trim() === "")
+          return { valid: false, message: "Please specify your gender." };
+        if (
+          !data.moreInfo?.contactMethod ||
+          data.moreInfo.contactMethod.trim() === ""
+        )
+          return {
+            valid: false,
+            message: "Please specify a preferred contact method.",
+          };
+        return { valid: true };
+
+      case 3: // Location
+        if (!data.location?.region || data.location.region.trim() === "")
+          return { valid: false, message: "Please enter your region." };
+        if (!data.location?.district || data.location.district.trim() === "")
+          return { valid: false, message: "Please enter your district." };
+        return { valid: true };
+
+      case 4: // Profile picture
+        // make optional if you prefer; currently required
+        if (!data.profilePicture)
+          return { valid: false, message: "Please upload a profile picture." };
+        return { valid: true };
+
+      case 5: // Business Location
+        if (!data.businessLocation || data.businessLocation.trim() === "")
+          return {
+            valid: false,
+            message: "Please enter your business location address.",
+          };
+        return { valid: true };
+
+      case 6: // Business Info
+        if (
+          !data.businessInfo?.businessName ||
+          data.businessInfo.businessName.trim() === ""
+        )
+          return { valid: false, message: "Please enter your business name." };
+        if (
+          !data.businessInfo?.category ||
+          data.businessInfo.category.trim() === ""
+        )
+          return {
+            valid: false,
+            message: "Please enter your business category.",
+          };
+        return { valid: true };
+
+      case 7: // Equipments
+        if (!Array.isArray(data.equipments) || data.equipments.length === 0)
+          return {
+            valid: false,
+            message: "Please add at least one equipment.",
+          };
+        // optionally check each equipment has a name
+        const missingName = data.equipments.find(
+          (e) => !e.equipment || e.equipment.trim() === ""
+        );
+        if (missingName)
+          return { valid: false, message: "Every equipment must have a name." };
+        return { valid: true };
+
+      default:
+        return { valid: true };
+    }
+  };
+
+  return {
+    currentStep: 0,
+    totalSteps: TOTAL,
+    data: defaultData,
+
+    nextStep: () =>
+      set((s) => ({
+        currentStep: Math.min(s.currentStep + 1, s.totalSteps - 1),
+      })),
+
+    prevStep: () =>
+      set((s) => ({ currentStep: Math.max(s.currentStep - 1, 0) })),
+
+    goToStep: (n: number) =>
+      set((s) => ({ currentStep: Math.max(0, Math.min(n, s.totalSteps - 1)) })),
+
+    updateData: (patch: Partial<OnboardingData>) =>
+      set((s) => ({ data: deepMerge(s.data, patch) })),
+
+    reset: () => set({ currentStep: 0, data: defaultData }),
+
+    validateStep: (step?: number) => {
+      const idx = typeof step === "number" ? step : get().currentStep;
+      return validate(idx);
+    },
+  };
+});
