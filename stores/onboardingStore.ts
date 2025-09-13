@@ -16,9 +16,8 @@ export type OnboardingData = {
   moreInfo: { gender?: string; contactMethod?: string };
   location: { region?: string; district?: string };
   profilePicture?: string;
-  businessLocation?: string;
-  businessInfo: { businessName?: string; category?: string; service?: string };
-  equipments: Equipment[];
+  farmLocation?: string;
+  farmInfo: { farmName?: string; farmSize?: number; cropTypes?: string[] };
 };
 
 type ValidateResult = { valid: boolean; message?: string };
@@ -50,9 +49,8 @@ const defaultData: OnboardingData = {
   moreInfo: {},
   location: {},
   profilePicture: undefined,
-  businessLocation: undefined,
-  businessInfo: {},
-  equipments: [],
+  farmLocation: undefined,
+  farmInfo: {},
 };
 
 export const useOnboardingStore = create<OnboardingState>((set, get) => {
@@ -77,8 +75,7 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
 
     switch (stepIndex) {
       case 0: // Language
-        if (!data.language)
-          return { valid: false, message: "Please select a language." };
+        if (!data.language) return { valid: false, message: "Please select a language." };
         return { valid: true };
 
       case 1: // Personal Info
@@ -91,14 +88,8 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
       case 2: // More Info
         if (!data.moreInfo?.gender || data.moreInfo.gender.trim() === "")
           return { valid: false, message: "Please specify your gender." };
-        if (
-          !data.moreInfo?.contactMethod ||
-          data.moreInfo.contactMethod.trim() === ""
-        )
-          return {
-            valid: false,
-            message: "Please specify a preferred contact method.",
-          };
+        if (!data.moreInfo?.contactMethod || data.moreInfo.contactMethod.trim() === "")
+          return { valid: false, message: "Please specify a preferred contact method." };
         return { valid: true };
 
       case 3: // Location
@@ -109,47 +100,21 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
         return { valid: true };
 
       case 4: // Profile picture
-        // make optional if you prefer; currently required
-        if (!data.profilePicture)
-          return { valid: false, message: "Please upload a profile picture." };
+        if (!data.profilePicture) return { valid: false, message: "Please upload a profile picture." };
         return { valid: true };
 
-      case 5: // Business Location
-        if (!data.businessLocation || data.businessLocation.trim() === "")
-          return {
-            valid: false,
-            message: "Please enter your business location address.",
-          };
+      case 5: // Farm Location
+        if (!data.farmLocation || data.farmLocation.trim() === "")
+          return { valid: false, message: "Please enter your business location address." };
         return { valid: true };
 
-      case 6: // Business Info
-        if (
-          !data.businessInfo?.businessName ||
-          data.businessInfo.businessName.trim() === ""
-        )
+      case 6: // Farm Info
+        if (!data.farmInfo?.farmName || data.farmInfo.farmName.trim() === "")
           return { valid: false, message: "Please enter your business name." };
-        if (
-          !data.businessInfo?.category ||
-          data.businessInfo.category.trim() === ""
-        )
-          return {
-            valid: false,
-            message: "Please enter your business category.",
-          };
-        return { valid: true };
-
-      case 7: // Equipments
-        if (!Array.isArray(data.equipments) || data.equipments.length === 0)
-          return {
-            valid: false,
-            message: "Please add at least one equipment.",
-          };
-        // optionally check each equipment has a name
-        const missingName = data.equipments.find(
-          (e) => !e.equipment || e.equipment.trim() === ""
-        );
-        if (missingName)
-          return { valid: false, message: "Every equipment must have a name." };
+        if (!data.farmInfo?.farmSize || data.farmInfo.farmSize <= 0)
+          return { valid: false, message: "Please enter a valid farm size." };
+        if (!data.farmInfo?.cropTypes || data.farmInfo.cropTypes.length === 0)
+          return { valid: false, message: "Please select at least one crop type." };
         return { valid: true };
 
       default:
@@ -163,9 +128,7 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
     data: defaultData,
 
     nextStep: () =>
-      set((s) => ({
-        currentStep: Math.min(s.currentStep + 1, s.totalSteps - 1),
-      })),
+      set((s) => ({ currentStep: Math.min(s.currentStep + 1, s.totalSteps - 1) })),
 
     prevStep: () =>
       set((s) => ({ currentStep: Math.max(s.currentStep - 1, 0) })),
