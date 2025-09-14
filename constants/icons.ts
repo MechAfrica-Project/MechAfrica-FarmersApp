@@ -9,6 +9,11 @@ import notification from "@/assets/icons/notification.png";
 import selector from "@/assets/icons/selector.png";
 import mechIcon from "@/assets/icons/mechIcon.png";
 import microphone from "@/assets/icons/microphone.png";
+import edit from "@/assets/icons/edit.png";
+import help from "@/assets/icons/help.png";
+import security from "@/assets/icons/security.png";
+import logout from "@/assets/icons/logout.png";
+import termsAndConditions from "@/assets/icons/termsAndConditions.png";
 export const icons = {
   home,
   services,
@@ -21,4 +26,9 @@ export const icons = {
   globe,
   selector,
   microphone,
+  edit,
+  help,
+  security,
+  logout,
+  termsAndConditions,
 };
