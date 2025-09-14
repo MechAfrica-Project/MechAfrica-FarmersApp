@@ -78,7 +78,7 @@ export default function OnboardingLayout() {
       await SecureStore.setItemAsync("onboardingCompleted", "true");
       Alert.alert("Success", "Onboarding completed successfully!");
       reset();
-      router.replace("/(tabs)/Dashboard");
+      router.replace("/(tabs)");
     } catch (err) {
       Alert.alert("Error", "Failed to save onboarding data.");
       console.error(err);

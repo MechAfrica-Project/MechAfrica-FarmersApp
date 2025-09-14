@@ -91,7 +91,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ user: data.user, token: data.token, loading: false });
 
       // navigate to protected app area
-      router.replace("/(tabs)/Dashboard");
+      router.replace("/(tabs)");
       return true;
     } catch (err: any) {
       set({ error: err?.message ?? "Verification failed", loading: false });

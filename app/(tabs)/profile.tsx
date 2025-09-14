@@ -3,7 +3,7 @@ import { View, Text } from "react-native";
 import { useAuthStore } from "@/stores/authStore";
 import PrimaryButton from "@/app/components/general/PrimaryButton";
 
-const Dashboard = () => {
+const Profile = () => {
   const { logout, phone } = useAuthStore();
 
   return (
@@ -21,4 +21,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Profile;
