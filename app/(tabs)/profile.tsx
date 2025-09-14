@@ -3,19 +3,12 @@ import { View, Text } from "react-native";
 import { useAuthStore } from "@/stores/authStore";
 import PrimaryButton from "@/app/components/general/PrimaryButton";
 
-const Dashboard = () => {
+const Profile = () => {
   const { logout, phone } = useAuthStore();
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 24,
-      }}
-    >
-      <Text style={{ fontSize: 24, fontWeight: "600", marginBottom: 16 }}>
+    <View className="flex-1 justify-center align-middle p-22">
+      <Text className="text-24 font-semibold mb-16">
         Welcome {phone || "Farmer"} 👋
       </Text>
 
@@ -28,4 +21,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Profile;
