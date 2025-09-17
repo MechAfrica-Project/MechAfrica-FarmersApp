@@ -13,6 +13,7 @@ type InputFieldProps = {
   focused: string | null;
   setFocused: (field: string | null) => void;
   fieldKey: string;
+  error?: boolean; // ✅ add error
 };
 
 export default function InputField({
@@ -26,6 +27,7 @@ export default function InputField({
   focused,
   setFocused,
   fieldKey,
+  error,
 }: InputFieldProps) {
   return (
     <View className="mb-6">
@@ -34,13 +36,16 @@ export default function InputField({
         {optional && <Text className="text-gray-400">(optional)</Text>}
       </Text>
       <View
-        className={`flex-row items-center rounded-xl px-3 py-3 border ${
-          focused === fieldKey
-            ? "border-green-500 bg-white"
-            : "border-gray-200 bg-gray-50"
-        }`}
+        className={`flex-row items-center rounded-xl px-3 py-3 border
+          ${
+            error
+              ? "border-red-500 bg-white"
+              : focused === fieldKey
+              ? "border-green-500 bg-white"
+              : "border-gray-200 bg-gray-50"
+          }`}
       >
-        <Feather name={icon} size={20} color="#6B7280" />
+        <Feather name={icon} size={20} color={error ? "red" : "#6B7280"} />
         <TextInput
           className="flex-1 text-base text-gray-900 ml-3"
           placeholder={placeholder}
@@ -50,6 +55,11 @@ export default function InputField({
           onBlur={() => setFocused(null)}
         />
       </View>
+      {error && (
+        <Text className="text-red-500 text-sm mt-1">
+          {label} is required
+        </Text>
+      )}
     </View>
   );
 }

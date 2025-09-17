@@ -3,10 +3,23 @@ import { View } from "react-native";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import PhoneInput from "../../login/components/PhoneInput";
 import InputField from "@/app/components/onboarding/InputField";
+import PrimaryButton from "@/app/components/general/PrimaryButton";
 
 export default function PersonalInfoStep() {
   const { data, updateData } = useOnboardingStore();
   const [focused, setFocused] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
+
+  const handleNext = () => {
+    const newErrors: { [key: string]: boolean } = {};
+    if (!data.personalInfo?.name?.trim()) newErrors.name = true;
+    if (!data.personalInfo?.phone?.valid) newErrors.phone = true;
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length === 0) {
+      console.log("✅ Proceed to next step...");
+    }
+  };
 
   return (
     <View className="p-4">
@@ -21,6 +34,7 @@ export default function PersonalInfoStep() {
         focused={focused}
         setFocused={setFocused}
         fieldKey="name"
+        error={errors.name}
       />
 
       {/* Other Names (Optional) */}
@@ -37,11 +51,10 @@ export default function PersonalInfoStep() {
       />
 
       {/* Telephone Number */}
+
       <PhoneInput
         label="Telephone number"
-        onChange={(val) => {
-          updateData({ personalInfo: { phone: val } });
-        }}
+        onChange={(val) => updateData({ personalInfo: { phone: val } })}
       />
     </View>
   );

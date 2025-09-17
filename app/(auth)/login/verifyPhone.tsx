@@ -58,7 +58,6 @@ export default function VerifyPhone() {
         <PrimaryButton
           title={loading ? "Verifying..." : "Log in"}
           onPress={handleVerify}
-          disabled={loading || code.length < 5}
           textClassName="text-white"
         />
 

@@ -9,7 +9,6 @@ import PhoneInput from "./components/PhoneInput";
 export default function SignIn() {
   const setPhone = useAuthStore((s) => s.setPhone);
   const sendPhone = useAuthStore((s) => s.sendPhone);
-  const loading = useAuthStore((s) => s.loading);
   const error = useAuthStore((s) => s.error);
 
   return (
@@ -39,7 +38,6 @@ export default function SignIn() {
         <PrimaryButton
           title="Log in"
           onPress={() => sendPhone()}
-          disabled={loading}
           textClassName="text-white"
         />
       </View>
