@@ -22,7 +22,10 @@ export type OnboardingData = {
 
   location: { region?: string; district?: string };
   profilePicture?: string;
-  farmLocation?: string;
+  farmLocation?:{
+    latitude: number;
+    longitude: number;
+  };
   farmInfo: { farmName?: string; farmSize?: number; cropTypes?: string[] };
 };
 
@@ -110,10 +113,14 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
         return { valid: true };
 
       case 5: // Farm Location
-        if (!data.farmLocation || data.farmLocation.trim() === "")
+       if (
+          !data.farmLocation ||
+          !data.farmLocation.latitude ||
+          !data.farmLocation.longitude
+        )
           return {
             valid: false,
-            message: "Please enter your business location address.",
+            message: "Please drop a valid farm location on the map.",
           };
         return { valid: true };
 

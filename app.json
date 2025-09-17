@@ -7,15 +7,33 @@
     "icon": "./assets/images/mechafrica.png",
     "scheme": "farmers",
     "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.mechafrica.farmer",
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": "AIzaSyC0XNPsV-0CfizOtaYSFNyVl5A2LWRIA3o"
+      },
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We need your location to show your farm location on the map."
+      }
     },
     "android": {
+      "package": "com.mechafrica.farmer",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/mechafrica.png",
         "backgroundColor": "#FCFF3B"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBrTOU6CRCf6cThoPxoWYtgeksDAy9TiUo"
+        }
+      }
     },
     "web": {
       "bundler": "metro",
@@ -27,13 +45,24 @@
       "resizeMode": "contain",
       "backgroundColor": "#FCFF3B",
       "dark": {
-        "image": "./assets/images/mechafrica-dark.png",
+        "image": "./assets/images/mechafrica.png",
         "backgroundColor": "#000000"
       }
     },
     "plugins": [
       "expo-router",
-      "expo-splash-screen",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FCFF3B",
+          "image": "./assets/images/mechafrica.png",
+          "dark": {
+            "image": "./assets/images/mechafrica.png",
+            "backgroundColor": "#000000"
+          },
+          "imageWidth": 200
+        }
+      ],
       "expo-secure-store"
     ],
     "experiments": {
