@@ -2,6 +2,7 @@ import React, { useEffect, useReducer } from "react";
 import { View, Text } from "react-native";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import GenderSelect from "@/app/components/onboarding/GenderSelector";
+import DOBPicker from "@/app/components/onboarding/DOBSelect";
 
 type State = {
   gender?: "Male" | "Female";
@@ -39,6 +40,8 @@ const MoreInfoStep = () => {
         value={state.gender}
         onChange={(value) => dispatch({ type: "setGender", payload: value })}
       />
+      {/* Date of Birth Picker */}
+      <DOBPicker />
     </View>
   );
 };
