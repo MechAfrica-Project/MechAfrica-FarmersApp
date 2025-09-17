@@ -1,13 +1,6 @@
-// components/GenderSelect.tsx
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Modal,
-  FlatList,
-} from "react-native";
-import { User, ChevronDown } from "lucide-react-native"; 
+import { View, Text, TouchableOpacity, Modal, FlatList } from "react-native";
+import { MaterialIcons, Feather } from "@expo/vector-icons"; // ← use icons here
 
 type GenderSelectProps = {
   label?: string;
@@ -17,30 +10,24 @@ type GenderSelectProps = {
 
 const GENDER_OPTIONS: ("Male" | "Female")[] = ["Male", "Female"];
 
-export default function GenderSelect({
-  label,
-  value,
-  onChange,
-}: GenderSelectProps) {
+export default function GenderSelect({ label, value, onChange }: GenderSelectProps) {
   const [modalVisible, setModalVisible] = useState(false);
 
   return (
     <View className="mb-4">
       {label && <Text className="mb-2 font-mulish">{label}</Text>}
 
-      {/* Selector */}
       <TouchableOpacity
         className="flex-row items-center justify-between border rounded-lg p-3 bg-gray-50"
         onPress={() => setModalVisible(true)}
       >
         <View className="flex-row items-center">
-          <User size={18} color="#555" style={{ marginRight: 8 }} />
+          <MaterialIcons name="person" size={18} color="#555" style={{ marginRight: 8 }} />
           <Text className="text-base">{value || "Select gender"}</Text>
         </View>
-        <ChevronDown size={18} color="#555" />
+        <Feather name="chevron-down" size={18} color="#555" />
       </TouchableOpacity>
 
-      {/* Modal */}
       <Modal visible={modalVisible} animationType="fade" transparent>
         <View className="flex-1 bg-black/40 justify-center">
           <View className="bg-white rounded-xl mx-6 p-4">
