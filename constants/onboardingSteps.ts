@@ -22,35 +22,38 @@ export const onboardingSteps = [
     Component: PersonalInfoStep,
   },
   {
-    title: "More info",
+    title: "More information",
     subtitle: "",
-    description: "Provide extra details to personalize your experience.",
+    description: "Let’s get to know you more",
     Component: MoreInfoStep,
   },
   {
-    title: "Set your",
-    subtitle: " location",
-    description: "We’ll use this info to better tailor your experience.",
+    title: "Where are you",
+    subtitle: "",
+    description: "Help us know which regions and district you are in",
     Component: LocationStep,
     optional: true,
   },
   {
-    title: "Add your",
-    subtitle: " profile picture",
-    description: "Upload a picture so others can recognize you.",
+    title: "Upload your Picture",
+    subtitle: "",
+    description:
+      "Let us know how you look to better connect \nyou to farmers and providers in Ghana.",
     Component: ProfilePictureStep,
     optional: true,
   },
   {
-    title: "Where is your",
-    subtitle: " farm?",
-    description: "Let us know where your farm is located.",
+    title: "Location of your",
+    subtitle: " farm",
+    description:
+      "Register your farm to connect  to the \nworld of farming, we need your farm \nlocation.",
     Component: FarmLocationStep,
   },
   {
-    title: "Farm info",
+    title: "More about your farm",
     subtitle: "",
-    description: "Add details about your farm setup.",
+    description:
+      "We would love to hear more about \nwhat you have going on, on site.",
     Component: FarmInfoStep,
   },
 ];
