@@ -76,7 +76,7 @@ export default function OnboardingLayout() {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View className="flex-1">
+      <View className="flex-1 bg-white">
         {/* Scrollable area with keyboard avoiding */}
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}

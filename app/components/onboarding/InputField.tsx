@@ -36,7 +36,7 @@ export default function InputField({
         {optional && <Text className="text-gray-400">(optional)</Text>}
       </Text>
       <View
-        className={`flex-row items-center rounded-xl px-3 py-3 border
+        className={`flex-row items-center rounded-xl px-3 py-1 border
           ${
             error
               ? "border-red-500 bg-white"

@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Platform } from "react-native";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import moment from "moment";
-import { Calendar } from "lucide-react-native"; // vector icon
+import { Calendar } from "lucide-react-native";
 
 type State = {
   dob: Date | null;
@@ -59,12 +59,12 @@ const DOBPicker = ({ label = "Date of Birth" }) => {
   };
 
   return (
-    <View className="mb-5">
-      <Text className="text-gray-700 font-semibold mb-2 text-lg">{label}</Text>
+    <View className="mb-6">
+      <Text className="text-gray-700 font-semibold mb-2 text-base">{label}</Text>
 
-      {/* Touchable date box */}
+      {/* Styled date box */}
       <TouchableOpacity
-        className="flex-row items-center justify-between border border-gray-300 rounded-xl bg-gray-50 px-4 py-3"
+        className="flex-row items-center justify-between border border-gray-300 rounded-xl bg-white px-4 py-3 shadow-sm"
         onPress={() => dispatch({ type: "setShowPicker", payload: true })}
       >
         <Text className={`text-base ${state.dob ? "text-gray-800" : "text-gray-400"}`}>
@@ -72,7 +72,7 @@ const DOBPicker = ({ label = "Date of Birth" }) => {
             ? moment(state.dob).format("MMMM Do, YYYY") + ` (${state.age} yrs)`
             : "Select your date of birth"}
         </Text>
-        <Calendar className="text-gray-500" size={20} />
+        <Calendar size={20} className="text-gray-400" />
       </TouchableOpacity>
 
       {/* Date Picker */}
@@ -83,7 +83,7 @@ const DOBPicker = ({ label = "Date of Birth" }) => {
           display={Platform.OS === "ios" ? "spinner" : "default"}
           maximumDate={new Date()}
           onChange={onChange}
-          className="mt-2"
+          className="mt-3"
         />
       )}
     </View>

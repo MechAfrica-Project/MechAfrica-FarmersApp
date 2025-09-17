@@ -20,7 +20,7 @@ const PrimaryButton = ({ title, onPress, className, textClassName }: Props) => {
         className ?? ""
       }`}
       onPress={onPress}
-      activeOpacity={0.8} // ✅ keeps button interactive
+      activeOpacity={0.9} // ✅ keeps button interactive
     >
       {loading ? (
         <ActivityIndicator size="small" color="#fff" />

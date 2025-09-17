@@ -31,8 +31,8 @@ const MoreInfoStep = () => {
   }, [state.gender]);
 
   return (
-    <View className="px-4 py-6">
-      <Text className="mb-4 font-bold text-lg">More Info</Text>
+    <View className="px-4 py-6 gap-4">
+      <View className="mt-10"></View>
 
       {/* Gender Selector */}
       <GenderSelect
