@@ -1,8 +1,9 @@
 // steps/ProfilePictureStep.tsx
 import React from "react";
-import { View, Text, Button, Image } from "react-native";
+import { View, Text, TouchableOpacity, Image } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useOnboardingStore } from "@/stores/onboardingStore";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function ProfilePictureStep() {
   const { data, updateData } = useOnboardingStore();
@@ -19,14 +20,44 @@ export default function ProfilePictureStep() {
   };
 
   return (
-    <View style={{ flex: 1, padding: 16, alignItems: "center" }}>
-      <Text style={{ fontSize: 20, fontWeight: "700", marginBottom: 12 }}>Upload Profile Picture</Text>
+    <View className="flex-1 items-center justify-center px-5">
 
-      {data.profilePicture ? (
-        <Image source={{ uri: data.profilePicture }} style={{ width: 128, height: 128, borderRadius: 64, marginBottom: 12 }} />
-      ) : null}
+      {/* Glow wrapper */}
+      <View className="w-[18rem] h-[18rem] rounded-full mt-10 bg-yellow-100/40 items-center justify-center mb-6">
+        {/* Circular Upload Area */}
+        <TouchableOpacity
+          onPress={pickImage}
+          className="w-[17rem] h-[17rem] rounded-full border-[0.7rem] border-white bg-gray-100 items-center justify-center"
+        >
+          {data.profilePicture ? (
+            <Image
+              source={{ uri: data.profilePicture }}
+              className="w-full h-full rounded-full"
+            />
+          ) : (
+            <Ionicons name="image-outline" size={48} color="#666" />
+          )}
+        </TouchableOpacity>
+      </View>
 
-      <Button title="Choose Image" onPress={pickImage} />
+      {/* Buttons Row */}
+      <View className="flex-row gap-5 mt-4">
+        <TouchableOpacity
+          onPress={pickImage}
+          className="w-12 h-12 rounded-xl bg-black items-center justify-center"
+        >
+          <Ionicons name="camera-outline" size={24} color="#fff" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={pickImage}
+          className="px-5 py-3 rounded-lg border bg-white"
+        >
+          <Text className="text-sm font-semibold text-black">
+            Upload Picture
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
