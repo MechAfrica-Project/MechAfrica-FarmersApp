@@ -54,13 +54,13 @@ export default function PhoneInput({
     <View className="mb-4">
       {label && <Text className="mb-2 font-mulish">{label}</Text>}
 
-      <View className="flex-row items-center border border-gray-300 rounded-lg px-3 py-1">
+      <View className="flex flex-row border border-gray-300 rounded-lg px-3 py-1">
         <TouchableOpacity
           onPress={() => setModalVisible(true)}
           className="flex-row items-center mr-2"
         >
           <Text className="text-xl mr-1">{selectedCountry.flag}</Text>
-          <Text className="text-base text-gray-700">
+          <Text className="text-xl">
             {selectedCountry.dialCode}
           </Text>
         </TouchableOpacity>
@@ -70,7 +70,7 @@ export default function PhoneInput({
           onChangeText={handleChange}
           placeholder="Enter phone number"
           keyboardType="phone-pad"
-          className="flex-1 text-base"
+          className="text-xl mb-2 "
         />
       </View>
 

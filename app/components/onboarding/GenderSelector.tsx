@@ -19,7 +19,7 @@ export default function GenderSelect({ label, value, onChange }: GenderSelectPro
       {label && <Text className="mb-2 font-mulish">{label}</Text>}
 
       <TouchableOpacity
-        className="flex-row items-center justify-between border border-gray-300 rounded-lg p-3 bg-gray-50"
+        className="flex-row items-center justify-between border border-gray-300 rounded-lg p-3 py-4 bg-gray-50"
         onPress={() => setModalVisible(true)}
       >
         <View className="flex-row items-center">

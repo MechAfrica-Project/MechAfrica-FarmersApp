@@ -59,7 +59,7 @@ const DOBPicker = ({ label = "Date of Birth" }) => {
   };
 
   return (
-    <View className="mb-6">
+    <View className="mb-6 ">
       <Text className="text-gray-700 font-semibold mb-2 text-base">{label}</Text>
 
       {/* Styled date box */}
