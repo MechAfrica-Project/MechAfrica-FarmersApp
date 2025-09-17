@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Modal, FlatList } from "react-native";
-import { MaterialIcons, Feather } from "@expo/vector-icons"; // ← use icons here
+import { View, Text, TouchableOpacity } from "react-native";
+import { MaterialIcons, Feather } from "@expo/vector-icons";
+import SelectModal from "../general/SelectModal";
 
 type GenderSelectProps = {
   label?: string;
@@ -18,44 +19,26 @@ export default function GenderSelect({ label, value, onChange }: GenderSelectPro
       {label && <Text className="mb-2 font-mulish">{label}</Text>}
 
       <TouchableOpacity
-        className="flex-row items-center justify-between border rounded-lg p-3 bg-gray-50"
+        className="flex-row items-center justify-between border border-gray-300 rounded-lg p-3 py-4 bg-gray-50"
         onPress={() => setModalVisible(true)}
       >
         <View className="flex-row items-center">
-          <MaterialIcons name="person" size={18} color="#555" style={{ marginRight: 8 }} />
-          <Text className="text-base">{value || "Select gender"}</Text>
+          <MaterialIcons name="person" size={18} color="#555" className="mr-2" />
+          <Text className="text-base font-mulish">{value || "Select gender"}</Text>
         </View>
         <Feather name="chevron-down" size={18} color="#555" />
       </TouchableOpacity>
 
-      <Modal visible={modalVisible} animationType="fade" transparent>
-        <View className="flex-1 bg-black/40 justify-center">
-          <View className="bg-white rounded-xl mx-6 p-4">
-            <Text className="font-semibold text-lg mb-3">Select Gender</Text>
-            <FlatList
-              data={GENDER_OPTIONS}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  className="py-3 border-b border-gray-200"
-                  onPress={() => {
-                    onChange(item);
-                    setModalVisible(false);
-                  }}
-                >
-                  <Text className="text-base">{item}</Text>
-                </TouchableOpacity>
-              )}
-            />
-            <TouchableOpacity
-              className="mt-4 py-3 rounded-lg bg-gray-200"
-              onPress={() => setModalVisible(false)}
-            >
-              <Text className="text-center font-medium">Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      <SelectModal
+        visible={modalVisible}
+        title="Select Gender"
+        options={GENDER_OPTIONS.map((g) => ({ label: g, value: g }))}
+        onSelect={(v) => {
+          onChange(v);
+          setModalVisible(false);
+        }}
+        onClose={() => setModalVisible(false)}
+      />
     </View>
   );
 }

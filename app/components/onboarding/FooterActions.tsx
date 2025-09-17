@@ -38,7 +38,7 @@ export default function FooterActions({
           <PrimaryButton
             title="Skip"
             onPress={onSkip}
-            className="w-[6rem] bg-light-yellow/55 text-black border"
+            className="w-[6rem] bg-yellow-100 border"
           />
         )}
 

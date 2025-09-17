@@ -36,7 +36,7 @@ export default function InputField({
         {optional && <Text className="text-gray-400">(optional)</Text>}
       </Text>
       <View
-        className={`flex-row items-center rounded-xl px-3 py-3 border
+        className={`flex flex-row items-center rounded-xl px-3 py-3 border
           ${
             error
               ? "border-red-500 bg-white"
@@ -47,7 +47,7 @@ export default function InputField({
       >
         <Feather name={icon} size={20} color={error ? "red" : "#6B7280"} />
         <TextInput
-          className="flex-1 text-base text-gray-900 ml-3"
+          className="flex-1 py-1 text-gray-900 ml-3"
           placeholder={placeholder}
           value={value}
           onChangeText={onChange}

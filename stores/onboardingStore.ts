@@ -17,6 +17,7 @@ export type OnboardingData = {
   moreInfo: {
     gender?: "Male" | "Female";
     age?: number;
+    dob?:string;
   };
 
   location: { region?: string; district?: string };
