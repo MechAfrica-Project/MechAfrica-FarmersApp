@@ -1,8 +1,6 @@
-// layouts/OnboardingLayout.tsx
 import React from "react";
 import {
   View,
-  Text,
   Alert,
   Keyboard,
   KeyboardAvoidingView,
@@ -15,27 +13,14 @@ import { useRouter } from "expo-router";
 
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import FooterNote from "@/app/components/general/FooterNote";
-import PrimaryButton from "@/app/components/general/PrimaryButton";
-import BackButton from "@/app/components/general/BackButton";
-import LanguageStep from "./components/LanguageStep";
-import PersonalInfoStep from "./components/PersonalInfoStep";
-import MoreInfoStep from "./components/MoreInfoStep";
-import LocationStep from "./components/LocationStep";
-import ProfilePictureStep from "./components/ProfilePictureStep";
-import FarmLocationStep from "./components/FarmLocationStep";
-import FarmInfoStep from "./components/FarmInfoStep";
-
-// step indexes for optional skip
-const steps = [
-  LanguageStep, // 0
-  PersonalInfoStep, // 1
-  MoreInfoStep, // 2
-  LocationStep, // 3 (optional)
-  ProfilePictureStep, // 4 (optional)
-  FarmLocationStep, // 5
-  FarmInfoStep, // 6
-];
-const optionalSteps = [3, 4];
+import OnboardingHeader from "@/app/components/onboarding/OnboardingHeader";
+import ProgressHeader from "@/app/components/onboarding/ProgressHeader";
+import FooterActions from "@/app/components/onboarding/FooterActions";
+import {
+  onboardingSteps,
+  PROGRESS_STEPS,
+  optionalSteps,
+} from "@/constants/onboardingSteps";
 
 export default function OnboardingLayout() {
   const {
@@ -47,9 +32,11 @@ export default function OnboardingLayout() {
     validateStep,
     reset,
   } = useOnboardingStore();
+
   const router = useRouter();
 
-  const StepComponent = steps[currentStep] ?? (() => <View />);
+  const { title, subtitle, description, Component } =
+    onboardingSteps[currentStep] ?? ({} as any);
 
   const onNextPress = () => {
     const res = validateStep(currentStep);
@@ -100,64 +87,41 @@ export default function OnboardingLayout() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <View className="flex-1 px-6 pt-12">
-              {/* Header */}
-
-              <Text className="text-center text-lg font-bold mb-6">
-                Step {currentStep + 1} of {totalSteps}
-              </Text>
-              {/* Back Button */}
-              {currentStep > 0 ? (
-                <BackButton onPress={prevStep} />
-              ) : (
-                <View className="w-20" />
+            <View className="flex-1 px-6 pt-[6rem]">
+              {/* Progress bar + back button (only show from step 1 → step 6) */}
+              {currentStep > 0 && (
+                <ProgressHeader
+                  currentStep={currentStep}
+                  totalSteps={PROGRESS_STEPS}
+                  onBack={prevStep}
+                />
               )}
-              {/* Step Content */}
-              <StepComponent />
+
+              {/* Title + description */}
+              <OnboardingHeader
+                title={title}
+                subtitle={subtitle}
+                description={description}
+              />
+
+              {/* Step content */}
+              <Component />
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
 
-        {/* Footer Section */}
+        {/* Footer Section (Skip / Next / Finish) */}
+        <FooterActions
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          isCurrentValid={isCurrentValid}
+          optionalSteps={optionalSteps}
+          onNext={onNextPress}
+          onFinish={handleFinish}
+          onSkip={nextStep}
+        />
 
-        {/* bottom fixed row */}
-        <View className="absolute w-full px-7 bottom-[10%] z-10">
-          <View
-            className={
-              // use row layout; center vertically; space between when both buttons present
-              optionalSteps.includes(currentStep)
-                ? "flex-row items-center space-x-3 gap-5 justify-center"
-                : "flex-row items-center"
-            }
-          >
-            {/* Skip (40%) */}
-            {optionalSteps.includes(currentStep) && (
-              <PrimaryButton
-                title="Skip"
-                onPress={nextStep}
-                className="w-[6rem] bg-light-yellow/55 text-black border "
-              />
-            )}
-
-            {/* Primary button container: 60% when skip present, full width otherwise */}
-            <View
-              className={
-                optionalSteps.includes(currentStep) ? "w-3/5" : "w-full"
-              }
-            >
-              <PrimaryButton
-                title={currentStep === totalSteps - 1 ? "Finish" : "Next"}
-                onPress={
-                  currentStep === totalSteps - 1 ? handleFinish : onNextPress
-                }
-                disabled={!isCurrentValid}
-                textClassName="text-white"
-              />
-            </View>
-          </View>
-        </View>
-
-        {/* Footer bg*/}
+        {/* Footer background */}
         <FooterNote />
       </View>
     </TouchableWithoutFeedback>
