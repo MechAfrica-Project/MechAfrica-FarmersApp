@@ -14,7 +14,11 @@ export type Equipment = {
 export type OnboardingData = {
   language?: string;
   personalInfo: { name?: string; otherNames?: string; phone?: PhoneValue };
-  moreInfo: { gender?: string; contactMethod?: string };
+  moreInfo: {
+    gender?: "Male" | "Female";
+    age?: number;
+  };
+
   location: { region?: string; district?: string };
   profilePicture?: string;
   farmLocation?: string;
@@ -90,14 +94,6 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
       case 2: // More Info
         if (!data.moreInfo?.gender || data.moreInfo.gender.trim() === "")
           return { valid: false, message: "Please specify your gender." };
-        if (
-          !data.moreInfo?.contactMethod ||
-          data.moreInfo.contactMethod.trim() === ""
-        )
-          return {
-            valid: false,
-            message: "Please specify a preferred contact method.",
-          };
         return { valid: true };
 
       case 3: // Location

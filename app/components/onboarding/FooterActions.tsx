@@ -47,7 +47,6 @@ export default function FooterActions({
           <PrimaryButton
             title={isLastStep ? "Finish" : "Next"}
             onPress={isLastStep ? onFinish : onNext}
-            disabled={!isCurrentValid}
             textClassName="text-white"
           />
         </View>

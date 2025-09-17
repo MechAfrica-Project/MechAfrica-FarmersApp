@@ -30,7 +30,7 @@ export default function BackButton({
       router.back();
     } catch {
       // fallback to a safe route if back fails
-      router.replace("/(tabs)/Dashboard");
+      router.replace("/(tabs)");
     }
   };
 

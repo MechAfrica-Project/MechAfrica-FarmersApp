@@ -1,10 +1,44 @@
+import React, { useEffect, useReducer } from "react";
 import { View, Text } from "react-native";
-import React from "react";
+import { useOnboardingStore } from "@/stores/onboardingStore";
+import GenderSelect from "@/app/components/onboarding/GenderSelector";
+
+type State = {
+  gender?: "Male" | "Female";
+};
+
+type Action = { type: "setGender"; payload: "Male" | "Female" };
 
 const MoreInfoStep = () => {
+  const moreInfo = useOnboardingStore((state) => state.data.moreInfo);
+  const updateData = useOnboardingStore((state) => state.updateData);
+
+  const [state, dispatch] = useReducer(
+    (prev: State, action: Action): State => {
+      switch (action.type) {
+        case "setGender":
+          return { ...prev, gender: action.payload };
+        default:
+          return prev;
+      }
+    },
+    { gender: moreInfo.gender }
+  );
+
+  useEffect(() => {
+    updateData({ moreInfo: { ...moreInfo, gender: state.gender } });
+  }, [state.gender]);
+
   return (
-    <View>
-      <Text>MoreInfoStep</Text>
+    <View className="px-4 py-6">
+      <Text className="mb-4 font-bold text-lg">More Info</Text>
+
+      {/* Gender Selector */}
+      <GenderSelect
+        label="Gender"
+        value={state.gender}
+        onChange={(value) => dispatch({ type: "setGender", payload: value })}
+      />
     </View>
   );
 };
