@@ -26,7 +26,7 @@ export default function SignIn() {
         <PhoneInput
           label="Telephone number"
           onChange={(val) => {
-            setPhone(val.formatted, val.raw);
+            setPhone(val);
           }}
         />
 

@@ -9,7 +9,7 @@ import AuthLayout from "./components/AuthLayout";
 import OtpInput from "./components/OtpInput";
 
 export default function VerifyPhone() {
-  const phone = useAuthStore((s) => s.phone);
+  const phone = useAuthStore((s) => s.phone?.formatted || s.phone?.raw || ""); // ✅ display nicely
   const verifyOtp = useAuthStore((s) => s.verifyOtp);
   const error = useAuthStore((s) => s.error);
   const loading = useAuthStore((s) => s.loading);
@@ -18,6 +18,7 @@ export default function VerifyPhone() {
   const [timeLeft, setTimeLeft] = useState(30);
   const wrapperRef = useRef<ShakeableViewRef>(null);
 
+  // Countdown timer
   useEffect(() => {
     if (timeLeft <= 0) return;
     const t = setInterval(() => setTimeLeft((v) => v - 1), 1000);
@@ -29,7 +30,7 @@ export default function VerifyPhone() {
     if (!success) {
       wrapperRef.current?.shake();
     }
-    // ✅ no navigation needed here — authStore handles redirect
+    // ✅ redirect/navigation handled in authStore
   };
 
   return (
@@ -38,9 +39,8 @@ export default function VerifyPhone() {
       title="Verify Phone number"
       subtitle={
         <Text className="font-mulish text-center text-gray-400 font-medium">
-          Please find a 5 digit code to fill in the {"\n"}spaces with the OTP
-          message sent to
-          <Text className="font-medium"> {phone}</Text>
+          Please enter the 5-digit OTP code sent to{" "}
+          <Text className="font-medium">{phone}</Text>
         </Text>
       }
     >
@@ -56,12 +56,13 @@ export default function VerifyPhone() {
         )}
 
         <PrimaryButton
-          title="Log in"
+          title={loading ? "Verifying..." : "Log in"}
           onPress={handleVerify}
+          disabled={loading || code.length < 5}
           textClassName="text-white"
         />
 
-        <View className="flex flex-row justify-center mt-1">
+        <View className="flex flex-row justify-center mt-2">
           {timeLeft > 0 ? (
             <Text className="text-primary-green font-mulish font-medium">
               Resend in {timeLeft}s

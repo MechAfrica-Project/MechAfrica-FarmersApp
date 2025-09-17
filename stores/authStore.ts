@@ -3,6 +3,7 @@ import { create } from "zustand";
 import * as SecureStore from "expo-secure-store";
 import { setAuthToken } from "@/lib/api";
 import { router } from "expo-router";
+import { PhoneValue } from "@/app/(auth)/login/components/PhoneInput";
 
 interface User {
   id: string;
@@ -14,11 +15,11 @@ interface User {
 interface AuthState {
   user: User | null;
   token: string | null;
-  phone: string | null;
+  phone: PhoneValue | null;
   loading: boolean;
   error: string | null;
 
-  setPhone: (formatted: string, raw: string) => void;
+  setPhone: (val: PhoneValue) => void;
   sendPhone: () => Promise<void>;
   verifyOtp: (code: string) => Promise<boolean>;
   logout: () => Promise<void>;
@@ -32,28 +33,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loading: false,
   error: null,
 
-  setPhone: (formatted, raw) => {
-    set({ phone: formatted, error: null });
-  },
+  setPhone: (val) => set({ phone: val, error: null }),
 
-  /**
-   * sendPhone
-   * Stubbed: doesn't call network. Simulates sending OTP and navigates to verify screen.
-   * Keeps behavior simple so UX flows work while building UI.
-   */
   sendPhone: async () => {
     const { phone } = get();
-    if (!phone) {
+    if (!phone?.valid) {
       set({ error: "Enter a valid phone number" });
       return;
     }
     set({ loading: true, error: null });
     try {
-      // Simulate network delay
+      // simulate API call
       await new Promise((res) => setTimeout(res, 350));
-
-      // In a real app you'd call apiFetch("/send-otp", { method: "POST", body: JSON.stringify({ phone }) })
-      // For now just navigate to OTP screen
       set({ loading: false });
       router.push("/(auth)/login/verifyPhone");
     } catch (err: any) {
@@ -61,36 +52,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  /**
-   * verifyOtp
-   * Stubbed: accepts any code, persists a mock token & user, and navigates to dashboard.
-   */
   verifyOtp: async (code) => {
     set({ loading: true, error: null });
     try {
-      // simulate verification delay
+      // simulate verification API
       await new Promise((res) => setTimeout(res, 450));
+      const { phone } = get();
 
-      // Fake response (same shape your real API returns)
       const data = {
         user: {
           id: "mock-user-1",
           name: "Demo Farmer",
           email: "demo@mechafrica.org",
-          phone: get().phone ?? "0240000000",
+          phone: phone?.formatted ?? "",
         },
         token: "mock-token-123456",
       };
 
-      // persist token locally
       await SecureStore.setItemAsync("token", data.token);
-
-      // inform local API layer about token (no real network, but kept for parity)
       setAuthToken(data.token);
 
       set({ user: data.user, token: data.token, loading: false });
-
-      // navigate to protected app area
       router.replace("/(tabs)");
       return true;
     } catch (err: any) {
@@ -99,33 +81,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  /**
-   * logout - clears token and user locally
-   */
   logout: async () => {
     await SecureStore.deleteItemAsync("token");
     setAuthToken(null);
     set({ user: null, token: null });
-    // reset the history stack
     router.replace("/(auth)/login/signIn");
   },
 
-  /**
-   * restoreSession - checks local SecureStore for token and restores a mock user if present.
-   * No network calls are made.
-   */
   restoreSession: async () => {
     set({ loading: true });
     try {
       const token = await SecureStore.getItemAsync("token");
       if (token) {
-        // inform api layer
         setAuthToken(token);
-
         // simulate fetching user
         await new Promise((res) => setTimeout(res, 300));
-
-        // restore mock user
         set({
           user: {
             id: "mock-user-1",
@@ -145,6 +115,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 }));
+
 
 // // stores/authStore.ts
 // import { create } from "zustand";

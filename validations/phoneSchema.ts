@@ -1,4 +1,3 @@
-// validation/phoneSchema.ts
 import { z } from "zod";
 
 export const phoneObjectSchema = z.object({
@@ -6,7 +5,9 @@ export const phoneObjectSchema = z.object({
     raw: z.string().min(6, "Invalid phone number"),
     formatted: z.string().optional(),
     country: z.string(),
-    valid: z.boolean().refine((v) => v === true, { message: "Enter a valid phone number" }),
+    valid: z.boolean().refine((v) => v === true, {
+      message: "Enter a valid phone number",
+    }),
   }),
 });
 

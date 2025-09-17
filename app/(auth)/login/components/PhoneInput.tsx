@@ -1,76 +1,72 @@
-import React, { useRef, useState } from "react";
-import { View, Text, TouchableWithoutFeedback, Keyboard } from "react-native";
-import RNPhoneInput from "react-native-phone-number-input";
+import React, { useState } from "react";
+import { View, Text } from "react-native";
+import IntlPhoneInput from "react-native-intl-phone-input";
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 
-type PhoneValue = {
+export type PhoneValue = {
   raw: string;
-  formatted: string;
+  formatted?: string;
   country: string;
   valid: boolean;
 };
 
-export default function PhoneInput({
-  label,
-  onChange,
-  defaultValue,
-}: {
+type PhoneInputProps = {
   label?: string;
-  onChange?: (value: PhoneValue) => void;
-  defaultValue?: string;
-}) {
-  const phoneInputRef = useRef<RNPhoneInput>(null);
-  const [phoneNumber, setPhoneNumber] = useState(defaultValue || "");
-  const [formattedValue, setFormattedValue] = useState("");
-  const [isValid, setIsValid] = useState(false);
+  onChange: (value: PhoneValue) => void;
+};
 
-  const handleValidation = (text: string) => {
-    const checkValid = phoneInputRef.current?.isValidNumber(text) || false;
-    const country = phoneInputRef.current?.getCountryCode() || "";
-    setIsValid(checkValid);
-    setPhoneNumber(text);
-    onChange?.({ raw: text, formatted: formattedValue, country, valid: checkValid });
+export default function PhoneInput({ label, onChange }: PhoneInputProps) {
+  const [isValid, setIsValid] = useState<boolean | null>(null);
+
+  const handlePhoneChange = ({
+    phoneNumber,
+    dialCode,
+    unmaskedPhoneNumber,
+  }: any) => {
+    const raw = phoneNumber;
+    const normalized = raw?.startsWith("+")
+      ? raw
+      : `${dialCode}${unmaskedPhoneNumber}`;
+
+    const parsed = parsePhoneNumberFromString(normalized);
+    const valid = parsed?.isValid() ?? false;
+
+    setIsValid(valid);
+
+    const formatted = valid ? parsed!.formatInternational() : undefined;
+
+    onChange({
+      raw: normalized,
+      formatted,
+      country: dialCode,
+      valid,
+    });
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View className="mb-5 w-full">
-        {label && <Text className="text-gray-500 mb-2 font-mulish">{label}</Text>}
-
-        <View className="relative w-full">
-          <RNPhoneInput
-            ref={phoneInputRef}
-            defaultCode="GH"
-            layout="second"
-            value={phoneNumber}
-            onChangeText={handleValidation}
-            onChangeFormattedText={(text) => setFormattedValue(text)}
-            containerStyle={{
-              width: "100%",
-              borderWidth: 1,
-              borderColor: "#E5E7EB",
-              borderRadius: 12,
-              backgroundColor: "#FFFFFF",
-            }}
-            textContainerStyle={{
-              borderLeftWidth: 0,
-              borderTopRightRadius: 12,
-              borderBottomRightRadius: 12,
-              backgroundColor:"#F3F4F6"
-              
-            }}
-          />
-
-          {phoneNumber.length > 0 && (
-            <Text
-              className={`absolute right-3 top-1/4  text-lg ${
-                isValid ? "text-green-600" : "text-red-500"
-              }`}
-            >
-              {isValid ? "✅" : "❌"}
-            </Text>
-          )}
-        </View>
-      </View>
-    </TouchableWithoutFeedback>
+    <View className="mb-4">
+      {label && <Text className="mb-2 font-mulish">{label}</Text>}
+      <IntlPhoneInput
+        onChangeText={handlePhoneChange}
+        defaultCountry="GH"
+        containerStyle={{
+          borderWidth: 1,
+          borderColor: isValid === false ? "red" : "#ccc",
+          borderRadius: 8,
+          padding: 4,
+        }}
+        phoneInputStyle={{ fontSize: 16, padding: 8 }}
+        flagStyle={{
+          marginRight: 8,
+          borderRadius: 3,
+        }}
+      />
+      {isValid === false && (
+        <Text className="text-red-500 mt-1">Invalid phone number</Text>
+      )}
+      {isValid === true && (
+        <Text className="text-green-500 mt-1">✅ Valid number</Text>
+      )}
+    </View>
   );
 }

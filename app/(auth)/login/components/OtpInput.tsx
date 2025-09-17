@@ -1,5 +1,10 @@
 import React, { useRef, useState } from "react";
-import { View, TextInput, NativeSyntheticEvent, TextInputKeyPressEventData } from "react-native";
+import {
+  View,
+  TextInput,
+  NativeSyntheticEvent,
+  TextInputKeyPressEventData,
+} from "react-native";
 
 interface OtpInputProps {
   length?: number;
@@ -7,7 +12,11 @@ interface OtpInputProps {
   error?: boolean;
 }
 
-export default function OtpInput({ length = 5, onCodeFilled, error }: OtpInputProps) {
+export default function OtpInput({
+  length = 5,
+  onCodeFilled,
+  error,
+}: OtpInputProps) {
   const inputs = useRef<(TextInput | null)[]>([]);
   const [values, setValues] = useState<string[]>(Array(length).fill(""));
 
@@ -25,23 +34,26 @@ export default function OtpInput({ length = 5, onCodeFilled, error }: OtpInputPr
     }
   };
 
-  const handleKeyPress = (e: NativeSyntheticEvent<TextInputKeyPressEventData>, index: number) => {
+  const handleKeyPress = (
+    e: NativeSyntheticEvent<TextInputKeyPressEventData>,
+    index: number
+  ) => {
     if (e.nativeEvent.key === "Backspace" && !values[index] && index > 0) {
       inputs.current[index - 1]?.focus();
     }
   };
 
   return (
-    <View className="flex-row justify-between mx-2 mb-3">
+    <View className="flex-row justify-center gap-3 mb-4">
       {Array.from({ length }).map((_, i) => (
         <TextInput
           key={i}
           ref={(ref) => {
-            inputs.current[i] = ref; // ✅ TS-safe
+            inputs.current[i] = ref;
           }}
-          className={`w-14 h-14 rounded-xl text-center text-lg font-extrabold bg-gray-100 border ${
-            error ? "border-red-500" : "border-gray-400"
-          }`}
+          className={`w-14 h-14 rounded-2xl pb-1 text-center text-xl font-bold 
+            bg-white border shadow-sm
+            ${error ? "border-red-500" : "border-gray-300"}`}
           maxLength={1}
           keyboardType="numeric"
           value={values[i]}

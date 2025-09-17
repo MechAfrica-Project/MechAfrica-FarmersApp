@@ -1,4 +1,5 @@
 // stores/onboardingStore.ts
+import { PhoneValue } from "@/app/(auth)/login/components/PhoneInput";
 import { create } from "zustand";
 
 /**
@@ -12,7 +13,7 @@ export type Equipment = {
 
 export type OnboardingData = {
   language?: string;
-  personalInfo: { name?: string; phone?: string };
+  personalInfo: { name?: string; otherNames?: string; phone?: PhoneValue };
   moreInfo: { gender?: string; contactMethod?: string };
   location: { region?: string; district?: string };
   profilePicture?: string;
@@ -31,12 +32,7 @@ type OnboardingState = {
   prevStep: () => void;
   goToStep: (n: number) => void;
 
-  /**
-   * updateData accepts a partial of OnboardingData and merges deeply
-   * Example: updateData({ personalInfo: { name: 'Elvis' } })
-   */
   updateData: (patch: Partial<OnboardingData>) => void;
-
   reset: () => void;
 
   /** validate a specific step (0-indexed) */
@@ -68,28 +64,40 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
     return out;
   };
 
-  const TOTAL = 8;
+  // ✅ match the actual number of steps you validate (0–6)
+  const TOTAL = 7;
 
   const validate = (stepIndex: number): ValidateResult => {
     const data = get().data;
 
     switch (stepIndex) {
       case 0: // Language
-        if (!data.language) return { valid: false, message: "Please select a language." };
+        if (!data.language)
+          return { valid: false, message: "Please select a language." };
         return { valid: true };
 
       case 1: // Personal Info
         if (!data.personalInfo?.name || data.personalInfo.name.trim() === "")
           return { valid: false, message: "Please enter your full name." };
-        if (!data.personalInfo?.phone || data.personalInfo.phone.trim() === "")
-          return { valid: false, message: "Please enter a phone number." };
+        // ✅ make "otherNames" optional
+        if (!data.personalInfo?.phone?.valid)
+          return {
+            valid: false,
+            message: "Please enter a valid phone number.",
+          };
         return { valid: true };
 
       case 2: // More Info
         if (!data.moreInfo?.gender || data.moreInfo.gender.trim() === "")
           return { valid: false, message: "Please specify your gender." };
-        if (!data.moreInfo?.contactMethod || data.moreInfo.contactMethod.trim() === "")
-          return { valid: false, message: "Please specify a preferred contact method." };
+        if (
+          !data.moreInfo?.contactMethod ||
+          data.moreInfo.contactMethod.trim() === ""
+        )
+          return {
+            valid: false,
+            message: "Please specify a preferred contact method.",
+          };
         return { valid: true };
 
       case 3: // Location
@@ -100,12 +108,16 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
         return { valid: true };
 
       case 4: // Profile picture
-        if (!data.profilePicture) return { valid: false, message: "Please upload a profile picture." };
+        if (!data.profilePicture)
+          return { valid: false, message: "Please upload a profile picture." };
         return { valid: true };
 
       case 5: // Farm Location
         if (!data.farmLocation || data.farmLocation.trim() === "")
-          return { valid: false, message: "Please enter your business location address." };
+          return {
+            valid: false,
+            message: "Please enter your business location address.",
+          };
         return { valid: true };
 
       case 6: // Farm Info
@@ -114,7 +126,10 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
         if (!data.farmInfo?.farmSize || data.farmInfo.farmSize <= 0)
           return { valid: false, message: "Please enter a valid farm size." };
         if (!data.farmInfo?.cropTypes || data.farmInfo.cropTypes.length === 0)
-          return { valid: false, message: "Please select at least one crop type." };
+          return {
+            valid: false,
+            message: "Please select at least one crop type.",
+          };
         return { valid: true };
 
       default:
@@ -128,7 +143,9 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
     data: defaultData,
 
     nextStep: () =>
-      set((s) => ({ currentStep: Math.min(s.currentStep + 1, s.totalSteps - 1) })),
+      set((s) => ({
+        currentStep: Math.min(s.currentStep + 1, s.totalSteps - 1),
+      })),
 
     prevStep: () =>
       set((s) => ({ currentStep: Math.max(s.currentStep - 1, 0) })),

@@ -16,9 +16,9 @@ export const onboardingSteps = [
     Component: LanguageStep,
   },
   {
-    title: "Tell us about",
-    subtitle: " yourself",
-    description: "Enter your personal details to set up your account.",
+    title: "Great to meet you,",
+    subtitle: "",
+    description: " Please provide your full name \nand contact number",
     Component: PersonalInfoStep,
   },
   {
