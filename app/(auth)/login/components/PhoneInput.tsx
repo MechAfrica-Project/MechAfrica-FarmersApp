@@ -42,6 +42,7 @@ export default function PhoneInput({
     const valid = parsed?.isValid() ?? false;
     setIsValid(valid);
 
+    // 🚀 Pass both phone + country to parent
     onChange({
       raw: normalized || text,
       formatted: valid ? parsed!.formatInternational() : formatted,
@@ -50,30 +51,47 @@ export default function PhoneInput({
     });
   };
 
+  const handleCountrySelect = (code: Country["code"]) => {
+    const country = COUNTRIES.find((c) => c.code === code)!;
+    setSelectedCountry(country);
+    setPhone("");
+    setIsValid(null);
+    setModalVisible(false);
+
+    // 🚀 Immediately push new country to parent
+    onChange({
+      raw: "",
+      formatted: "",
+      country: country.code,
+      valid: false,
+    });
+  };
+
   return (
     <View className="mb-4">
       {label && <Text className="mb-2 font-mulish">{label}</Text>}
 
-      <View className="flex flex-row border border-gray-300 rounded-lg px-3 py-1">
+      <View className="flex flex-row border border-gray-300 rounded-lg px-3 py-1 items-center">
+        {/* Country selector */}
         <TouchableOpacity
           onPress={() => setModalVisible(true)}
           className="flex-row items-center mr-2"
         >
           <Text className="text-xl mr-1">{selectedCountry.flag}</Text>
-          <Text className="text-xl">
-            {selectedCountry.dialCode}
-          </Text>
+          <Text className="text-xl">{selectedCountry.dialCode}</Text>
         </TouchableOpacity>
 
+        {/* Phone input */}
         <TextInput
           value={phone}
           onChangeText={handleChange}
           placeholder="Enter phone number"
           keyboardType="phone-pad"
-          className="text-xl mb-2 "
+          className="flex-1 text-xl"
         />
       </View>
 
+      {/* Validation feedback */}
       {isValid === false && (
         <Text className="text-red-500 mt-1">Invalid phone number</Text>
       )}
@@ -81,6 +99,7 @@ export default function PhoneInput({
         <Text className="text-green-500 mt-1">✅ Valid number</Text>
       )}
 
+      {/* Country picker modal */}
       <SelectModal
         visible={modalVisible}
         title="Select country"
@@ -88,13 +107,7 @@ export default function PhoneInput({
           label: `${c.flag} ${c.name} (${c.dialCode})`,
           value: c.code,
         }))}
-        onSelect={(code) => {
-          const country = COUNTRIES.find((c) => c.code === code)!;
-          setSelectedCountry(country);
-          setPhone("");
-          setIsValid(null);
-          setModalVisible(false);
-        }}
+        onSelect={handleCountrySelect}
         onClose={() => setModalVisible(false)}
       />
     </View>
