@@ -9,8 +9,6 @@ export default function PersonalInfoStep() {
   const [focused, setFocused] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
 
-
-
   return (
     <View className="p-4 ">
       <View className="mt-10"></View>
@@ -42,10 +40,16 @@ export default function PersonalInfoStep() {
       />
 
       {/* Telephone Number */}
-
       <PhoneInput
         label="Telephone number"
-        onChange={(val) => updateData({ personalInfo: { phone: val } })}
+        onChange={(val) =>
+          updateData({
+            personalInfo: {
+              ...data.personalInfo, 
+              phone: val, 
+            },
+          })
+        }
       />
     </View>
   );
