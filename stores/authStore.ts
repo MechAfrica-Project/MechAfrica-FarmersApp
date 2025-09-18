@@ -1,7 +1,7 @@
 // stores/authStore.ts
 import { create } from "zustand";
 import * as SecureStore from "expo-secure-store";
-import { setAuthToken } from "@/lib/api";
+import { setAuthToken, apiFetch } from "@/lib/api";
 import { router } from "expo-router";
 import { PhoneValue } from "@/app/(auth)/login/components/PhoneInput";
 
@@ -10,6 +10,12 @@ interface User {
   name: string;
   email: string;
   phone?: string;
+  avatar?: string; // optional, for profile picture
+}
+
+interface LoginResponse {
+  user: User;
+  token: string;
 }
 
 interface AuthState {
@@ -43,8 +49,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
     set({ loading: true, error: null });
     try {
-      // simulate API call
-      await new Promise((res) => setTimeout(res, 350));
+      // hit backend to request OTP
+      await apiFetch("/auth/send-otp", {
+        method: "POST",
+        body: JSON.stringify({ phone: phone?.raw }),
+      });
       set({ loading: false });
       router.push("/(auth)/login/verifyPhone");
     } catch (err: any) {
@@ -55,19 +64,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   verifyOtp: async (code) => {
     set({ loading: true, error: null });
     try {
-      // simulate verification API
-      await new Promise((res) => setTimeout(res, 450));
       const { phone } = get();
+      if (!phone?.valid) throw new Error("No valid phone set");
 
-      const data = {
-        user: {
-          id: "mock-user-1",
-          name: "Demo Farmer",
-          email: "demo@mechafrica.org",
-          phone: phone?.formatted ?? "",
-        },
-        token: "mock-token-123456",
-      };
+      // ✅ expect structured response
+      const data = await apiFetch<LoginResponse>("/auth/verify-otp", {
+        method: "POST",
+        body: JSON.stringify({ phone: phone?.raw, code }),
+      });
 
       await SecureStore.setItemAsync("token", data.token);
       setAuthToken(data.token);
@@ -94,133 +98,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const token = await SecureStore.getItemAsync("token");
       if (token) {
         setAuthToken(token);
-        // simulate fetching user
-        await new Promise((res) => setTimeout(res, 300));
-        set({
-          user: {
-            id: "mock-user-1",
-            name: "Demo Farmer",
-            email: "demo@mechafrica.org",
-            phone: "0240000000",
-          },
-          token,
-          loading: false,
-        });
+        // ✅ fetch current user from backend
+        const me = await apiFetch<User>("/auth/me");
+        set({ user: me, token, loading: false });
       } else {
         set({ loading: false });
       }
-    } catch {
+    } catch (err) {
       set({ user: null, token: null, loading: false });
       setAuthToken(null);
     }
   },
 }));
-
-
-// // stores/authStore.ts
-// import { create } from "zustand";
-// import * as SecureStore from "expo-secure-store";
-// import { apiFetch, setAuthToken } from "@/lib/api";
-// import { router } from "expo-router";
-
-// interface User {
-//   id: string;
-//   name: string;
-//   email: string;
-//   phone?: string;
-// }
-
-// interface AuthState {
-//   user: User | null;
-//   token: string | null;
-//   phone: string | null;
-//   loading: boolean;
-//   error: string | null;
-
-//   setPhone: (formatted: string, raw: string) => void;
-//   sendPhone: () => Promise<void>;
-//   verifyOtp: (code: string) => Promise<boolean>;
-//   logout: () => Promise<void>;
-//   restoreSession: () => Promise<void>;
-// }
-
-// export const useAuthStore = create<AuthState>((set, get) => ({
-//   user: null,
-//   token: null,
-//   phone: null,
-//   loading: false,
-//   error: null,
-
-//   setPhone: (formatted, raw) => {
-//     set({ phone: formatted, error: null });
-//   },
-
-//   sendPhone: async () => {
-//     const { phone } = get();
-//     if (!phone) {
-//       set({ error: "Enter a valid phone number" });
-//       return;
-//     }
-//     set({ loading: true, error: null });
-//     try {
-//       await apiFetch("/send-otp", {
-//         method: "POST",
-//         body: JSON.stringify({ phone }),
-//       });
-//       set({ loading: false });
-//       router.push("/(auth)/login/verifyPhone");
-//     } catch (err: any) {
-//       set({ error: err?.message ?? "Network error", loading: false });
-//     }
-//   },
-
-//   verifyOtp: async (code) => {
-//     set({ loading: true, error: null });
-//     try {
-//       const data = await apiFetch<{ user: User; token: string }>("/verify-otp", {
-//         method: "POST",
-//         body: JSON.stringify({ phone: get().phone, code }),
-//       });
-
-//       await SecureStore.setItemAsync("token", data.token);
-
-//       // critical: inform api module about token (breaks cycle if api didn't import the store)
-//       setAuthToken(data.token);
-
-//       set({ user: data.user, token: data.token, loading: false });
-
-//       router.replace("/(tabs)/Dashboard");
-//       return true;
-//     } catch (err: any) {
-//       set({ error: err?.message ?? "Verification failed", loading: false });
-//       return false;
-//     }
-//   },
-
-//   logout: async () => {
-//     await SecureStore.deleteItemAsync("token");
-//     setAuthToken(null);
-//     set({ user: null, token: null });
-//     router.replace("/(auth)/login/signIn");
-//   },
-
-//   restoreSession: async () => {
-//     set({ loading: true });
-//     try {
-//       const token = await SecureStore.getItemAsync("token");
-//       if (token) {
-//         // tell api module to attach token automatically
-//         setAuthToken(token);
-
-//         // now call /me without passing header manually
-//         const data = await apiFetch<{ user: User }>("/me");
-//         set({ user: data.user, token, loading: false });
-//       } else {
-//         set({ loading: false });
-//       }
-//     } catch {
-//       set({ user: null, token: null, loading: false });
-//       setAuthToken(null);
-//     }
-//   },
-// }));

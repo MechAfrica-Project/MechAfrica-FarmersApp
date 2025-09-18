@@ -1,50 +1,44 @@
-import React, { useEffect } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
-import { useAuthStore } from "@/stores/authStore";
-import { useFarmerStore } from "@/stores/farmerStore";
-import PrimaryButton from "@/app/components/general/PrimaryButton";
+import { useEffect } from "react";
+import { Text, View, ScrollView, Image } from "react-native";
+import { useOnboardingStore } from "@/stores/onboardingStore";
 
-const Profile = () => {
-  const { phone, logout } = useAuthStore();
-  const { profile, fetchProfile, loading, error } = useFarmerStore();
+export default function Profile() {
+  const data = useOnboardingStore((s) => s.data);
+  const loadFromStorage = useOnboardingStore((s) => s.loadFromStorage);
 
-  // 🔄 Fetch farmer profile when screen mounts
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    loadFromStorage();
+  }, []);
 
   return (
-    <View className="flex-1 justify-center items-center p-6">
-      {loading && <ActivityIndicator size="large" color="#16a34a" />}
-      {error && <Text className="text-red-500 font-mulish mb-4">{error}</Text>}
+    <ScrollView className="flex-1 p-4">
+      {data.personalInfo?.name ? (
+        <View>
+          <Text className="text-xl font-bold mb-4">Profile</Text>
 
-      {!loading && !error && (
-        <>
-          <Text className="text-2xl font-semibold mb-2">
-            Welcome {profile?.name || phone?.formatted || "Farmer"} 👋
-          </Text>
+          {/* ✅ Profile picture */}
+          {data.profilePicture && (
+            <Image
+              source={{ uri: data.profilePicture }}
+              className="w-32 h-32 rounded-full mb-4"
+              resizeMode="cover"
+            />
+          )}
 
-          <View className="mt-4 space-y-2">
-            <Text className="text-gray-600 font-mulish">
-              📱 Phone: {phone?.formatted || phone?.raw || "N/A"}
-            </Text>
-            <Text className="text-gray-600 font-mulish">
-              📧 Email: {profile?.email || "N/A"}
-            </Text>
-            <Text className="text-gray-600 font-mulish">
-              🏠 Location: {profile?.location || "N/A"}
-            </Text>
-          </View>
-
-          <PrimaryButton
-            title="Logout"
-            onPress={logout}
-            textClassName="text-white mt-6"
-          />
-        </>
+          <Text>Name: {data.personalInfo.name}</Text>
+          <Text>Other Names: {data.personalInfo.otherNames}</Text>
+          <Text>Phone: {data.personalInfo.phone?.raw}</Text>
+          <Text>Gender: {data.moreInfo?.gender}</Text>
+          <Text>Age: {data.moreInfo?.age}</Text>
+          <Text>Region: {data.location?.region}</Text>
+          <Text>District: {data.location?.district}</Text>
+          <Text>Farm Name: {data.farmInfo?.farmName}</Text>
+          <Text>Farm Size: {data.farmInfo?.farmSize}</Text>
+          <Text>Crop Types: {data.farmInfo?.cropTypes?.join(", ")}</Text>
+        </View>
+      ) : (
+        <Text>No profile data found.</Text>
       )}
-    </View>
+    </ScrollView>
   );
-};
-
-export default Profile;
+}
