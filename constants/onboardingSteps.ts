@@ -32,7 +32,6 @@ export const onboardingSteps = [
     subtitle: "",
     description: "Help us know which regions and district you are in",
     Component: LocationStep,
-    optional: true,
   },
   {
     title: "Upload your Picture",
@@ -48,6 +47,7 @@ export const onboardingSteps = [
     description:
       "Register your farm to connect  to the \nworld of farming, we need your farm \nlocation.",
     Component: FarmLocationStep,
+    optional: true,
   },
   {
     title: "More about your farm",

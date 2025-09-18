@@ -54,20 +54,17 @@ export default function Profile() {
           ) : (
             <Text>Farm Location: Not set</Text>
           )}
-
-          {/* ✅ Logout button */}
-          <TouchableOpacity
-            onPress={handleLogout}
-            className="mt-6 bg-red-500 py-3 rounded-xl"
-          >
-            <Text className="text-white text-center font-semibold">
-              Log out
-            </Text>
-          </TouchableOpacity>
         </View>
       ) : (
         <Text>No profile data found.</Text>
       )}
+      {/* ✅ Logout button */}
+      <TouchableOpacity
+        onPress={handleLogout}
+        className="mt-6 bg-red-500 py-3 rounded-xl"
+      >
+        <Text className="text-white text-center font-semibold">Log out</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }

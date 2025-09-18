@@ -1,21 +1,17 @@
 // stores/authStore.ts
 import { create } from "zustand";
 import * as SecureStore from "expo-secure-store";
-import { setAuthToken, apiFetch } from "@/lib/api";
+import { setAuthToken } from "@/lib/api";
 import { router } from "expo-router";
 import { PhoneValue } from "@/app/(auth)/login/components/PhoneInput";
+import { useOnboardingStore } from "@/stores/onboardingStore";
 
 interface User {
   id: string;
   name: string;
-  email: string;
+  email?: string;
   phone?: string;
-  avatar?: string; // optional, for profile picture
-}
-
-interface LoginResponse {
-  user: User;
-  token: string;
+  avatar?: string;
 }
 
 interface AuthState {
@@ -47,18 +43,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ error: "Enter a valid phone number" });
       return;
     }
-    set({ loading: true, error: null });
-    try {
-      // hit backend to request OTP
-      await apiFetch("/auth/send-otp", {
-        method: "POST",
-        body: JSON.stringify({ phone: phone?.raw }),
-      });
-      set({ loading: false });
-      router.push("/(auth)/login/verifyPhone");
-    } catch (err: any) {
-      set({ error: err?.message ?? "Network error", loading: false });
-    }
+
+    // ⛔️ Skipping backend for now
+    // await apiFetch("/auth/send-otp", { ... });
+
+    // ✅ Simulate sending OTP
+    set({ loading: false });
+    router.push("/(auth)/login/verifyPhone");
   },
 
   verifyOtp: async (code) => {
@@ -67,16 +58,32 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { phone } = get();
       if (!phone?.valid) throw new Error("No valid phone set");
 
-      // ✅ expect structured response
-      const data = await apiFetch<LoginResponse>("/auth/verify-otp", {
-        method: "POST",
-        body: JSON.stringify({ phone: phone?.raw, code }),
-      });
+      // ⛔ Skipping backend for now
+      // const data = await apiFetch<LoginResponse>("/auth/verify-otp", { ... });
 
-      await SecureStore.setItemAsync("token", data.token);
-      setAuthToken(data.token);
+      // ✅ Ensure onboarding is loaded from storage
+      const onboardingStore = useOnboardingStore.getState();
+      await onboardingStore.loadFromStorage();
+      const onboarding = onboardingStore.data;
 
-      set({ user: data.user, token: data.token, loading: false });
+      if (!onboarding.personalInfo?.name) {
+        set({ error: "No onboarding data found", loading: false });
+        return false;
+      }
+
+      const fakeUser: User = {
+        id: Date.now().toString(),
+        name: onboarding.personalInfo.name,
+        phone: onboarding.personalInfo.phone?.raw,
+        avatar: onboarding.profilePicture,
+      };
+
+      const fakeToken = "local-token-" + fakeUser.id;
+
+      await SecureStore.setItemAsync("token", fakeToken);
+      setAuthToken(fakeToken);
+
+      set({ user: fakeUser, token: fakeToken, loading: false });
       router.replace("/(tabs)");
       return true;
     } catch (err: any) {
@@ -98,13 +105,30 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const token = await SecureStore.getItemAsync("token");
       if (token) {
         setAuthToken(token);
-        // ✅ fetch current user from backend
-        const me = await apiFetch<User>("/auth/me");
-        set({ user: me, token, loading: false });
+
+        // ✅ Ensure onboarding is loaded before using
+        const onboardingStore = useOnboardingStore.getState();
+        await onboardingStore.loadFromStorage();
+        const onboarding = onboardingStore.data;
+
+        if (onboarding.personalInfo?.name) {
+          set({
+            user: {
+              id: "local",
+              name: onboarding.personalInfo.name,
+              phone: onboarding.personalInfo.phone?.raw,
+              avatar: onboarding.profilePicture,
+            },
+            token,
+            loading: false,
+          });
+        } else {
+          set({ loading: false });
+        }
       } else {
         set({ loading: false });
       }
-    } catch (err) {
+    } catch {
       set({ user: null, token: null, loading: false });
       setAuthToken(null);
     }
