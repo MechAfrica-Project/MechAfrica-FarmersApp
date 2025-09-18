@@ -1,6 +1,7 @@
 // stores/onboardingStore.ts
 import { PhoneValue } from "@/app/(auth)/login/components/PhoneInput";
 import { create } from "zustand";
+import * as SecureStore from "expo-secure-store";
 
 /**
  * Onboarding data shape
@@ -17,12 +18,12 @@ export type OnboardingData = {
   moreInfo: {
     gender?: "Male" | "Female";
     age?: number;
-    dob?:string;
+    dob?: string;
   };
 
   location: { region?: string; district?: string };
   profilePicture?: string;
-  farmLocation?:{
+  farmLocation?: {
     latitude: number;
     longitude: number;
   };
@@ -45,6 +46,7 @@ type OnboardingState = {
 
   /** validate a specific step (0-indexed) */
   validateStep: (step?: number) => ValidateResult;
+  loadFromStorage: () => Promise<void>;
 };
 
 const defaultData: OnboardingData = {
@@ -113,7 +115,7 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
         return { valid: true };
 
       case 5: // Farm Location
-       if (
+        if (
           !data.farmLocation ||
           !data.farmLocation.latitude ||
           !data.farmLocation.longitude
@@ -165,6 +167,17 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
     validateStep: (step?: number) => {
       const idx = typeof step === "number" ? step : get().currentStep;
       return validate(idx);
+    },
+    loadFromStorage: async () => {
+      try {
+        const saved = await SecureStore.getItemAsync("onboardingData");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          set({ data: parsed });
+        }
+      } catch (err) {
+        console.error("Failed to load onboarding data", err);
+      }
     },
   };
 });

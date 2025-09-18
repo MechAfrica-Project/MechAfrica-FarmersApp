@@ -1,6 +1,5 @@
-// steps/FarmLocationStep.tsx
-import { View, Text, Alert, TouchableOpacity } from "react-native";
-import React, { useEffect, useReducer, useRef, useCallback } from "react";
+import { View, Text, Alert, TouchableOpacity, ActivityIndicator } from "react-native";
+import React, { useEffect, useReducer, useRef, useCallback, useState } from "react";
 import MapView, { Marker, Region } from "react-native-maps";
 import * as Location from "expo-location";
 import { useOnboardingStore } from "@/stores/onboardingStore";
@@ -9,58 +8,42 @@ import { Ionicons } from "@expo/vector-icons";
 type Coords = { latitude: number; longitude: number };
 
 type LocationState = {
-  region: Region | null;
   marker: Coords | null;
+  city?: string;
 };
 
 type Action =
-  | { type: "SET_REGION"; payload: Region }
-  | { type: "SET_MARKER"; payload: Coords };
+  | { type: "SET_MARKER"; payload: Coords }
+  | { type: "SET_CITY"; payload: string };
 
 const reducer = (state: LocationState, action: Action): LocationState => {
   switch (action.type) {
-    case "SET_REGION":
-      return { ...state, region: action.payload };
     case "SET_MARKER":
       return { ...state, marker: action.payload };
+    case "SET_CITY":
+      return { ...state, city: action.payload };
     default:
       return state;
   }
 };
 
+const DEFAULT_REGION: Region = {
+  latitude: 5.6037, // Accra fallback
+  longitude: -0.1870,
+  latitudeDelta: 0.1,
+  longitudeDelta: 0.1,
+};
+
 const FarmLocationStep = () => {
   const { data, updateData } = useOnboardingStore();
-
-  const [state, dispatch] = useReducer(reducer, {
-    region: null,
-    marker: data.farmLocation ?? null,
-  });
-
   const mapRef = useRef<MapView>(null);
 
-  // 📍 Load saved location OR user’s current location
-  useEffect(() => {
-    const getLocation = async () => {
-      try {
-        if (data.farmLocation) {
-          const region: Region = {
-            latitude: data.farmLocation.latitude,
-            longitude: data.farmLocation.longitude,
-            latitudeDelta: 0.02,
-            longitudeDelta: 0.02,
-          };
-          dispatch({ type: "SET_REGION", payload: region });
-          dispatch({ type: "SET_MARKER", payload: data.farmLocation });
-        } else {
-          await fetchCurrentLocation();
-        }
-      } catch (err) {
-        console.error("Error getting location:", err);
-      }
-    };
+  const [state, dispatch] = useReducer(reducer, {
+    marker: data.farmLocation ?? null,
+    city: undefined,
+  });
 
-    getLocation();
-  }, []);
+  const [loading, setLoading] = useState(false);
 
   // 🔄 Sync marker to store
   useEffect(() => {
@@ -69,57 +52,71 @@ const FarmLocationStep = () => {
     }
   }, [state.marker, updateData]);
 
-  // 📍 Helper to fetch current location
-  const fetchCurrentLocation = useCallback(async () => {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    console.log("Location permission status:", status);
+  // 📍 Load location
+  const preloadLocation = useCallback(async () => {
+    try {
+      setLoading(true);
+      let { status } = await Location.requestForegroundPermissionsAsync();
 
-    if (status !== "granted") {
-      Alert.alert("Permission denied", "Location access is required.");
-      return;
-    }
+      if (status !== "granted") {
+        Alert.alert("Permission denied", "Location access is required.");
+        setLoading(false);
+        return;
+      }
 
-    let loc = await Location.getCurrentPositionAsync({});
-    const coords: Coords = {
-      latitude: loc.coords.latitude,
-      longitude: loc.coords.longitude,
-    };
+      let loc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced, // balanced for speed
+      });
 
-    const region: Region = {
-      ...coords,
-      latitudeDelta: 0.02,
-      longitudeDelta: 0.02,
-    };
+      if (loc) {
+        const coords: Coords = {
+          latitude: loc.coords.latitude,
+          longitude: loc.coords.longitude,
+        };
 
-    dispatch({ type: "SET_REGION", payload: region });
-    dispatch({ type: "SET_MARKER", payload: coords });
+        dispatch({ type: "SET_MARKER", payload: coords });
 
-    if (mapRef.current) {
-      mapRef.current.animateToRegion(region, 1000);
+        // Animate instead of binding region to state
+        if (mapRef.current) {
+          mapRef.current.animateToRegion(
+            {
+              ...coords,
+              latitudeDelta: 0.02,
+              longitudeDelta: 0.02,
+            },
+            1000
+          );
+        }
+
+        // Reverse geocode city
+        const places = await Location.reverseGeocodeAsync(coords);
+        if (places.length > 0 && places[0].city) {
+          dispatch({ type: "SET_CITY", payload: places[0].city });
+        }
+      }
+    } catch (err) {
+      console.error("Error getting location:", err);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  if (!state.region) {
-    return (
-      <View className="flex-1 items-center justify-center px-6">
-        <Text className="text-base text-gray-500">Loading map...</Text>
-      </View>
-    );
-  }
+  useEffect(() => {
+    if (!data.farmLocation) {
+      preloadLocation(); // preload on mount
+    }
+  }, []);
 
   return (
     <View className="flex-1 items-center justify-center px-6">
       {/* Glow wrapper for map */}
-      <View className="w-80 h-80 rounded-full bg-yellow-100/40 items-center justify-center">
+      <View className="w-80 mt-4 h-80 rounded-full bg-yellow-100/40 items-center justify-center">
         <View className="w-72 h-72 rounded-full overflow-hidden">
           <MapView
             ref={mapRef}
             style={{ flex: 1 }}
-            region={state.region}
+            initialRegion={DEFAULT_REGION}
             provider="google"
-            onRegionChangeComplete={(r) =>
-              dispatch({ type: "SET_REGION", payload: r })
-            }
           >
             {state.marker && (
               <Marker
@@ -134,24 +131,36 @@ const FarmLocationStep = () => {
               />
             )}
           </MapView>
+          {loading && (
+            <View className="absolute inset-0 items-center justify-center bg-white/40">
+              <ActivityIndicator size="large" color="black" />
+            </View>
+          )}
         </View>
       </View>
 
+      {/* City label */}
+      {state.city && (
+        <Text className="mt-3 text-gray-600">📍 {state.city}</Text>
+      )}
+
       {/* Bottom button */}
       <TouchableOpacity
-        onPress={fetchCurrentLocation}
+        onPress={preloadLocation}
         className="flex-row items-center mt-6 px-4 py-3 bg-black rounded-xl"
+        disabled={loading}
       >
         <Ionicons name="locate-outline" size={20} color="white" />
         <Text className="text-white font-semibold ml-2">
-          Use My Current Location
+          {loading ? "Fetching Location..." : "Use My Current Location"}
         </Text>
       </TouchableOpacity>
 
       {/* Floating recenter button */}
       <TouchableOpacity
-        onPress={fetchCurrentLocation}
+        onPress={preloadLocation}
         className="absolute bottom-32 right-8 w-12 h-12 rounded-full bg-black items-center justify-center shadow-lg"
+        disabled={loading}
       >
         <Ionicons name="locate-outline" size={22} color="white" />
       </TouchableOpacity>
