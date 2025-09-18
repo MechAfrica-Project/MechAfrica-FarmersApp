@@ -1,11 +1,12 @@
 import React from "react";
 import { View, Text, TextInput } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { Leaf, Ruler } from "lucide-react-native";
 
 type InputFieldProps = {
   label: string;
   placeholder: string;
-  icon: keyof typeof Feather.glyphMap;
+  icon: keyof typeof Feather.glyphMap | "leaf" | "ruler"; // ✅ allow Lucide names
   value: string;
   onChange: (text: string) => void;
   required?: boolean;
@@ -13,7 +14,7 @@ type InputFieldProps = {
   focused: string | null;
   setFocused: (field: string | null) => void;
   fieldKey: string;
-  error?: boolean; // ✅ add error
+  error?: boolean;
 };
 
 export default function InputField({
@@ -29,6 +30,16 @@ export default function InputField({
   fieldKey,
   error,
 }: InputFieldProps) {
+  const renderIcon = () => {
+    if (icon === "leaf") {
+      return <Leaf size={20} color={error ? "red" : "#6B7280"} />;
+    }
+    if (icon === "ruler") {
+      return <Ruler size={20} color={error ? "red" : "#6B7280"} />;
+    }
+    return <Feather name={icon} size={20} color={error ? "red" : "#6B7280"} />;
+  };
+
   return (
     <View className="mb-6">
       <Text className="text-md font-mulish text-gray-600 mb-2">
@@ -45,7 +56,7 @@ export default function InputField({
               : "border-gray-200 bg-gray-50"
           }`}
       >
-        <Feather name={icon} size={20} color={error ? "red" : "#6B7280"} />
+        {renderIcon()}
         <TextInput
           className="flex-1 py-1 text-gray-900 ml-3"
           placeholder={placeholder}

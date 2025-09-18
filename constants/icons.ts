@@ -15,6 +15,7 @@ import security from "@/assets/icons/security.png";
 import logout from "@/assets/icons/logout.png";
 import termsAndConditions from "@/assets/icons/termsAndConditions.png";
 import search from "@/assets/icons/search.png";
+import map from "@/assets/icons/map.png"
 export const icons = {
   home,
   services,
@@ -32,5 +33,6 @@ export const icons = {
   security,
   logout,
   termsAndConditions,
-  search
+  search,
+  map
 };
