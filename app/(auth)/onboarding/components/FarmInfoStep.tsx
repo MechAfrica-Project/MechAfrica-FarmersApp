@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Sprout } from "lucide-react-native";
 import { useOnboardingStore } from "@/stores/onboardingStore";
-import { cropOptions } from "@/constants/cropOtions";
 import InputField from "@/app/components/onboarding/InputField";
+import { cropOptions } from "@/constants/cropOptions";
 
 const FarmInfoStep = () => {
   const { data, updateData } = useOnboardingStore();
