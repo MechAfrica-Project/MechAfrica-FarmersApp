@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TextInput } from "react-native";
+import { View, Text, TextInput, KeyboardTypeOptions } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { Leaf, Ruler } from "lucide-react-native";
 
@@ -15,6 +15,7 @@ type InputFieldProps = {
   setFocused: (field: string | null) => void;
   fieldKey: string;
   error?: boolean;
+  keyboardType?: KeyboardTypeOptions; // ✅ add this
 };
 
 export default function InputField({
@@ -29,6 +30,7 @@ export default function InputField({
   setFocused,
   fieldKey,
   error,
+  keyboardType = "default", // ✅ fallback to default
 }: InputFieldProps) {
   const renderIcon = () => {
     if (icon === "leaf") {
@@ -64,12 +66,11 @@ export default function InputField({
           onChangeText={onChange}
           onFocus={() => setFocused(fieldKey)}
           onBlur={() => setFocused(null)}
+          keyboardType={keyboardType} // ✅ apply prop
         />
       </View>
       {error && (
-        <Text className="text-red-500 text-sm mt-1">
-          {label} is required
-        </Text>
+        <Text className="text-red-500 text-sm mt-1">{label} is required</Text>
       )}
     </View>
   );

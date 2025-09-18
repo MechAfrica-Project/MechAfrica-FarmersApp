@@ -1,6 +1,7 @@
 import { images } from "@/interfaces/images";
 import { Link } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function Index() {
   return (
@@ -13,9 +14,13 @@ export default function Index() {
       />
 
       {/* Overlay */}
-      <View className="flex-1 justify-end p-6 pb-19 bg-black/20">
+      <View className="relative flex-1 justify-end pb-1">
+        <LinearGradient
+          colors={["rgba(0,0,0,0.1)", "rgba(0,0,0,1)", "rgba(0,0,0,1)"]}
+          style={{ position: "absolute", left: 0, right: 0, height: "30%" }}
+        />
         {/* Text */}
-        <View className="relative mb-8 items-center justify-center w-auto mx-[1.8%]">
+        <View className="relative mb-8 p-6 items-center justify-center w-auto mx-[1.8%]">
           <Text className="text-white font-mulish text-center text-[2rem] font-extrabold mb-2">
             Welcome to <Text className="text-accent-yellow">MechAfrica</Text>
           </Text>

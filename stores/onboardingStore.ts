@@ -6,11 +6,6 @@ import * as SecureStore from "expo-secure-store";
 /**
  * Onboarding data shape
  */
-export type Equipment = {
-  equipment?: string;
-  coverage?: string;
-  price?: string;
-};
 
 export type OnboardingData = {
   language?: string;

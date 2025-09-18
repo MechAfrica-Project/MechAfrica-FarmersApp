@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Sprout } from "lucide-react-native";
 import { useOnboardingStore } from "@/stores/onboardingStore";
-import { cropOptions } from "@/constants/cropOtions";
 import InputField from "@/app/components/onboarding/InputField";
+import { cropOptions } from "@/constants/cropOptions";
 
 const FarmInfoStep = () => {
   const { data, updateData } = useOnboardingStore();
@@ -62,11 +62,11 @@ const FarmInfoStep = () => {
         fieldKey="farmName"
       />
 
-      {/* Farm Size */}
-      <View className="">
+      {/* Farm Size (in acres only) */}
+      <View className="mt-4">
         <InputField
           label="Farm Size"
-          placeholder="1.5"
+          placeholder="1.2"
           icon="ruler"
           value={farmInfo?.farmSize?.toString() || ""}
           onChange={(text) => {
@@ -75,16 +75,18 @@ const FarmInfoStep = () => {
               farmInfo: { farmSize: isNaN(parsed) ? undefined : parsed },
             });
           }}
-          required
+          keyboardType="numeric"
           focused={focused}
           setFocused={setFocused}
           fieldKey="farmSize"
+          required
         />
-        <Text className="absolute text-gray-500 bottom-10 right-2">Acre</Text>
+        {/* Fixed Unit Label */}
+        <Text className="absolute text-gray-500 bottom-10 right-3">Acre</Text>
       </View>
 
       {/* Crop Types */}
-      <View>
+      <View className="mt-6">
         <Text className="text-sm font-semibold text-gray-700 mb-2">
           Crop Type
         </Text>
