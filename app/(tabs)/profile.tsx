@@ -1,30 +1,13 @@
 // app/profile.tsx (or pages/Profile.tsx)
 import React from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import MultiToneBackground from "../components/general/MultiToneBackground";
 import MenuList from "../components/profile/MenuList";
+import ProfilePicture from "../components/profile/ProfilePicture";
 
 const Profile = () => {
-  
   return (
-    <MultiToneBackground topColor="#FFF9D6" mainColor="#FFFFFF">
-      <View className="items-center mt-16">
-        {/* Profile Image with Edit Icon */}
-        <View className="relative">
-          <Image
-            source={{ uri: "https://via.placeholder.com/120" }}
-            className="w-28 h-28 rounded-full border-4 border-white"
-          />
-          <TouchableOpacity className="absolute bottom-1 right-1 bg-green-500 p-2 rounded-full">
-            <Ionicons name="pencil" size={14} color="#fff" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Name & ID */}
-        <Text className="mt-3 text-lg font-semibold">Farmer Akwasi Okai</Text>
-        <Text className="text-gray-500 text-xs">ID: 2453525362</Text>
-      </View>
+    <MultiToneBackground topColor="#FFF9D6" topHeight={140} mainColor="#FFFFFF">
+      <ProfilePicture />
 
       {/* Menu List */}
       <MenuList />
@@ -33,8 +16,6 @@ const Profile = () => {
 };
 
 export default Profile;
-
-
 
 // import { useEffect } from "react";
 // import { Text, View, ScrollView, Image, TouchableOpacity } from "react-native";
