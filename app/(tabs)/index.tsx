@@ -1,12 +1,13 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import { Text } from "react-native";
+import React from "react";
+import MultiToneBackground from "../components/general/MultiToneBackground";
 
 const Index = () => {
   return (
-    <View>
-      <Text>Index</Text>
-    </View>
-  )
-}
+    <MultiToneBackground topColor="#FCFF3B" topHeight={280} mainColor="#FDFFE0">
+      <Text className="text-center text-lg font-bold mt-20">Index tab</Text>
+    </MultiToneBackground>
+  );
+};
 
-export default Index
+export default Index;
