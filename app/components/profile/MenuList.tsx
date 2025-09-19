@@ -16,8 +16,8 @@ type MenuItemType =
 
 const menuItems: MenuItemType[] = [
   { icon: "person-outline", label: "Account", type: "modal", modalKey: "account" },
-  { icon: "globe-outline", label: "Farms", type: "route", route: "/profilePages/farms" },
-  { icon: "shield-checkmark-outline", label: "Security", type: "route", route: "/profilePages/security" },
+  { icon: "globe-outline", label: "Farms", type: "route", route: "/components/profile/profilePages/farms" },
+  { icon: "shield-checkmark-outline", label: "Security", type: "route", route: "/components/profile/profilePages/security" },
   { icon: "document-text-outline", label: "Terms & Conditions", type: "modal", modalKey: "terms" },
   { icon: "chatbubble-ellipses-outline", label: "Contact Agent", type: "modal", modalKey: "contact" },
 ];
