@@ -2,10 +2,10 @@ import React from "react";
 import { View } from "react-native";
 
 type Props = {
-  topColor: string;
+  topColor?: string;
   mainColor: string;
   bottomColor?: string;
-  topHeight?: number;    // default: 100
+  topHeight?: number; // default: 100
   bottomHeight?: number; // default: 100
   children?: React.ReactNode;
 };
@@ -21,12 +21,14 @@ const MultiToneBackground: React.FC<Props> = ({
   return (
     <View className="flex-1 relative">
       {/* Top background */}
-      <View
-        style={{
-          height: topHeight,
-          backgroundColor: topColor,
-        }}
-      />
+      {topColor && (
+        <View
+          style={{
+            height: topHeight,
+            backgroundColor: topColor,
+          }}
+        />
+      )}
 
       {/* Middle background */}
       <View style={{ flex: 1, backgroundColor: mainColor }} />

@@ -1,11 +1,14 @@
-import { View, Text } from "react-native";
+import { ScrollView, Text } from "react-native";
 import React from "react";
+import MultiToneBackground from "../components/general/MultiToneBackground";
 
 const Services = () => {
   return (
-    <View>
-      <Text>saved</Text>
-    </View>
+    <MultiToneBackground mainColor="#FDFFE0">
+      <ScrollView className="pt-[4rem]">
+        <Text className="text-center text-lg font-bold ">Service tab</Text>
+      </ScrollView>
+    </MultiToneBackground>
   );
 };
 
