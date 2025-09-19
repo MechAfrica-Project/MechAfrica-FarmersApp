@@ -1,39 +1,30 @@
 // components/profile/MenuList.tsx
-import React from "react";
+import React, { useState } from "react";
 import { View } from "react-native";
-import { useRouter, type Href } from "expo-router"; // 👈 import Href type
+import { useRouter, type Href } from "expo-router";
 import MenuItem from "./MenuItems";
 import { useAuthStore } from "@/stores/authStore";
+import AccountEditModal from "./modals/AccountEditModal";
+import TermsModal from "./modals/TermsModal";
 
-type MenuItemType = {
-  icon: string;
-  label: string;
-  route: Href; // 👈 enforce expo-router route type
-};
+type ModalKey = "account" | "terms";
+
+type MenuItemType =
+  | { icon: string; label: string; type: "route"; route: Href }
+  | { icon: string; label: string; type: "modal"; modalKey: ModalKey };
 
 const menuItems: MenuItemType[] = [
-  { icon: "person-outline", label: "Account", route: "/profilePages/account" },
-  { icon: "globe-outline", label: "Farms", route: "/profilePages/farms" },
-  {
-    icon: "shield-checkmark-outline",
-    label: "Security",
-    route: "/profilePages/security",
-  },
-  {
-    icon: "document-text-outline",
-    label: "Terms & Conditions",
-    route: "/profilePages/terms",
-  },
-  {
-    icon: "chatbubble-ellipses-outline",
-    label: "Contact Agent",
-    route: "/profilePages/contactAgent",
-  },
+  { icon: "person-outline", label: "Account", type: "modal", modalKey: "account" },
+  { icon: "globe-outline", label: "Farms", type: "route", route: "/profilePages/farms" },
+  { icon: "shield-checkmark-outline", label: "Security", type: "route", route: "/profilePages/security" },
+  { icon: "document-text-outline", label: "Terms & Conditions", type: "modal", modalKey: "terms" },
+  { icon: "chatbubble-ellipses-outline", label: "Contact Agent", type: "route", route: "/profilePages/contactAgent" },
 ];
 
 const MenuList = () => {
   const router = useRouter();
   const { logout } = useAuthStore();
+  const [activeModal, setActiveModal] = useState<ModalKey | null>(null);
 
   const handleLogout = async () => {
     await logout();
@@ -46,7 +37,13 @@ const MenuList = () => {
           key={index}
           icon={item.icon}
           label={item.label}
-          onPress={() => router.push(item.route)} // ✅ type-safe now
+          onPress={() => {
+            if (item.type === "route") {
+              router.push(item.route);
+            } else {
+              setActiveModal(item.modalKey);
+            }
+          }}
         />
       ))}
 
@@ -56,6 +53,18 @@ const MenuList = () => {
         label="Logout"
         danger
         onPress={handleLogout}
+      />
+
+      {/* ✅ Account Edit Modal */}
+      <AccountEditModal
+        visible={activeModal === "account"}
+        onClose={() => setActiveModal(null)}
+      />
+
+      {/* ✅ Terms Modal */}
+      <TermsModal
+        visible={activeModal === "terms"}
+        onClose={() => setActiveModal(null)}
       />
     </View>
   );
