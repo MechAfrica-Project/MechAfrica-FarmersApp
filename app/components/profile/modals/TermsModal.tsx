@@ -68,11 +68,11 @@ const TermsModal = ({ visible, onClose }: Props) => {
             <SafeAreaView className="h-full">
               {/* Header */}
               <View className="flex-row items-center justify-between mb-4">
-                <Text className="text-lg font-semibold text-gray-900">
+                <Text className="text-xl font-mulish font-bold text-gray-900">
                   Terms & Conditions
                 </Text>
                 <TouchableOpacity onPress={onClose} className="px-2 py-1">
-                  <Text className="text-sm text-gray-500">Close</Text>
+                  <Text className="text-sm font-mulish font-semibold text-gray-500">Close</Text>
                 </TouchableOpacity>
               </View>
 
@@ -112,7 +112,7 @@ const TermsModal = ({ visible, onClose }: Props) => {
                         {/* section text */}
                         <View className="ml-3 flex-1">
                           <Text
-                            className={`text-base font-semibold ${
+                            className={`text-base font-mulish font-bold ${
                               isActive || isDone
                                 ? "text-gray-900"
                                 : "text-gray-400"
@@ -121,7 +121,7 @@ const TermsModal = ({ visible, onClose }: Props) => {
                             {section.title}
                           </Text>
                           {isActive && (
-                            <Text className="text-gray-700 mt-1 leading-6">
+                            <Text className="text-gray-700 font-mulish mt-1 leading-6">
                               {section.content}
                             </Text>
                           )}
@@ -145,7 +145,7 @@ const TermsModal = ({ visible, onClose }: Props) => {
                   }}
                   className="flex-1 bg-green-600 py-3 rounded-xl items-center justify-center"
                 >
-                  <Text className="text-white font-semibold">
+                  <Text className="text-white font-mulish font-bold">
                     {activeIndex === sections.length - 1
                       ? "Accept All"
                       : "Next"}
@@ -156,7 +156,7 @@ const TermsModal = ({ visible, onClose }: Props) => {
                   onPress={onClose}
                   className="flex-1 border border-gray-300 py-3 rounded-xl items-center justify-center"
                 >
-                  <Text className="text-gray-700 font-semibold">Decline</Text>
+                  <Text className="text-gray-700 font-mulish font-bold">Decline</Text>
                 </TouchableOpacity>
               </View>
             </SafeAreaView>
