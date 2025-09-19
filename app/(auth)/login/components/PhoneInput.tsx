@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { COUNTRIES, Country } from "@/constants/countries";
 import { parsePhoneNumberFromString, AsYouType } from "libphonenumber-js";
@@ -14,20 +14,34 @@ export type PhoneValue = {
 type PhoneInputProps = {
   label?: string;
   countryCode?: Country["code"];
+  value?: PhoneValue; // 👈 preload old value
   onChange: (value: PhoneValue) => void;
 };
 
 export default function PhoneInput({
   label,
   countryCode = "GH",
+  value,
   onChange,
 }: PhoneInputProps) {
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(value?.formatted || "");
   const [selectedCountry, setSelectedCountry] = useState<Country>(
-    COUNTRIES.find((c) => c.code === countryCode) ?? COUNTRIES[0]
+    COUNTRIES.find((c) => c.code === (value?.country || countryCode)) ??
+      COUNTRIES[0]
   );
-  const [isValid, setIsValid] = useState<boolean | null>(null);
+  const [isValid, setIsValid] = useState<boolean | null>(value?.valid ?? null);
   const [modalVisible, setModalVisible] = useState(false);
+
+  // 🔄 Sync with parent value if it changes
+  useEffect(() => {
+    if (value) {
+      setPhone(value.formatted || "");
+      setSelectedCountry(
+        COUNTRIES.find((c) => c.code === value.country) ?? selectedCountry
+      );
+      setIsValid(value.valid);
+    }
+  }, [value]);
 
   const handleChange = (text: string) => {
     const formatter = new AsYouType(selectedCountry.code);
@@ -60,9 +74,7 @@ export default function PhoneInput({
           className="flex-row items-center mr-2"
         >
           <Text className="text-xl mr-1">{selectedCountry.flag}</Text>
-          <Text className="text-xl">
-            {selectedCountry.dialCode}
-          </Text>
+          <Text className="text-xl">{selectedCountry.dialCode}</Text>
         </TouchableOpacity>
 
         <TextInput
@@ -70,7 +82,7 @@ export default function PhoneInput({
           onChangeText={handleChange}
           placeholder="Enter phone number"
           keyboardType="phone-pad"
-          className="text-xl mb-2 "
+          className="text-xl mb-2"
         />
       </View>
 
