@@ -6,8 +6,9 @@ import MenuItem from "./MenuItems";
 import { useAuthStore } from "@/stores/authStore";
 import AccountEditModal from "./modals/AccountEditModal";
 import TermsModal from "./modals/TermsModal";
+import ContactAgentModal from "./modals/ContactAgentModal";
 
-type ModalKey = "account" | "terms";
+type ModalKey = "account" | "terms" | "contact";
 
 type MenuItemType =
   | { icon: string; label: string; type: "route"; route: Href }
@@ -15,10 +16,10 @@ type MenuItemType =
 
 const menuItems: MenuItemType[] = [
   { icon: "person-outline", label: "Account", type: "modal", modalKey: "account" },
-  { icon: "globe-outline", label: "Farms", type: "route", route: "/profilePages/farms" },
-  { icon: "shield-checkmark-outline", label: "Security", type: "route", route: "/profilePages/security" },
+  { icon: "globe-outline", label: "Farms", type: "route", route: "/components/profile/profilePages/farms" },
+  { icon: "shield-checkmark-outline", label: "Security", type: "route", route: "/components/profile/profilePages/security" },
   { icon: "document-text-outline", label: "Terms & Conditions", type: "modal", modalKey: "terms" },
-  { icon: "chatbubble-ellipses-outline", label: "Contact Agent", type: "route", route: "/profilePages/contactAgent" },
+  { icon: "chatbubble-ellipses-outline", label: "Contact Agent", type: "modal", modalKey: "contact" },
 ];
 
 const MenuList = () => {
@@ -28,6 +29,28 @@ const MenuList = () => {
 
   const handleLogout = async () => {
     await logout();
+  };
+
+  // ✅ Modal registry
+  const modalRegistry: Record<ModalKey, React.ReactNode> = {
+    account: (
+      <AccountEditModal
+        visible={activeModal === "account"}
+        onClose={() => setActiveModal(null)}
+      />
+    ),
+    terms: (
+      <TermsModal
+        visible={activeModal === "terms"}
+        onClose={() => setActiveModal(null)}
+      />
+    ),
+    contact: (
+      <ContactAgentModal
+        visible={activeModal === "contact"}
+        onClose={() => setActiveModal(null)}
+      />
+    ),
   };
 
   return (
@@ -55,17 +78,8 @@ const MenuList = () => {
         onPress={handleLogout}
       />
 
-      {/* ✅ Account Edit Modal */}
-      <AccountEditModal
-        visible={activeModal === "account"}
-        onClose={() => setActiveModal(null)}
-      />
-
-      {/* ✅ Terms Modal */}
-      <TermsModal
-        visible={activeModal === "terms"}
-        onClose={() => setActiveModal(null)}
-      />
+      {/* ✅ Render only the active modal */}
+      {activeModal && modalRegistry[activeModal]}
     </View>
   );
 };
