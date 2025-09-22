@@ -27,7 +27,7 @@ export default function SelectModal({
       {/* Background overlay */}
       <TouchableOpacity
         activeOpacity={1}
-        className="absolute inset-0 bg-black/40 justify-center"
+        className="absolute inset-0 bg-black/20 justify-center"
         onPress={onClose} // dismiss when background is clicked
       >
         {/* Modal content */}
