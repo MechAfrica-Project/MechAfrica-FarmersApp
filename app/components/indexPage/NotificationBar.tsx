@@ -1,14 +1,15 @@
-import { Image, TouchableOpacity, View } from "react-native";
+import { Image, View } from "react-native";
 import React from "react";
 import { icons } from "@/constants/icons";
+import { Link } from "expo-router";
 
-const NotificationBar = () => {
+const NotificationBar = () => {  
   return (
     <View className="mt-[3rem] flex-row justify-between items-center px-2 pr-7">
       <Image source={icons.mechIcon} />
-      <TouchableOpacity>
+      <Link href="/components/notifications/notifications">
         <Image source={icons.notification} />
-      </TouchableOpacity>
+      </Link>
     </View>
   );
 };
