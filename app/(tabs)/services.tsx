@@ -3,7 +3,7 @@ import MultiToneBackground from "../components/general/MultiToneBackground";
 import SearchService from "../components/service/SearchService";
 import ServiceHeader from "../components/service/ServiceHeader";
 import { servicesData } from "@/constants/servicesData";
-import { FlatList, ScrollView } from "react-native";
+import { FlatList } from "react-native";
 
 const Services = () => {
   const [search, setSearch] = useState("");
