@@ -1,23 +1,29 @@
-import { FlatList } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import MultiToneBackground from "../components/general/MultiToneBackground";
-import ServiceRequestSection from "../components/service/ServiceRequestSection";
 import SearchService from "../components/service/SearchService";
+import ServiceHeader from "../components/service/ServiceHeader";
+import { servicesData } from "@/constants/servicesData";
+import { FlatList, ScrollView } from "react-native";
 
 const Services = () => {
+  const [search, setSearch] = useState("");
+
+  // Filter services globally here
+  const filteredServices = servicesData.filter((service) =>
+    service.title.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <MultiToneBackground mainColor="#FDFFE0">
+      {/* Pass search props */}
+      <ServiceHeader search={search} setSearch={setSearch} />
       <FlatList
         data={[]} // no data, but required
         renderItem={null}
         ListHeaderComponent={
-          <>
-            <ServiceRequestSection />
-            <SearchService />
-          </>
+          <SearchService filteredServices={filteredServices} />
         }
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: 64 }} // pt-[4rem]
       />
     </MultiToneBackground>
   );
