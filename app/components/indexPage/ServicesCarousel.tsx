@@ -32,7 +32,7 @@ const ServicesCarousel: React.FC<ServicesCarouselProps> = ({ services }) => {
             rating={item.rating}
             onPress={() =>
               router.push({
-                pathname: "/components/service/[id]",
+                pathname: "/components/service/ServiceStart",
                 params: { id: item.id },
               })
             }

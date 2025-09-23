@@ -42,7 +42,7 @@ const SearchService = () => {
             rating={item.rating}
             onPress={() =>
               router.push({
-                pathname: "/components/service/[id]",
+                pathname: "/components/service/ServiceStart",
                 params: { id: item.id },
               })
             }
