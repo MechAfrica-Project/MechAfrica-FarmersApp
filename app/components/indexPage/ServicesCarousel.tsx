@@ -1,6 +1,7 @@
 import React from "react";
 import { View, FlatList } from "react-native";
 import ServiceCard from "../general/ServiceCard";
+import { useRouter } from "expo-router";
 
 interface Service {
   id: string;
@@ -12,15 +13,12 @@ interface Service {
 
 interface ServicesCarouselProps {
   services: Service[];
-  onSelectService: (service: Service) => void;
 }
 
-const ServicesCarousel: React.FC<ServicesCarouselProps> = ({
-  services,
-  onSelectService,
-}) => {
+const ServicesCarousel: React.FC<ServicesCarouselProps> = ({ services }) => {
+  const router = useRouter();
   return (
-    <View >
+    <View className="">
       <FlatList
         data={services}
         horizontal
@@ -32,7 +30,12 @@ const ServicesCarousel: React.FC<ServicesCarouselProps> = ({
             title={item.title}
             subtitle={item.subtitle}
             rating={item.rating}
-            onPress={() => onSelectService(item)}
+            onPress={() =>
+              router.push({
+                pathname: "/components/service/[id]",
+                params: { id: item.id },
+              })
+            }
           />
         )}
       />

@@ -36,7 +36,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
           <Text className="text-primary-green font-mulish font-bold text-lg">
             {title}
           </Text>
-          <Text className="text-gray-600 font-mulish font-bold text-sm w-[12rem]">
+          <Text className="text-gray-600 font-mulish font-bold text-sm w-[11.5rem]">
             {subtitle}
           </Text>
         </View>
