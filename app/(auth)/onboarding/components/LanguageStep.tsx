@@ -50,7 +50,7 @@ export default function LanguageStep() {
 
       {/* Dropdown */}
       {dropdownOpen && (
-        <View className="mt-4 border rounded-xl bg-white shadow max-h-56">
+        <View className="mt-4 rounded-xl bg-white shadow shadow-slate-300 max-h-56">
           <ScrollView keyboardShouldPersistTaps="handled">
             {filteredLanguages.map((item) => (
               <TouchableOpacity

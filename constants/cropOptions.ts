@@ -1,5 +1,4 @@
 export const cropOptions = [
-  "All Crops",
   "Maize",
   "Wheat",
   "Beans",
