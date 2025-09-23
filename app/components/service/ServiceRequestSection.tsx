@@ -6,7 +6,7 @@ import { useOnboardingStore } from "@/stores/onboardingStore";
 const ServiceRequestSection = () => {
   const { data } = useOnboardingStore();
   return (
-    <View className="relative flex-row bg-primary-green overflow rounded-3xl mt-6 mx-4 h-[10rem] p-6">
+    <View className="relative flex-row bg-primary-green overflow rounded-3xl mt-[6rem] mx-4 h-[10rem] p-6">
       {/* Left section (text) */}
       <View className="flex-1 justify-between bg-primary-green rounded-3xl">
         <View className="pr-[10.2rem]">
@@ -19,7 +19,7 @@ const ServiceRequestSection = () => {
         </View>
       </View>
 
-      {/* Right section (farmer + maize) */}
+      {/* Right section */}
       <Image
         source={images.farmer}
         className="absolute bottom-0 right-0 z-10 rounded-3xl"

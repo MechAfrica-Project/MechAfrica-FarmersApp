@@ -1,59 +1,46 @@
-import React, { useState } from "react";
-import { View, TextInput, FlatList, TouchableOpacity } from "react-native";
-import { Search } from "lucide-react-native";
-import { servicesData } from "@/constants/servicesData";
-import { SafeAreaView } from "react-native-safe-area-context";
+import React from "react";
+import { FlatList } from "react-native";
 import ServiceCard from "../general/ServiceCard";
 import { useRouter } from "expo-router";
 
-const SearchService = () => {
-  const [search, setSearch] = useState("");
+interface Service {
+  id: string;
+  title: string;
+  subtitle: string;
+  image: any;
+  rating: number;
+}
 
-  // Filter services by search text
-  const filteredServices = servicesData.filter((service) =>
-    service.title.toLowerCase().includes(search.toLowerCase())
-  );
+interface SearchServiceProps {
+  filteredServices: Service[];
+}
+
+const SearchService: React.FC<SearchServiceProps> = ({ filteredServices }) => {
   const router = useRouter();
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FDFFE0]">
-      {/* Search Bar */}
-      <View className="flex-row items-center bg-white rounded-2xl px-4 py-3 m-4 shadow-sm">
-        <TextInput
-          placeholder="Type service name"
-          value={search}
-          onChangeText={setSearch}
-          className="flex-1 text-base text-gray-700"
+    <FlatList
+      data={filteredServices}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => (
+        <ServiceCard
+          image={item.image}
+          title={item.title}
+          subtitle={item.subtitle}
+          rating={item.rating}
+          onPress={() =>
+            router.push({
+              pathname: "/components/service/ServiceStart",
+              params: { id: item.id },
+            })
+          }
         />
-        <TouchableOpacity>
-          <Search size={20} color="#333" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Services Grid */}
-      <FlatList
-        data={filteredServices}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <ServiceCard
-            image={item.image}
-            title={item.title}
-            subtitle={item.subtitle}
-            rating={item.rating}
-            onPress={() =>
-              router.push({
-                pathname: "/components/service/ServiceStart",
-                params: { id: item.id },
-              })
-            }
-          />
-        )}
-        numColumns={2}
-        columnWrapperStyle={{ justifyContent: "space-around" }}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        showsVerticalScrollIndicator={false}
-      />
-    </SafeAreaView>
+      )}
+      numColumns={2}
+      columnWrapperStyle={{ justifyContent: "space-around" }}
+      contentContainerStyle={{ paddingBottom: 20 }}
+      showsVerticalScrollIndicator={false}
+    />
   );
 };
 
