@@ -11,9 +11,9 @@ const ServiceRequestSection = () => {
       <View className="flex-1 justify-between bg-primary-green rounded-3xl">
         <View className="pr-[10.2rem]">
           <Text className="text-accent-yellow font-mulish font-bold text-base mb-2">
-            {data.personalInfo.name} what service do you need?
+            {data.personalInfo.name}, what service do you need?
           </Text>
-          <Text className="text-white font-mulish text-sm leading-5">
+          <Text className="text-light-yellow font-mulish text-sm leading-5">
             MechAfrica will connect you{"\n"} to a service provider now.
           </Text>
         </View>
