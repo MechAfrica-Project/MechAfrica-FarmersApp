@@ -10,6 +10,9 @@ import ripping from "@/assets/images/ripping.png"
 import structure from "@/assets/images/structure.png"
 import threshing from "@/assets/images/threshing.png"
 import transportation from "@/assets/images/transportation.png"
+import drone from "@/assets/images/drone.png"
+import planting from "@/assets/images/planting.png"
+import spraying from "@/assets/images/spraying.png"
 export const images = {
 welcomeBg,
 mechafrica,
@@ -22,5 +25,8 @@ ploughing,
 ripping,
 structure,
 threshing,
-transportation
+transportation,
+drone,
+planting,
+spraying
 }
