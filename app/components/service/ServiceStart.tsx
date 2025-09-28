@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Modal, Pressable } from "react-native";
-import DateTimePicker, {
-  DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { CircleX } from "lucide-react-native";
+import { DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import PickerModal from "../general/PickerModal";
 
 const ServiceStart = () => {
   const router = useRouter();
@@ -12,21 +11,14 @@ const ServiceStart = () => {
 
   const [date, setDate] = useState(new Date());
   const [time, setTime] = useState(new Date());
-
   const [showDate, setShowDate] = useState(false);
   const [showTime, setShowTime] = useState(false);
 
-  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    if (event.type === "set" && selectedDate) {
-      setDate(selectedDate);
-    }
-  };
-
-  const onTimeChange = (event: DateTimePickerEvent, selectedTime?: Date) => {
-    if (event.type === "set" && selectedTime) {
-      setTime(selectedTime);
-    }
-  };
+  const handleChange =
+    (setter: React.Dispatch<React.SetStateAction<Date>>) =>
+    (event: DateTimePickerEvent, selected?: Date) => {
+      if (event.type === "set" && selected) setter(selected);
+    };
 
   const handleNext = () => {
     router.push({
@@ -47,7 +39,7 @@ const ServiceStart = () => {
           className="flex-row gap-2 justify-center items-center"
           onPress={() => router.back()}
         >
-          <CircleX color="#FF0000" className="w-3 h-3" />{" "}
+          <CircleX color="#FF0000" className="w-3 h-3" />
           <Text className="text-red-500 text-lg font-semibold">Cancel</Text>
         </TouchableOpacity>
       </View>
@@ -61,26 +53,23 @@ const ServiceStart = () => {
           Select the date and time you need the service.
         </Text>
 
-        {/* Date picker button */}
+        {/* Date button */}
         <TouchableOpacity
           className="mt-8 border border-gray-300 p-4 rounded-lg"
           onPress={() => setShowDate(true)}
         >
-          <Text className="text-lg w-full text-gray-700 text-center">
+          <Text className="text-lg text-gray-700 text-center">
             {date.toDateString()}
           </Text>
         </TouchableOpacity>
 
-        {/* Time picker button */}
+        {/* Time button */}
         <TouchableOpacity
           className="mt-4 border border-gray-300 p-4 rounded-lg"
           onPress={() => setShowTime(true)}
         >
           <Text className="text-lg text-gray-700 text-center">
-            {time.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+            {time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
           </Text>
         </TouchableOpacity>
       </View>
@@ -97,45 +86,21 @@ const ServiceStart = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Date Modal */}
-      <Modal visible={showDate} transparent animationType="slide">
-        <View className="flex-1 justify-center bg-black/50">
-          <View className="bg-white rounded-lg mx-6 p-4">
-            <DateTimePicker
-              value={date}
-              mode="date"
-              display="spinner"
-              onChange={onDateChange}
-            />
-            <Pressable
-              onPress={() => setShowDate(false)}
-              className="mt-4 py-4 bg-green-700 rounded-lg"
-            >
-              <Text className="text-white text-center font-semibold">Done</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Time Modal */}
-      <Modal visible={showTime} transparent animationType="slide">
-        <View className="flex-1 justify-center bg-black/50">
-          <View className="bg-white rounded-lg mx-6 p-4">
-            <DateTimePicker
-              value={time}
-              mode="time"
-              display="spinner"
-              onChange={onTimeChange}
-            />
-            <Pressable
-              onPress={() => setShowTime(false)}
-              className="mt-4 py-4 bg-green-700 rounded-lg"
-            >
-              <Text className="text-white text-center font-semibold">Done</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
+      {/* Modals */}
+      <PickerModal
+        visible={showDate}
+        mode="date"
+        value={date}
+        onChange={handleChange(setDate)}
+        onClose={() => setShowDate(false)}
+      />
+      <PickerModal
+        visible={showTime}
+        mode="time"
+        value={time}
+        onChange={handleChange(setTime)}
+        onClose={() => setShowTime(false)}
+      />
     </View>
   );
 };
