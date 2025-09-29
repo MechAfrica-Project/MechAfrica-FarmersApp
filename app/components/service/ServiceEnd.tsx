@@ -39,9 +39,11 @@ const ServiceEnd = () => {
       <View className="px-4 py-4">
         <TouchableOpacity
           className="flex-row gap-2 justify-center items-center"
-          onPress={() => router.push({
-            pathname:"/(tabs)/services"
-          })}
+          onPress={() =>
+            router.push({
+              pathname: "/(tabs)/services",
+            })
+          }
         >
           <CircleX color="#FF0000" className="w-3 h-3" />
           <Text className="text-red-500 text-lg font-semibold">Cancel</Text>
@@ -49,31 +51,34 @@ const ServiceEnd = () => {
       </View>
 
       {/* Content */}
-      <View className="flex-1">
-        <Text className="text-[2.3rem] w-[18rem] font-bold text-center mt-2">
-          When should this service end?
+      <View className="flex-1 items-center">
+        <Text className="text-[2.2rem] w-[23rem] text-center font-bold t mt-2">
+          When must the work be completed?
         </Text>
-        <Text className="text-gray-500 text-lg w-[17rem] text-center mt-5">
-          Select the end date and time for the service.
+        <Text className="text-gray-500 text-lg text-center mx-[4rem] mt-5">
+          Select the date and time you need the service to be completed.
         </Text>
 
         {/* Date button */}
         <TouchableOpacity
-          className="mt-8 border border-gray-300 p-4 rounded-lg"
+          className="mt-8 w-[20rem] border border-gray-300 p-4 rounded-lg"
           onPress={() => setShowDate(true)}
         >
-          <Text className="text-lg text-gray-700 text-center">
+          <Text className="text-lg w-full text-gray-700 text-center">
             {endDate.toDateString()}
           </Text>
         </TouchableOpacity>
 
         {/* Time button */}
         <TouchableOpacity
-          className="mt-4 border border-gray-300 p-4 rounded-lg"
+          className="mt-4 w-[20rem]  border border-gray-300 p-4 rounded-lg"
           onPress={() => setShowTime(true)}
         >
           <Text className="text-lg text-gray-700 text-center">
-            {endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            {endTime.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </Text>
         </TouchableOpacity>
       </View>

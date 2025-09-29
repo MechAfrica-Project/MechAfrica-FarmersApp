@@ -55,7 +55,7 @@ const ServiceStart = () => {
 
         {/* Date button */}
         <TouchableOpacity
-          className="mt-8 border border-gray-300 p-4 rounded-lg"
+          className="mt-8 w-[20rem] border border-gray-300 p-4 rounded-lg"
           onPress={() => setShowDate(true)}
         >
           <Text className="text-lg text-gray-700 text-center">
@@ -65,7 +65,7 @@ const ServiceStart = () => {
 
         {/* Time button */}
         <TouchableOpacity
-          className="mt-4 border border-gray-300 p-4 rounded-lg"
+          className="mt-4 w-[20rem] border border-gray-300 p-4 rounded-lg"
           onPress={() => setShowTime(true)}
         >
           <Text className="text-lg text-gray-700 text-center">
