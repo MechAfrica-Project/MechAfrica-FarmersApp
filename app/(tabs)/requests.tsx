@@ -39,7 +39,7 @@ const Requests = () => {
               activeOpacity={1}
               onPress={() => setActiveTab(tab)}
               className={`px-4 py-3 rounded-2xl ${
-                isActive ? "bg-primary-green" : "border border-gray-300"
+                isActive ? "bg-primary-green " : "border border-gray-300"
               }`}
             >
               <Text

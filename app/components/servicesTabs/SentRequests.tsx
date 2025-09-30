@@ -11,6 +11,7 @@ const SentRequests = () => {
         status="sent"
         date="August 2, 2025"
         time="15:30"
+        onCancel={() => console.log("Cancelled service request!")}
       />
     </View>
   );
