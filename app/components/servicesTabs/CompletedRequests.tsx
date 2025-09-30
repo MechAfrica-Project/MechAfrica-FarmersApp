@@ -1,10 +1,12 @@
 import { View, Text } from "react-native";
 import React from "react";
 import ServiceTicket from "./ServiceTicket";
+import CashCard from "./CashCard";
 
 const CompletedRequests = () => {
   return (
-    <View>
+    <View className="mx-3 w-auto">
+      <CashCard />
       <ServiceTicket
         serviceName="Ripping"
         serviceSubtitle="Land Preparation & Soil Breaking"

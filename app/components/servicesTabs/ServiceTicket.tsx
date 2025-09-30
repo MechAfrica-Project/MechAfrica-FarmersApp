@@ -1,5 +1,4 @@
 import { images } from "@/constants/images";
-import { ClosedCaptionIcon, XCircleIcon } from "lucide-react-native";
 import React from "react";
 import { View, Text, ImageBackground, TouchableOpacity } from "react-native";
 import { ProgressBar } from "react-native-paper";
@@ -64,9 +63,11 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
       {/* Header */}
       <View className="mb-10">
         <View className="flex-row justify-between items-center">
-          <Text className="text-gray-700 font-semibold">Service name</Text>
+          <Text className="text-gray-700 font-mulish font-semibold">
+            Service name
+          </Text>
           <View className={`${getHeaderStyle()} px-3 py-1 rounded-full`}>
-            <Text className="text-white text-sm font-semibold">
+            <Text className="text-white font-mulish text-sm font-semibold">
               {getHeaderLabel()}
             </Text>
           </View>
@@ -83,8 +84,8 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
       {status === "sent" && (
         <View className="">
           <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-gray-500">Date requested:</Text>
-            <Text className="text-gray-900 font-semibold">
+            <Text className="text-gray-500 font-mulish">Date requested:</Text>
+            <Text className="text-gray-900 font-semibold font-mulish">
               {date} {time}
             </Text>
           </View>
@@ -95,8 +96,8 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
               onPress={onCancel}
               className="absolute p-1 px-2 bg-red-500 rounded-full  flex-row bottom-9 right-0 self-start"
             >
-              {/* <XCircleIcon color="red" height={18} /> */}
-              <Text className="text-white">cancel</Text>
+             
+              <Text className="text-white font-mulish">cancel</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -105,8 +106,8 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
       {status === "ongoing" && (
         <View>
           <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-gray-500">Days left:</Text>
-            <Text className="text-gray-900 font-semibold">
+            <Text className="text-gray-500  font-mulish">Days left:</Text>
+            <Text className="text-gray-900 font-extrabold font-mulish">
               {daysLeft} Days left
             </Text>
           </View>
@@ -125,8 +126,10 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
       {status === "completed" && (
         <View>
           <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-gray-500">Completion Date:</Text>
-            <Text className="text-gray-900 font-semibold">{date}</Text>
+            <Text className="text-gray-500 font-mulish">Completion Date:</Text>
+            <Text className="text-gray-900 font-extrabold font-mulish">
+              {date}
+            </Text>
           </View>
           <ProgressBar
             progress={1}
@@ -141,8 +144,8 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
 
       {status === "cancelled" && (
         <View className="flex-row justify-between items-center">
-          <Text className="text-gray-500">Date requested:</Text>
-          <Text className="text-gray-900 font-semibold">
+          <Text className="text-gray-500 ">Date requested:</Text>
+          <Text className="text-gray-900 font-extrabold font-mulish">
             {date} {time}
           </Text>
         </View>

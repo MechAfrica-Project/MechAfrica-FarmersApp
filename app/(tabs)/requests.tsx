@@ -28,9 +28,9 @@ const Requests = () => {
   };
 
   return (
-    <View className="flex-1 bg-white p-4 pt-[4rem]">
+    <View className="flex-1 bg-white p-2 pt-[4rem]">
       {/* Tabs */}
-      <View className="flex-row justify-around mb-6">
+      <View className="flex-row gap-2 justify-around mb-6">
         {tabs.map((tab) => {
           const isActive = activeTab === tab;
           return (

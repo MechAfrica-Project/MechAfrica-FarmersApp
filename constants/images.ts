@@ -13,6 +13,8 @@ import transportation from "@/assets/images/transportation.png"
 import drone from "@/assets/images/drone.png"
 import planting from "@/assets/images/planting.png"
 import spraying from "@/assets/images/spraying.png"
+import coins from "@/assets/images/coins.png"
+import halfBg from "@/assets/images/half-bg.png"
 export const images = {
 welcomeBg,
 mechafrica,
@@ -28,5 +30,7 @@ threshing,
 transportation,
 drone,
 planting,
-spraying
+spraying,
+coins,
+halfBg
 }

@@ -4,7 +4,7 @@ import ServiceTicket from "./ServiceTicket";
 
 const CancelledRequests = () => {
   return (
-    <View>
+    <View className="mx-3 w-auto">
       <ServiceTicket
         serviceName="Drone"
         serviceSubtitle="Aerial Spraying & Monitoring"

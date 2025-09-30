@@ -4,7 +4,7 @@ import ServiceTicket from "./ServiceTicket";
 
 const SentRequests = () => {
   return (
-    <View>
+    <View className="mx-3 w-auto">
       <ServiceTicket
         serviceName="Ripping"
         serviceSubtitle="Land Preparation & Soil Breaking"
