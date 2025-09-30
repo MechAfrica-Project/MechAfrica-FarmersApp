@@ -31,25 +31,23 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
       className="w-full rounded-xl overflow-hidden p-4 my-2"
     >
       {/* Header */}
-      <View className="flex-row justify-between items-center mb-2">
-        <Text className="text-gray-700 font-semibold">Service name</Text>
-        <View className="bg-green-800 px-3 py-1 rounded-full">
-          <Text className="text-white text-sm font-semibold">
-            {status === "sent"
-              ? "looking for Provider"
-              : providerName || "Provider"}
-          </Text>
+      <View className="mb-10">
+        <View className="flex-row justify-between items-center">
+          <Text className="text-gray-700 font-semibold">Service name</Text>
+          <View className="bg-green-800 px-3 py-1 rounded-full">
+            <Text className="text-white text-sm font-semibold">
+              {status === "sent"
+                ? "looking for Provider"
+                : providerName || "Provider"}
+            </Text>
+          </View>
         </View>
+        {/* Service Details */}
+        <Text className="text-green-800 font-extrabold text-base mt-2">
+          {serviceName}
+          <Text className="text-gray-700 font-normal"> {serviceSubtitle}</Text>
+        </Text>
       </View>
-
-      {/* Service Details */}
-      <Text className="text-green-800 font-extrabold text-base">
-        {serviceName}
-        <Text className="text-gray-700 font-normal"> {serviceSubtitle}</Text>
-      </Text>
-
-      {/* Dotted Divider */}
-      <View className="border-b border-dashed border-gray-300 my-3" />
 
       {/* Status Section */}
       {status === "sent" ? (
