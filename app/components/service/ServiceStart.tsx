@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Platform } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { CircleX } from "lucide-react-native";
 import { DateTimePickerEvent } from "@react-native-community/datetimepicker";
@@ -15,18 +15,22 @@ const ServiceStart = () => {
   const [showTime, setShowTime] = useState(false);
 
   const handleChange =
-    (setter: React.Dispatch<React.SetStateAction<Date>>) =>
+    (setter: React.Dispatch<React.SetStateAction<Date>>, close: () => void) =>
     (event: DateTimePickerEvent, selected?: Date) => {
       if (event.type === "set" && selected) setter(selected);
+      if (Platform.OS === "android") close(); // auto-close on Android
     };
 
   const handleNext = () => {
+    // Combine date + time into one Date object
+    const combinedStart = new Date(date);
+    combinedStart.setHours(time.getHours(), time.getMinutes());
+
     router.push({
       pathname: "/components/service/ServiceEnd",
       params: {
         id,
-        startDate: date.toISOString(),
-        startTime: time.toISOString(),
+        startDate: combinedStart.toISOString(),
       },
     });
   };
@@ -39,13 +43,13 @@ const ServiceStart = () => {
           className="flex-row gap-2 justify-center items-center"
           onPress={() => router.back()}
         >
-          <CircleX color="#FF0000" className="w-3 h-3" />
+          <CircleX color="#FF0000" />
           <Text className="text-red-500 text-lg font-semibold">Cancel</Text>
         </TouchableOpacity>
       </View>
 
       {/* Content */}
-      <View className="flex-1">
+      <View className="flex-1 items-center">
         <Text className="text-[2.3rem] w-[18rem] font-bold text-center mt-2">
           When you need this service?
         </Text>
@@ -91,14 +95,14 @@ const ServiceStart = () => {
         visible={showDate}
         mode="date"
         value={date}
-        onChange={handleChange(setDate)}
+        onChange={handleChange(setDate, () => setShowDate(false))}
         onClose={() => setShowDate(false)}
       />
       <PickerModal
         visible={showTime}
         mode="time"
         value={time}
-        onChange={handleChange(setTime)}
+        onChange={handleChange(setTime, () => setShowTime(false))}
         onClose={() => setShowTime(false)}
       />
     </View>
