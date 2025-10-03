@@ -1,67 +1,28 @@
-import { View, Text } from "react-native";
+import { ScrollView } from "react-native";
 import React from "react";
 import ServiceTicket from "./ServiceTicket";
-import { ScrollView } from "react-native-reanimated/lib/typescript/Animated";
+import { sampleRequests } from "@/dummy-data/dummy_data";
+import { Request } from "@/types/request";
 
-const OnGoingRequests = () => {
+const OnGoingRequests: React.FC = () => {
+  // Filter only ongoing requests
+  const ongoingRequests: Request[] = sampleRequests.filter(
+    (req) => req.status === "ongoing"
+  );
+
   return (
     <ScrollView className="mx-3 w-auto" showsVerticalScrollIndicator={false}>
-      <ServiceTicket
-        serviceName="Ripping"
-        serviceSubtitle="Land Preparation & Soil Breaking"
-        status="ongoing"
-        providerName="Mr. Sarfo Kofi"
-        daysLeft={29}
-        progress={0.7}
-      />
-      <ServiceTicket
-        serviceName="Ripping"
-        serviceSubtitle="Land Preparation & Soil Breaking"
-        status="ongoing"
-        providerName="Mr. Sarfo Kofi"
-        daysLeft={29}
-        progress={0.7}
-      />
-      <ServiceTicket
-        serviceName="Ripping"
-        serviceSubtitle="Land Preparation & Soil Breaking"
-        status="ongoing"
-        providerName="Mr. Sarfo Kofi"
-        daysLeft={29}
-        progress={0.7}
-      />
-      <ServiceTicket
-        serviceName="Ripping"
-        serviceSubtitle="Land Preparation & Soil Breaking"
-        status="ongoing"
-        providerName="Mr. Sarfo Kofi"
-        daysLeft={29}
-        progress={0.7}
-      />
-      <ServiceTicket
-        serviceName="Ripping"
-        serviceSubtitle="Land Preparation & Soil Breaking"
-        status="ongoing"
-        providerName="Mr. Sarfo Kofi"
-        daysLeft={29}
-        progress={0.7}
-      />
-      <ServiceTicket
-        serviceName="Ripping"
-        serviceSubtitle="Land Preparation & Soil Breaking"
-        status="ongoing"
-        providerName="Mr. Sarfo Kofi"
-        daysLeft={29}
-        progress={0.7}
-      />
-      <ServiceTicket
-        serviceName="Ripping"
-        serviceSubtitle="Land Preparation & Soil Breaking"
-        status="ongoing"
-        providerName="Mr. Sarfo Kofi"
-        daysLeft={29}
-        progress={0.7}
-      />
+      {ongoingRequests.map((request) => (
+        <ServiceTicket
+          key={request.id}
+          serviceName={request.serviceType}
+          serviceSubtitle={request.serviceDetails}
+          status="ongoing"
+          providerName={request.providerName} // show farmer's name
+          daysLeft={request.daysLeft}
+          progress={request.progress ?? 0} // ensure progress is between 0-1
+        />
+      ))}
     </ScrollView>
   );
 };
