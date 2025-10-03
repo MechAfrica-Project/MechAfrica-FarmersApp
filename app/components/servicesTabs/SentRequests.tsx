@@ -1,51 +1,25 @@
-import { View, Text } from "react-native";
+import { ScrollView } from "react-native";
 import React from "react";
+import { sampleRequests } from "@/dummy-data/dummy_data";
+import { Request } from "@/types/request";
 import ServiceTicket from "./ServiceTicket";
-import { ScrollView } from "react-native-reanimated/lib/typescript/Animated";
 
 const SentRequests = () => {
+  // Filter only ongoing requests
+  const SentRequests: Request[] = sampleRequests.filter(
+    (req) => req.status === "sent"
+  );
   return (
     <ScrollView className="mx-3 w-auto" showsVerticalScrollIndicator={false}>
-      <ServiceTicket
-        serviceName="Ripping"
-        serviceSubtitle="Land Preparation & Soil Breaking"
-        status="sent"
-        date="August 2, 2025"
-        time="15:30"
-        onCancel={() => console.log("Cancelled service request!")}
-      />
-      <ServiceTicket
-        serviceName="Ripping"
-        serviceSubtitle="Land Preparation & Soil Breaking"
-        status="sent"
-        date="August 2, 2025"
-        time="15:30"
-        onCancel={() => console.log("Cancelled service request!")}
-      />
-      <ServiceTicket
-        serviceName="Ripping"
-        serviceSubtitle="Land Preparation & Soil Breaking"
-        status="sent"
-        date="August 2, 2025"
-        time="15:30"
-        onCancel={() => console.log("Cancelled service request!")}
-      />
-      <ServiceTicket
-        serviceName="Ripping"
-        serviceSubtitle="Land Preparation & Soil Breaking"
-        status="sent"
-        date="August 2, 2025"
-        time="15:30"
-        onCancel={() => console.log("Cancelled service request!")}
-      />
-      <ServiceTicket
-        serviceName="Ripping"
-        serviceSubtitle="Land Preparation & Soil Breaking"
-        status="sent"
-        date="August 2, 2025"
-        time="15:30"
-        onCancel={() => console.log("Cancelled service request!")}
-      />
+      {SentRequests.map((request) => (
+        <ServiceTicket
+          key={request.id}
+          serviceName={request.serviceType}
+          serviceSubtitle={request.serviceDetails}
+          date={request.dateCompleted ?? request.dateRequested}
+          status="sent"
+        />
+      ))}
     </ScrollView>
   );
 };

@@ -1,7 +1,7 @@
 import { images } from "@/constants/images";
 import React from "react";
 import { View, Text, ImageBackground, TouchableOpacity } from "react-native";
-import { ProgressBar } from "react-native-paper";
+import * as Animatable from "react-native-animatable";
 
 interface ServiceTicketProps {
   serviceName: string;
@@ -9,10 +9,11 @@ interface ServiceTicketProps {
   date?: string;
   time?: string;
   status: "sent" | "ongoing" | "completed" | "cancelled";
+  cancelledBy?: "admin" | "farmer" | "provider";
   providerName?: string;
   daysLeft?: number;
   progress?: number; // value between 0 and 1
-  onCancel?: () => void; // callback for cancel button
+  onCancel?: () => void;
 }
 
 const ServiceTicket: React.FC<ServiceTicketProps> = ({
@@ -21,6 +22,7 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
   date,
   time,
   status,
+  cancelledBy,
   providerName,
   daysLeft,
   progress = 0,
@@ -31,11 +33,12 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
       case "sent":
         return "Looking for Provider";
       case "ongoing":
-        return providerName || "Provider";
       case "completed":
         return providerName || "Provider";
       case "cancelled":
-        return "Cancelled by Admin";
+        return cancelledBy === "farmer"
+          ? "Declined Request"
+          : "Cancelled by Admin";
       default:
         return "Provider";
     }
@@ -82,7 +85,7 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
 
       {/* Status Section */}
       {status === "sent" && (
-        <View className="">
+        <View>
           <View className="flex-row justify-between items-center mb-3">
             <Text className="text-gray-500 font-mulish">Date requested:</Text>
             <Text className="text-gray-900 font-semibold font-mulish">
@@ -90,36 +93,39 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
             </Text>
           </View>
 
-          {/* Cancel Button */}
           {onCancel && (
             <TouchableOpacity
               onPress={onCancel}
-              className="absolute p-1 px-2 bg-red-500 rounded-full  flex-row bottom-9 right-0 self-start"
+              className="absolute p-1 px-2 bg-red-500 rounded-full flex-row bottom-9 right-0 self-start"
             >
-             
               <Text className="text-white font-mulish">cancel</Text>
             </TouchableOpacity>
           )}
         </View>
       )}
-
       {status === "ongoing" && (
         <View>
           <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-gray-500  font-mulish">Days left:</Text>
+            <Text className="text-gray-500 font-mulish">Days left:</Text>
             <Text className="text-gray-900 font-extrabold font-mulish">
               {daysLeft} Days left
             </Text>
           </View>
-          <ProgressBar
-            progress={progress}
-            color="#065f46" // dark green
-            style={{
-              height: 10,
-              borderRadius: 10,
-              backgroundColor: "#facc15", // yellow background
-            }}
-          />
+
+          {/* Progress Bar */}
+          <View
+            className="bg-yellow-400 rounded-lg h-2 w-full overflow-hidden"
+            style={{ backgroundColor: "#facc15" }}
+          >
+            <View
+              style={{
+                width: `${Math.min(progress, 1) * 100}%`,
+                height: 10,
+                borderRadius: 10,
+                backgroundColor: "#065f46",
+              }}
+            />
+          </View>
         </View>
       )}
 
@@ -131,20 +137,24 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
               {date}
             </Text>
           </View>
-          <ProgressBar
-            progress={1}
-            color="#facc15"
-            style={{
-              height: 10,
-              borderRadius: 10,
-            }}
-          />
+          <View className="bg-yellow-400 rounded-lg h-2 w-full overflow-hidden">
+            <Animatable.View
+              animation={{ 0: { width: "0%" }, 1: { width: "100%" } }}
+              duration={800}
+              useNativeDriver={false}
+              style={{
+                height: 10,
+                borderRadius: 10,
+                backgroundColor: "#facc15",
+              }}
+            />
+          </View>
         </View>
       )}
 
       {status === "cancelled" && (
         <View className="flex-row justify-between items-center">
-          <Text className="text-gray-500 ">Date requested:</Text>
+          <Text className="text-gray-500">Date requested:</Text>
           <Text className="text-gray-900 font-extrabold font-mulish">
             {date} {time}
           </Text>
