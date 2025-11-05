@@ -39,9 +39,13 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
     // ✅ Farmer can only cancel their sent request
     cancelRequest: (id) =>
       set((s) => {
-        const byId = {
+        const byId: Record<string, Request> = {
           ...s.byId,
-          [id]: { ...s.byId[id], status: "cancelled", cancelledBy: "farmer" },
+          [id]: {
+            ...s.byId[id],
+            status: "cancelled" as RequestStatus,
+            cancelledBy: "farmer",
+          },
         };
         return { byId, listsByStatus: computeListsByStatus(byId) };
       }),
@@ -49,9 +53,13 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
     // Optional: Keep for internal use (when service is done)
     completeRequest: (id) =>
       set((s) => {
-        const byId = {
+        const byId: Record<string, Request> = {
           ...s.byId,
-          [id]: { ...s.byId[id], status: "completed", progress: 1 },
+          [id]: {
+            ...s.byId[id],
+            status: "completed" as RequestStatus,
+            progress: 1,
+          },
         };
         return { byId, listsByStatus: computeListsByStatus(byId) };
       }),
