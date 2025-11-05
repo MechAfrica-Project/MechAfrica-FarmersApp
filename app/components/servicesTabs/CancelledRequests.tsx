@@ -1,4 +1,4 @@
-import { View, ScrollView } from "react-native";
+import {ScrollView } from "react-native";
 import React from "react";
 import ServiceTicket from "./ServiceTicket";
 import { sampleRequests } from "@/dummy-data/dummy_data";
