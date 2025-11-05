@@ -66,7 +66,7 @@ export const requestsData: Request[] = [
     serviceId: "4",
     serviceTitle: "Irrigation",
     serviceDetails: "Drip Installation Assessment",
-    serviceImage: images.irrigation,
+    serviceImage: images.threshing,
     farmerName: "F. Provider Ltd.",
     farmLocation: "KNUST Campus",
     providerName: "",

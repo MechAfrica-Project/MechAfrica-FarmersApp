@@ -5,9 +5,8 @@ import { ScrollView } from "react-native";
 import ServiceTicket from "./ServiceTicket";
 
 const CancelledRequests: React.FC = () => {
-  const getByStatus = useRequestsStore((s) => s.getByStatus);
   // Filter only cancelled requests
-  const cancelledRequests: Request[] = getByStatus("cancelled");
+  const cancelledRequests: Request[] = useRequestsStore((s) => s.listsByStatus.cancelled);
 
   return (
     <ScrollView className="mx-3 w-auto" showsVerticalScrollIndicator={false}>

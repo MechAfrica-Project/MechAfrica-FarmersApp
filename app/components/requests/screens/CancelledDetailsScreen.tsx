@@ -10,7 +10,6 @@ const CancelledDetailsScreen: React.FC = () => {
   const deleteRequest = useRequestsStore((s) => s.deleteRequest);
   const router = useRouter();
 
-  // Parse request and type it
   let parsedRequest: Request | null = null;
   if (request) {
     try {
@@ -28,14 +27,13 @@ const CancelledDetailsScreen: React.FC = () => {
     );
   }
 
-
   return (
     <RequestDetailsCard
       request={parsedRequest}
       type="cancelled"
-      onAccept={() => {
-        if (!parsedRequest) return;
-        deleteRequest(parsedRequest.id);
+      showActions
+      onDelete={() => {
+        deleteRequest(parsedRequest!.id);
         router.back();
       }}
     />

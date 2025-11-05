@@ -5,13 +5,18 @@ import { ScrollView } from "react-native";
 import ServiceTicket from "./ServiceTicket";
 
 const SentRequests = () => {
-  const getByStatus = useRequestsStore((s) => s.getByStatus);
-  // Filter only pending requests (formerly "sent")
-  const sentRequests: Request[] = getByStatus("pending");
+  const sentRequests: Request[] = useRequestsStore((s) => s.listsByStatus.pending);
+  const cancelRequest = useRequestsStore((s) => s.cancelRequest);
+
   return (
     <ScrollView className="mx-3 w-auto" showsVerticalScrollIndicator={false}>
       {sentRequests.map((request) => (
-        <ServiceTicket key={request.id} fullRequest={request} status={request.status} />
+        <ServiceTicket
+          key={request.id}
+          fullRequest={request}
+          status={request.status}
+          onCancel={() => cancelRequest(request.id)}
+        />
       ))}
     </ScrollView>
   );
