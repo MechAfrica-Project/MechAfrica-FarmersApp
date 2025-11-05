@@ -1,7 +1,7 @@
+import { useRouter } from "expo-router";
 import React from "react";
 import { FlatList } from "react-native";
-import ServiceCard from "../general/ServiceCard";
-import { useRouter } from "expo-router";
+import ServiceCard from "../../general/ServiceCard";
 
 interface Service {
   id: string;
@@ -30,7 +30,7 @@ const SearchService: React.FC<SearchServiceProps> = ({ filteredServices }) => {
           rating={item.rating}
           onPress={() =>
             router.push({
-              pathname: "/components/service/ServiceStart",
+              pathname: "/components/service/serviceFlow/ServiceStart",
               params: { id: item.id },
             })
           }

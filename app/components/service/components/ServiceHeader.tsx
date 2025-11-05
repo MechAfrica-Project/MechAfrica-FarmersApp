@@ -1,7 +1,7 @@
-import { TextInput, TouchableOpacity, View } from "react-native";
-import React from "react";
-import ServiceRequestSection from "./ServiceRequestSection";
 import { Search } from "lucide-react-native";
+import React from "react";
+import { TextInput, TouchableOpacity, View } from "react-native";
+import ServiceRequestSection from "./ServiceRequestSection";
 
 interface ServiceHeaderProps {
   search: string;

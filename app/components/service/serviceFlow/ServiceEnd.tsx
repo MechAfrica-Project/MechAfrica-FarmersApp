@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Platform } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { CircleX } from "lucide-react-native";
 import { DateTimePickerEvent } from "@react-native-community/datetimepicker";
-import PickerModal from "../general/PickerModal";
+import PickerModal from "../../general/PickerModal";
 
 const ServiceEnd = () => {
   const router = useRouter();

@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Platform } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { CircleX } from "lucide-react-native";
 import { DateTimePickerEvent } from "@react-native-community/datetimepicker";
-import PickerModal from "../general/PickerModal";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { CircleX } from "lucide-react-native";
+import React, { useState } from "react";
+import { Platform, Text, TouchableOpacity, View } from "react-native";
+import PickerModal from "../../general/PickerModal";
 
 const ServiceStart = () => {
   const router = useRouter();
@@ -27,7 +27,7 @@ const ServiceStart = () => {
     combinedStart.setHours(time.getHours(), time.getMinutes());
 
     router.push({
-      pathname: "/components/service/ServiceEnd",
+      pathname: "/components/service/serviceFlow/ServiceEnd",
       params: {
         id,
         startDate: combinedStart.toISOString(),
