@@ -10,8 +10,7 @@ const ServiceBar = () => {
       </Text>
       <Link href="/services" asChild>
         <Text className="text-primary-green underline underline-offset  text-lg font-mulish font-bold">
-          {" "}
-          See all{" "}
+          See all
         </Text>
       </Link>
     </View>

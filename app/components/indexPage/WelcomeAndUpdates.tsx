@@ -1,7 +1,7 @@
-import { View, Text, Image } from "react-native";
-import React from "react";
 import { images } from "@/constants/images";
 import { useOnboardingStore } from "@/stores/onboardingStore";
+import React from "react";
+import { Image, Text, View } from "react-native";
 
 const WelcomeAndUpdates = () => {
   const { data } = useOnboardingStore();
@@ -10,7 +10,6 @@ const WelcomeAndUpdates = () => {
       {/* Left section (text) */}
       <View className="flex-1 justify-between bg-primary-green rounded-3xl p-4">
         <View>
-          {" "}
           <Text className="text-white font-mulish font-bold text-2xl">
             Good afternoon,
           </Text>
