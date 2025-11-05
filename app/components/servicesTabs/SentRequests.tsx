@@ -6,7 +6,8 @@ import ServiceTicket from "./ServiceTicket";
 
 const SentRequests = () => {
   const sentRequests: Request[] = useRequestsStore((s) => s.listsByStatus.pending);
-  const rejectRequest = useRequestsStore((s) => s.rejectRequest);
+  const cancelRequest = useRequestsStore((s) => s.cancelRequest);
+
   return (
     <ScrollView className="mx-3 w-auto" showsVerticalScrollIndicator={false}>
       {sentRequests.map((request) => (
@@ -14,7 +15,7 @@ const SentRequests = () => {
           key={request.id}
           fullRequest={request}
           status={request.status}
-          onCancel={() => rejectRequest(request.id)}
+          onCancel={() => cancelRequest(request.id)}
         />
       ))}
     </ScrollView>

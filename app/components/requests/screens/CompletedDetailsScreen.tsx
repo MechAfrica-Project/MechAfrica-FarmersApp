@@ -1,8 +1,8 @@
 import React from "react";
-import { View, Text } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import RequestDetailsCard from "../reusable/RequestDetailsCard";
 import { Request } from "@/types/request";
+import { Text, View } from "react-native";
 import { useRequestsStore } from "@/stores/requestsStore";
 
 const CompletedDetailsScreen: React.FC = () => {
@@ -10,7 +10,6 @@ const CompletedDetailsScreen: React.FC = () => {
   const deleteRequest = useRequestsStore((s) => s.deleteRequest);
   const router = useRouter();
 
-  // Parse request and type it
   let parsedRequest: Request | null = null;
   if (request) {
     try {
@@ -23,7 +22,7 @@ const CompletedDetailsScreen: React.FC = () => {
   if (!parsedRequest) {
     return (
       <View className="flex-1 justify-center items-center">
-        <Text className="text-red-500 text-lg">Error: Request not found</Text>
+        <Text className="text-red-600 font-semibold">Request not found</Text>
       </View>
     );
   }
@@ -32,7 +31,8 @@ const CompletedDetailsScreen: React.FC = () => {
     <RequestDetailsCard
       request={parsedRequest}
       type="completed"
-      onAccept={() => {
+      showActions
+      onDelete={() => {
         deleteRequest(parsedRequest!.id);
         router.back();
       }}

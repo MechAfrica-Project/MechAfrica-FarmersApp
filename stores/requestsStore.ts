@@ -6,8 +6,7 @@ type RequestsState = {
   byId: Record<string, Request>;
   listsByStatus: Record<RequestStatus, Request[]>;
   getByStatus: (status: RequestStatus) => Request[];
-  acceptRequest: (id: string) => void;
-  rejectRequest: (id: string) => void;
+  cancelRequest: (id: string) => void;
   completeRequest: (id: string) => void;
   deleteRequest: (id: string) => void;
   deleteCancelled: () => void;
@@ -20,7 +19,9 @@ const indexById = (list: Request[]): Record<string, Request> => {
   return out;
 };
 
-const computeListsByStatus = (byId: Record<string, Request>): Record<RequestStatus, Request[]> => ({
+const computeListsByStatus = (
+  byId: Record<string, Request>
+): Record<RequestStatus, Request[]> => ({
   pending: Object.values(byId).filter((r) => r.status === "pending"),
   ongoing: Object.values(byId).filter((r) => r.status === "ongoing"),
   completed: Object.values(byId).filter((r) => r.status === "completed"),
@@ -35,24 +36,23 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
 
     getByStatus: (status) => get().listsByStatus[status],
 
-    acceptRequest: (id) =>
-      set((s) => {
-        const byId = { ...s.byId, [id]: { ...s.byId[id], status: "ongoing" } };
-        return { byId, listsByStatus: computeListsByStatus(byId) };
-      }),
-
-    rejectRequest: (id) =>
+    // ✅ Farmer can only cancel their sent request
+    cancelRequest: (id) =>
       set((s) => {
         const byId = {
           ...s.byId,
-          [id]: { ...s.byId[id], status: "cancelled", cancelledBy: "provider" },
+          [id]: { ...s.byId[id], status: "cancelled", cancelledBy: "farmer" },
         };
         return { byId, listsByStatus: computeListsByStatus(byId) };
       }),
 
+    // Optional: Keep for internal use (when service is done)
     completeRequest: (id) =>
       set((s) => {
-        const byId = { ...s.byId, [id]: { ...s.byId[id], status: "completed", progress: 1 } };
+        const byId = {
+          ...s.byId,
+          [id]: { ...s.byId[id], status: "completed", progress: 1 },
+        };
         return { byId, listsByStatus: computeListsByStatus(byId) };
       }),
 
@@ -82,5 +82,3 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
       }),
   };
 });
-
-

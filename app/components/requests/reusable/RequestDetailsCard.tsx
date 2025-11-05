@@ -10,59 +10,63 @@ interface RequestDetailsCardProps {
   request: any;
   type?: "pending" | "ongoing" | "completed" | "cancelled";
   showActions?: boolean;
-  onAccept?: () => void;
-  onDecline?: () => void;
+  onCancel?: () => void;
+  onDelete?: () => void;
+  onComplete?: () => void;
 }
 
 const RequestDetailsCard: React.FC<RequestDetailsCardProps> = ({
   request,
   type = "pending",
   showActions = false,
-  onAccept,
-  onDecline,
+  onCancel,
+  onDelete,
+  onComplete,
 }) => {
   const renderActionButtons = () => {
+    if (!showActions) return null;
+
+    // 🟡 Pending — farmer can only cancel
     if (type === "pending") {
       return (
-        <View className="flex-row justify-between mt-10 mb-16">
-          <TouchableOpacity
-            onPress={onDecline}
-            className="bg-[#D32F2F] w-[48%] py-3 rounded-full items-center"
-          >
-            <Text className="text-white font-semibold text-lg">Reject</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={onAccept}
-            className="bg-[#00796B] w-[48%] py-3 rounded-full items-center"
-          >
-            <Text className="text-white font-semibold text-lg">Accept</Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
-
-    if (type === "ongoing") {
-      return (
         <TouchableOpacity
-          onPress={onAccept}
-          className="bg-[#00796B] py-3 my-12 rounded-full items-center"
+          onPress={onCancel}
+          className="bg-[#D32F2F] py-3 my-12 rounded-full items-center"
         >
-          <Text className="text-white font-semibold text-lg">Mark as Done</Text>
+          <Text className="text-white font-semibold text-lg">
+            Cancel Request
+          </Text>
         </TouchableOpacity>
       );
     }
 
-    // For completed/cancelled requests
-    const label = type === "cancelled" || type === "completed" ? "Delete" : "Done";
-    return (
-      <TouchableOpacity
-        onPress={onAccept}
-        className="bg-[#00796B] py-3 my-12 rounded-full items-center"
-      >
-        <Text className="text-white font-semibold text-lg">{label}</Text>
-      </TouchableOpacity>
-    );
+    // 🟢 Ongoing — show Mark as Complete
+    if (type === "ongoing") {
+      return (
+        <TouchableOpacity
+          onPress={onComplete}
+          className="bg-[#388E3C] py-3 my-12 rounded-full items-center"
+        >
+          <Text className="text-white font-semibold text-lg">
+            Mark as Complete
+          </Text>
+        </TouchableOpacity>
+      );
+    }
+
+    // 🔴 Completed / Cancelled — allow delete
+    if (type === "completed" || type === "cancelled") {
+      return (
+        <TouchableOpacity
+          onPress={onDelete}
+          className="bg-[#00796B] py-3 my-12 rounded-full items-center"
+        >
+          <Text className="text-white font-semibold text-lg">Delete</Text>
+        </TouchableOpacity>
+      );
+    }
+
+    return null;
   };
 
   return (
