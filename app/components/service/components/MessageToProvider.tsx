@@ -1,13 +1,13 @@
-import React, { useEffect } from "react";
-import { View, Text, TextInput, Alert } from "react-native";
 import {
-  useAudioRecorder,
   AudioModule,
   RecordingPresets,
   setAudioModeAsync,
+  useAudioRecorder,
   useAudioRecorderState,
 } from "expo-audio";
-import VoiceRecorderButton from "../general/VoiceRecorderButton";
+import React, { useEffect } from "react";
+import { Alert, Text, TextInput, View } from "react-native";
+import VoiceRecorderButton from "../../general/VoiceRecorderButton";
 
 const MessageToProvider = () => {
   const [message, setMessage] = React.useState("");

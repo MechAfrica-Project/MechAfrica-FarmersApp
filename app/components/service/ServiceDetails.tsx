@@ -1,11 +1,11 @@
-import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
 import { servicesData } from "@/constants/servicesData";
-import MultiToneBackground from "../general/MultiToneBackground";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React from "react";
+import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import BackButton from "../general/BackButton";
-import FarmerDetails from "./FarmerDetails";
-import MessageToProvider from "./MessageToProvider";
+import MultiToneBackground from "../general/MultiToneBackground";
+import FarmerDetails from "./components/FarmerDetails";
+import MessageToProvider from "./components/MessageToProvider";
 
 const ServiceDetails = () => {
   const { id, startDate, startTime, endDate, endTime } = useLocalSearchParams();
