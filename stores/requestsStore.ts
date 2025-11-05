@@ -4,6 +4,7 @@ import { create } from "zustand";
 
 type RequestsState = {
   byId: Record<string, Request>;
+  listsByStatus: Record<RequestStatus, Request[]>;
   getByStatus: (status: RequestStatus) => Request[];
   acceptRequest: (id: string) => void;
   rejectRequest: (id: string) => void;
@@ -19,47 +20,67 @@ const indexById = (list: Request[]): Record<string, Request> => {
   return out;
 };
 
-export const useRequestsStore = create<RequestsState>((set, get) => ({
-  byId: indexById(requestsData),
+const computeListsByStatus = (byId: Record<string, Request>): Record<RequestStatus, Request[]> => ({
+  pending: Object.values(byId).filter((r) => r.status === "pending"),
+  ongoing: Object.values(byId).filter((r) => r.status === "ongoing"),
+  completed: Object.values(byId).filter((r) => r.status === "completed"),
+  cancelled: Object.values(byId).filter((r) => r.status === "cancelled"),
+});
 
-  getByStatus: (status) =>
-    Object.values(get().byId).filter((r) => r.status === status),
+export const useRequestsStore = create<RequestsState>((set, get) => {
+  const initialById = indexById(requestsData);
+  return {
+    byId: initialById,
+    listsByStatus: computeListsByStatus(initialById),
 
-  acceptRequest: (id) =>
-    set((s) => ({ byId: { ...s.byId, [id]: { ...s.byId[id], status: "ongoing" } } })),
+    getByStatus: (status) => get().listsByStatus[status],
 
-  rejectRequest: (id) =>
-    set((s) => ({
-      byId: { ...s.byId, [id]: { ...s.byId[id], status: "cancelled", cancelledBy: "provider" } },
-    })),
+    acceptRequest: (id) =>
+      set((s) => {
+        const byId = { ...s.byId, [id]: { ...s.byId[id], status: "ongoing" } };
+        return { byId, listsByStatus: computeListsByStatus(byId) };
+      }),
 
-  completeRequest: (id) =>
-    set((s) => ({ byId: { ...s.byId, [id]: { ...s.byId[id], status: "completed", progress: 1 } } })),
-  
-  deleteRequest: (id) =>
-    set((s) => {
-      const copy = { ...s.byId };
-      delete copy[id];
-      return { byId: copy };
-    }),
+    rejectRequest: (id) =>
+      set((s) => {
+        const byId = {
+          ...s.byId,
+          [id]: { ...s.byId[id], status: "cancelled", cancelledBy: "provider" },
+        };
+        return { byId, listsByStatus: computeListsByStatus(byId) };
+      }),
 
-  deleteCancelled: () =>
-    set((s) => {
-      const copy: Record<string, Request> = {};
-      for (const [id, r] of Object.entries(s.byId)) {
-        if (r.status !== "cancelled") copy[id] = r;
-      }
-      return { byId: copy };
-    }),
+    completeRequest: (id) =>
+      set((s) => {
+        const byId = { ...s.byId, [id]: { ...s.byId[id], status: "completed", progress: 1 } };
+        return { byId, listsByStatus: computeListsByStatus(byId) };
+      }),
 
-  deleteCompleted: () =>
-    set((s) => {
-      const copy: Record<string, Request> = {};
-      for (const [id, r] of Object.entries(s.byId)) {
-        if (r.status !== "completed") copy[id] = r;
-      }
-      return { byId: copy };
-    }),
-}));
+    deleteRequest: (id) =>
+      set((s) => {
+        const byId = { ...s.byId };
+        delete byId[id];
+        return { byId, listsByStatus: computeListsByStatus(byId) };
+      }),
+
+    deleteCancelled: () =>
+      set((s) => {
+        const byId: Record<string, Request> = {};
+        for (const [id, r] of Object.entries(s.byId)) {
+          if (r.status !== "cancelled") byId[id] = r;
+        }
+        return { byId, listsByStatus: computeListsByStatus(byId) };
+      }),
+
+    deleteCompleted: () =>
+      set((s) => {
+        const byId: Record<string, Request> = {};
+        for (const [id, r] of Object.entries(s.byId)) {
+          if (r.status !== "completed") byId[id] = r;
+        }
+        return { byId, listsByStatus: computeListsByStatus(byId) };
+      }),
+  };
+});
 
 

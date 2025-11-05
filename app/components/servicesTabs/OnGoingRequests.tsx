@@ -1,14 +1,12 @@
-import { ScrollView } from "react-native";
-import React from "react";
-import ServiceTicket from "./ServiceTicket";
-import { Request } from "@/types/request";
 import { useRequestsStore } from "@/stores/requestsStore";
+import { Request } from "@/types/request";
+import React from "react";
+import { ScrollView } from "react-native";
+import ServiceTicket from "./ServiceTicket";
 
 const OnGoingRequests: React.FC = () => {
-  const getByStatus = useRequestsStore((s) => s.getByStatus);
+  const ongoingRequests: Request[] = useRequestsStore((s) => s.listsByStatus.ongoing);
   const completeRequest = useRequestsStore((s) => s.completeRequest);
-  // Filter only ongoing requests
-  const ongoingRequests: Request[] = getByStatus("ongoing");
 
   return (
     <ScrollView className="mx-3 w-auto" showsVerticalScrollIndicator={false}>
