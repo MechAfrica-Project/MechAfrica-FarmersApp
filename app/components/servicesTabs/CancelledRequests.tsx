@@ -1,25 +1,21 @@
-import {ScrollView } from "react-native";
-import React from "react";
-import ServiceTicket from "./ServiceTicket";
-import { sampleRequests } from "@/dummy-data/dummy_data";
+import { useRequestsStore } from "@/stores/requestsStore";
 import { Request } from "@/types/request";
+import React from "react";
+import { ScrollView } from "react-native";
+import ServiceTicket from "./ServiceTicket";
 
 const CancelledRequests: React.FC = () => {
+  const getByStatus = useRequestsStore((s) => s.getByStatus);
   // Filter only cancelled requests
-  const cancelledRequests: Request[] = sampleRequests.filter(
-    (req) => req.status === "cancelled"
-  );
+  const cancelledRequests: Request[] = getByStatus("cancelled");
 
   return (
     <ScrollView className="mx-3 w-auto" showsVerticalScrollIndicator={false}>
       {cancelledRequests.map((request) => (
         <ServiceTicket
           key={request.id}
-          serviceName={request.serviceType}
-          serviceSubtitle={request.serviceDetails}
-          date={request.dateRequested}
-          status="cancelled"
-          cancelledBy={request.cancelledBy}
+          fullRequest={request}
+          status={request.status}
         />
       ))}
     </ScrollView>

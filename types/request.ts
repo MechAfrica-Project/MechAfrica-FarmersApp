@@ -1,29 +1,48 @@
 // types/request.ts
 import { ImageSourcePropType } from "react-native";
 
-export type RequestStatus = "sent" | "ongoing" | "completed" | "cancelled";
+export type StatusType = "Active" | "Inactive";
 
-export interface Asset {
+export type Asset = {
+  id: string;
   machineType: string;
-  machineName: string;
-  status: "Active" | "Inactive";
-  farmerName: string;
-  task: string;
-  dateLeft: string;
-  image: ImageSourcePropType;
-}
+  workerName: string;
+  providerName: string;
+  status: StatusType;
+  image?: ImageSourcePropType;
+  currentTask?: {
+    assignedToRequest: string;
+    farmerName: string;
+    task: string;
+    dateLeft: string;
+  };
+  lastTask?: {
+    requestId: string;
+    farmerName: string;
+    task: string;
+    completedDate: string;
+  };
+};
 
-export interface Request {
-  id: number;
-  serviceType: string;
+export type RequestStatus = "pending" | "ongoing" | "completed" | "cancelled";
+
+export type Request = {
+  id: string;
+  serviceId: string;
+  serviceTitle: string;
   serviceDetails: string;
-  farmLocation?: string; // optional for cancelled or sent requests
-  providerName?: string; // optional for cancelled/sent
-  dateRequested: string; // always required
-  dateCompleted?: string; // only for completed
-  status: RequestStatus; // ongoing/completed/cancelled/sent
-  cancelledBy?: "admin" | "provider"| "farmer"; // only for cancelled
-  progress?: number; // only for ongoing
-  daysLeft?: number; // only for ongoing
-  asset?: Asset; // only if a machine is involved
-}
+  serviceImage?: ImageSourcePropType;
+  farmerName: string;
+  farmLocation: string;
+  providerName: string;
+  startDateTime: string;
+  endDateTime: string;
+  status: RequestStatus;
+  progress?: number;
+  daysLeft?: number;
+  cancelledBy?: string;
+  crop?: string;
+  messageFromFarmer?: string;
+  voiceNoteUrl?: string | null;
+  asset?: Asset;
+};

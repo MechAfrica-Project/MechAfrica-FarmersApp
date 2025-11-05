@@ -1,24 +1,17 @@
-import { ScrollView } from "react-native";
-import React from "react";
-import { sampleRequests } from "@/dummy-data/dummy_data";
+import { useRequestsStore } from "@/stores/requestsStore";
 import { Request } from "@/types/request";
+import React from "react";
+import { ScrollView } from "react-native";
 import ServiceTicket from "./ServiceTicket";
 
 const SentRequests = () => {
-  // Filter only ongoing requests
-  const SentRequests: Request[] = sampleRequests.filter(
-    (req) => req.status === "sent"
-  );
+  const getByStatus = useRequestsStore((s) => s.getByStatus);
+  // Filter only pending requests (formerly "sent")
+  const sentRequests: Request[] = getByStatus("pending");
   return (
     <ScrollView className="mx-3 w-auto" showsVerticalScrollIndicator={false}>
-      {SentRequests.map((request) => (
-        <ServiceTicket
-          key={request.id}
-          serviceName={request.serviceType}
-          serviceSubtitle={request.serviceDetails}
-          date={request.dateCompleted ?? request.dateRequested}
-          status="sent"
-        />
+      {sentRequests.map((request) => (
+        <ServiceTicket key={request.id} fullRequest={request} status={request.status} />
       ))}
     </ScrollView>
   );

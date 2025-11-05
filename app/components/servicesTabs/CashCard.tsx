@@ -14,7 +14,7 @@ const CashCard = () => {
           <View className="">
             <Text className="text-accent-yellow font-mulish font-bold text-base">
               Total Spent
-            </Text>{" "}
+            </Text>
             <Text className="text-white font-mulish font-bold text-2xl">
               ₵10,000.54
             </Text>
