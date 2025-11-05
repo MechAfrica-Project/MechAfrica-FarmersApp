@@ -51,13 +51,14 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
 
   const handlePress = () => {
     let path:
+      | "/components/requests/screens/RequestDetailsScreen"
       | "/components/requests/screens/OngoingDetailsScreen"
       | "/components/requests/screens/CompletedDetailsScreen"
       | "/components/requests/screens/CancelledDetailsScreen";
 
     switch (status) {
       case "pending":
-        path = "/components/requests/screens/OngoingDetailsScreen";
+        path = "/components/requests/screens/RequestDetailsScreen";
         break;
       case "ongoing":
         path = "/components/requests/screens/OngoingDetailsScreen";
@@ -164,7 +165,9 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
         {status === "completed" && (
           <View>
             <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-gray-500 font-mulish">Completion Date:</Text>
+              <Text className="text-gray-500 font-mulish">
+                Completion Date:
+              </Text>
               <Text className="text-gray-900 font-extrabold font-mulish">
                 {fullRequest.endDateTime}
               </Text>
