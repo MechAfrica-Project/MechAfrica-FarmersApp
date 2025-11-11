@@ -71,9 +71,8 @@ const FarmInfoStep = () => {
           label="Farm Size"
           placeholder="1.2"
           icon="ruler"
-          value={farmInfo?.farmSizeRaw ?? farmInfo?.farmSize?.toString() ?? ""}
+          value={farmInfo?.farmSizeRaw ?? ""}
           onChange={(text) => {
-            // Store both raw and parsed values
             const parsed = parseFloat(text);
             updateData({
               farmInfo: {
@@ -82,7 +81,8 @@ const FarmInfoStep = () => {
               },
             });
           }}
-          keyboardType="decimal-pad" // allows decimals
+          keyboardType="decimal-pad"
+          allowDecimal={true} 
           focused={focused}
           setFocused={setFocused}
           fieldKey="farmSize"

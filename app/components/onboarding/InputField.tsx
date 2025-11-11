@@ -72,13 +72,24 @@ export default function InputField({
           className="flex-1 py-1 text-gray-900 ml-3"
           placeholder={placeholder}
           value={value}
-          onChangeText={onChange}
+          onChangeText={(text) => {
+            if (allowDecimal) {
+              // Only allow numbers and one decimal
+              const clean = text.replace(/[^0-9.]/g, ""); // remove invalid chars
+              const parts = clean.split(".");
+              const newValue =
+                parts.length <= 1
+                  ? parts[0]
+                  : parts[0] + "." + parts.slice(1).join(""); // ignore extra decimals
+              onChange(newValue);
+            } else {
+              onChange(text);
+            }
+          }}
           onFocus={() => setFocused(fieldKey)}
           onBlur={() => setFocused(null)}
           keyboardType={getKeyboardType()}
-          // Prevent auto-correction for numbers
           autoCorrect={false}
-          // For decimal pad, allow smooth typing of "." on iOS
           contextMenuHidden={allowDecimal}
         />
       </View>
