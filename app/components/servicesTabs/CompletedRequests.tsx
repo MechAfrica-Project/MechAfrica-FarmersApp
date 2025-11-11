@@ -22,7 +22,7 @@ const CompletedRequests: React.FC = () => {
       }}
       showsVerticalScrollIndicator={false}
     >
-      <CashCard />
+      {/* <CashCard /> */}
 
       {completedRequests.length > 0 ? (
         completedRequests.map((request) => (
