@@ -7,14 +7,14 @@ import SelectModal from "@/app/components/general/SelectModal";
 export type PhoneValue = {
   raw: string;
   formatted?: string;
-  country: string; // ISO code
+  country: string; 
   valid: boolean;
 };
 
 type PhoneInputProps = {
   label?: string;
   countryCode?: Country["code"];
-  value?: PhoneValue; // 👈 preload old value
+  value?: PhoneValue;
   onChange: (value: PhoneValue) => void;
 };
 
@@ -90,7 +90,7 @@ export default function PhoneInput({
         <Text className="text-red-500 mt-1">Invalid phone number</Text>
       )}
       {isValid === true && (
-        <Text className="text-green-500 mt-1">✅ Valid number</Text>
+        <Text className="text-green-500 mt-1">Valid number</Text>
       )}
 
       <SelectModal

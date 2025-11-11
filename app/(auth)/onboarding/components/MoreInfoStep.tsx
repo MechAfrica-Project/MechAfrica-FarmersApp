@@ -1,5 +1,5 @@
 import React, { useEffect, useReducer } from "react";
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import GenderSelect from "@/app/components/onboarding/GenderSelector";
 import DOBPicker from "@/app/components/onboarding/DOBSelect";

@@ -11,6 +11,7 @@ const FarmInfoStep = () => {
 
   const [focused, setFocused] = useState<string | null>(null);
 
+  // Toggle crop selection logic
   const toggleCrop = (crop: string) => {
     let current = farmInfo?.cropTypes || [];
 
@@ -40,54 +41,62 @@ const FarmInfoStep = () => {
       current = [...current, "All Crops"];
     }
 
-    updateData({ farmInfo: { cropTypes: current } });
+    updateData({ farmInfo: { ...farmInfo, cropTypes: current } });
   };
 
   return (
     <ScrollView
-      className="flex-1 px-6 pt-4"
+      className="flex-1 px-6 pt-4 bg-white"
       contentContainerStyle={{ paddingBottom: 40 }}
       keyboardShouldPersistTaps="handled"
     >
       {/* Farm Name */}
       <InputField
         label="Farm Name"
-        placeholder="ie. Kwame Mintah Farms"
+        placeholder="e.g. Kwame Mintah Farms"
         icon="leaf"
         value={farmInfo?.farmName || ""}
-        onChange={(text) => updateData({ farmInfo: { farmName: text } })}
+        onChange={(text) =>
+          updateData({ farmInfo: { ...farmInfo, farmName: text } })
+        }
         required
         focused={focused}
         setFocused={setFocused}
         fieldKey="farmName"
       />
 
-      {/* Farm Size (in acres only) */}
-      <View className="mt-4">
+      {/* Farm Size */}
+      <View className="mt-5 relative">
         <InputField
           label="Farm Size"
           placeholder="1.2"
           icon="ruler"
-          value={farmInfo?.farmSize?.toString() || ""}
+          value={farmInfo?.farmSizeRaw ?? ""}
           onChange={(text) => {
             const parsed = parseFloat(text);
             updateData({
-              farmInfo: { farmSize: isNaN(parsed) ? undefined : parsed },
+              farmInfo: {
+                farmSizeRaw: text,
+                farmSize: isNaN(parsed) ? undefined : parsed,
+              },
             });
           }}
-          keyboardType="numeric"
+          keyboardType="decimal-pad"
+          allowDecimal={true} 
           focused={focused}
           setFocused={setFocused}
           fieldKey="farmSize"
           required
         />
-        {/* Fixed Unit Label */}
-        <Text className="absolute text-gray-500 bottom-10 right-3">Acre</Text>
+
+        <Text className="absolute right-3 bottom-10 text-gray-500 font-medium">
+          Acre
+        </Text>
       </View>
 
       {/* Crop Types */}
-      <View className="mt-6">
-        <Text className="text-sm font-semibold text-gray-700 mb-2">
+      <View className="mt-8">
+        <Text className="text-base font-semibold text-gray-800 mb-3">
           Crop Type
         </Text>
         <View className="flex-row flex-wrap">
@@ -97,21 +106,19 @@ const FarmInfoStep = () => {
               <TouchableOpacity
                 key={crop}
                 onPress={() => toggleCrop(crop)}
-                className={`flex-row items-center px-4 py-2 mr-2 mb-2 rounded-full border ${
-                  selected
-                    ? "bg-green-100 border-green-600"
-                    : "bg-white border-gray-300"
+                activeOpacity={0.8}
+                className={`flex-row items-center px-4 py-2 mr-2 mb-2 rounded-full ${
+                  selected ? "bg-green-700" : "bg-gray-100"
                 }`}
               >
                 <Sprout
                   size={14}
-                  className={`mr-1 ${
-                    selected ? "text-green-700" : "text-gray-400"
-                  }`}
+                  color={selected ? "#fff" : "#4B5563"} // Tailwind gray-600
+                  className="mr-1"
                 />
                 <Text
-                  className={`text-sm ${
-                    selected ? "text-green-800 font-semibold" : "text-gray-700"
+                  className={`text-sm font-semibold ${
+                    selected ? "text-white" : "text-gray-800"
                   }`}
                 >
                   {crop}

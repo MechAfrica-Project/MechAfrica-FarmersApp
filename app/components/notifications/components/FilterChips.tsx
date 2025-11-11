@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 
-type FilterType = "all" | "request" | "payment" | "system";
+type FilterType = "all" | "request" | "system";
 
 type Props = {
   active: FilterType;
@@ -9,18 +9,25 @@ type Props = {
 };
 
 const FilterChips: React.FC<Props> = ({ active, onChange }) => {
-  const keys: FilterType[] = ["all", "request", "payment", "system"];
+  const keys: FilterType[] = ["all", "request", "system"];
   return (
-    <View className="flex-row gap-2 mb-3">
+    <View className="flex-row flex-wrap gap-2 mb-3">
       {keys.map((key) => {
         const isActive = active === key;
         return (
           <TouchableOpacity
             key={key}
             onPress={() => onChange(key)}
-            className={`px-4 py-2 rounded-full ${isActive ? "bg-green-900" : "bg-gray-100"}`}
+            className={`px-4 py-2 rounded-full ${
+              isActive ? "bg-green-700" : "bg-gray-100"
+            }`}
+            activeOpacity={0.8}
           >
-            <Text className={`${isActive ? "text-white" : "text-gray-800"} font-semibold capitalize`}>
+            <Text
+              className={`${
+                isActive ? "text-white" : "text-gray-800"
+              } font-semibold capitalize`}
+            >
               {key}
             </Text>
           </TouchableOpacity>
@@ -31,5 +38,3 @@ const FilterChips: React.FC<Props> = ({ active, onChange }) => {
 };
 
 export default FilterChips;
-
-

@@ -28,7 +28,7 @@ export default function SelectModal({
       <TouchableOpacity
         activeOpacity={1}
         className="absolute inset-0 bg-black/20 justify-center"
-        onPress={onClose} // dismiss when background is clicked
+        onPress={onClose} 
       >
         {/* Modal content */}
         <View className="bg-white rounded-xl mx-6 max-h-[70%] p-4" pointerEvents="box-none">
