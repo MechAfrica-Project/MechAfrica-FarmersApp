@@ -5,7 +5,7 @@ export type NotificationItem = {
   title: string;
   body: string;
   time: string;
-  type: "request" | "system" | "payment";
+  type: "request" | "system";
   read: boolean;
 };
 
@@ -46,7 +46,7 @@ const seed: NotificationItem[] = [
     title: "Payment processed",
     body: "₵850.00 has been deducted for your completed Ripping service at Adenta Block A.",
     time: "2h ago",
-    type: "payment",
+    type: "request",
     read: false,
   },
   {
@@ -54,7 +54,7 @@ const seed: NotificationItem[] = [
     title: "Request completed",
     body: "Your Harrowing request at Fumesua has been marked as completed.",
     time: "Yesterday",
-    type: "request",
+    type: "system",
     read: true,
   },
   {

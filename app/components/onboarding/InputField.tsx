@@ -6,7 +6,7 @@ import { Leaf, Ruler } from "lucide-react-native";
 type InputFieldProps = {
   label: string;
   placeholder: string;
-  icon: keyof typeof Feather.glyphMap | "leaf" | "ruler"; // ✅ allow Lucide names
+  icon: keyof typeof Feather.glyphMap | "leaf" | "ruler";
   value: string;
   onChange: (text: string) => void;
   required?: boolean;
@@ -15,7 +15,8 @@ type InputFieldProps = {
   setFocused: (field: string | null) => void;
   fieldKey: string;
   error?: boolean;
-  keyboardType?: KeyboardTypeOptions; // ✅ add this
+  keyboardType?: KeyboardTypeOptions;
+  allowDecimal?: boolean; // NEW: optional flag for decimal input
 };
 
 export default function InputField({
@@ -30,7 +31,8 @@ export default function InputField({
   setFocused,
   fieldKey,
   error,
-  keyboardType = "default", // ✅ fallback to default
+  keyboardType = "default",
+  allowDecimal = false,
 }: InputFieldProps) {
   const renderIcon = () => {
     if (icon === "leaf") {
@@ -42,12 +44,19 @@ export default function InputField({
     return <Feather name={icon} size={20} color={error ? "red" : "#6B7280"} />;
   };
 
+  // Determine keyboard type dynamically
+  const getKeyboardType = () => {
+    if (allowDecimal) return "decimal-pad";
+    return keyboardType;
+  };
+
   return (
     <View className="mb-6">
       <Text className="text-md font-mulish text-gray-600 mb-2">
         {label} {required && <Text className="text-red-500">*</Text>}
         {optional && <Text className="text-gray-400">(optional)</Text>}
       </Text>
+
       <View
         className={`flex flex-row items-center rounded-xl px-3 py-3 border
           ${
@@ -66,9 +75,14 @@ export default function InputField({
           onChangeText={onChange}
           onFocus={() => setFocused(fieldKey)}
           onBlur={() => setFocused(null)}
-          keyboardType={keyboardType} // ✅ apply prop
+          keyboardType={getKeyboardType()}
+          // Prevent auto-correction for numbers
+          autoCorrect={false}
+          // For decimal pad, allow smooth typing of "." on iOS
+          contextMenuHidden={allowDecimal}
         />
       </View>
+
       {error && (
         <Text className="text-red-500 text-sm mt-1">{label} is required</Text>
       )}

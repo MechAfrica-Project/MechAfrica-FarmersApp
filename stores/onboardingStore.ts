@@ -22,7 +22,12 @@ export type OnboardingData = {
     latitude: number;
     longitude: number;
   };
-  farmInfo: { farmName?: string; farmSize?: number; cropTypes?: string[] };
+  farmInfo: {
+    farmName?: string;
+    farmSize?: number;
+    farmSizeRaw?: string; // keep the user's typed string
+    cropTypes?: string[];
+  };
 };
 
 type ValidateResult = { valid: boolean; message?: string };
@@ -69,7 +74,7 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
     return out;
   };
 
-  // ✅ match the actual number of steps you validate (0–6)
+  // match the actual number of steps you validate (0–6)
   const TOTAL = 7;
 
   const validate = (stepIndex: number): ValidateResult => {
@@ -84,7 +89,7 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
       case 1: // Personal Info
         if (!data.personalInfo?.name || data.personalInfo.name.trim() === "")
           return { valid: false, message: "Please enter your full name." };
-        // ✅ make "otherNames" optional
+        // make "otherNames" optional
         if (!data.personalInfo?.phone?.valid)
           return {
             valid: false,
@@ -122,15 +127,19 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
         return { valid: true };
 
       case 6: // Farm Info
-        if (!data.farmInfo?.farmName || data.farmInfo.farmName.trim() === "")
+        if (!data.farmInfo?.farmName?.trim())
           return { valid: false, message: "Please enter your business name." };
-        if (!data.farmInfo?.farmSize || data.farmInfo.farmSize <= 0)
+
+        const farmSize = data.farmInfo.farmSize;
+        if (!farmSize || farmSize <= 0)
           return { valid: false, message: "Please enter a valid farm size." };
+
         if (!data.farmInfo?.cropTypes || data.farmInfo.cropTypes.length === 0)
           return {
             valid: false,
             message: "Please select at least one crop type.",
           };
+
         return { valid: true };
 
       default:

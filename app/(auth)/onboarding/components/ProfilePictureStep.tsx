@@ -1,16 +1,35 @@
-// steps/ProfilePictureStep.tsx
 import React from "react";
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity, Image, Dimensions } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function ProfilePictureStep() {
   const { data, updateData } = useOnboardingStore();
+  const screenWidth = Dimensions.get("window").width;
 
+  // 📸 Take a new photo using the camera
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      alert("Camera permission is required to take photos.");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ["images"], // ✅ updated syntax
+      quality: 0.7,
+    });
+
+    if (!result.canceled && result.assets?.length) {
+      updateData({ profilePicture: result.assets[0].uri });
+    }
+  };
+
+  // 🖼️ Pick an existing image from the gallery
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       quality: 0.7,
     });
 
@@ -21,18 +40,25 @@ export default function ProfilePictureStep() {
 
   return (
     <View className="flex-1 items-center justify-center px-5">
-
       {/* Glow wrapper */}
-      <View className="w-[18rem] h-[18rem] rounded-full mt-10 bg-yellow-100/40 items-center justify-center mb-6">
+      <View
+        style={{ width: screenWidth * 0.7, height: screenWidth * 0.7 }}
+        className="rounded-full bg-yellow-100/40 items-center justify-center mb-6 mt-10"
+      >
         {/* Circular Upload Area */}
         <TouchableOpacity
           onPress={pickImage}
-          className="w-[17rem] h-[17rem] rounded-full border-[0.7rem] border-white bg-gray-100 items-center justify-center"
+          style={{
+            width: screenWidth * 0.65,
+            height: screenWidth * 0.65,
+          }}
+          className="rounded-full border-[6px] border-white bg-gray-100 items-center justify-center overflow-hidden"
         >
           {data.profilePicture ? (
             <Image
               source={{ uri: data.profilePicture }}
               className="w-full h-full rounded-full"
+              resizeMode="cover"
             />
           ) : (
             <Ionicons name="image-outline" size={48} color="#666" />
@@ -41,14 +67,16 @@ export default function ProfilePictureStep() {
       </View>
 
       {/* Buttons Row */}
-      <View className="flex-row gap-5 mt-4">
+      <View className="flex-row items-center gap-5 mt-4">
+        {/* Camera Button */}
         <TouchableOpacity
-          onPress={pickImage}
+          onPress={takePhoto}
           className="w-12 h-12 rounded-xl bg-black items-center justify-center"
         >
           <Ionicons name="camera-outline" size={24} color="#fff" />
         </TouchableOpacity>
 
+        {/* Upload Button */}
         <TouchableOpacity
           onPress={pickImage}
           className="px-5 py-3 rounded-lg border bg-white"
