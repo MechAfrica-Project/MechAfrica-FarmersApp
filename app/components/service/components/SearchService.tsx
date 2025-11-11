@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { FlatList } from "react-native";
+import { FlatList, View } from "react-native";
 import ServiceCard from "../../general/ServiceCard";
 
 interface Service {
@@ -37,8 +37,8 @@ const SearchService: React.FC<SearchServiceProps> = ({ filteredServices }) => {
         />
       )}
       numColumns={2}
-      columnWrapperStyle={{ justifyContent: "space-around" }}
-      contentContainerStyle={{ paddingBottom: 20 }}
+      columnWrapperStyle={{ justifyContent: "space-between", paddingHorizontal: 10 }}
+      contentContainerStyle={{ paddingBottom: 20, paddingTop: 10 }}
       showsVerticalScrollIndicator={false}
     />
   );
