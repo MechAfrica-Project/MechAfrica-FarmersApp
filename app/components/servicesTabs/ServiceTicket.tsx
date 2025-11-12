@@ -10,6 +10,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
+import { formatDate } from "../../../utils/formatDate";
 
 interface ServiceTicketProps {
   fullRequest: Request;
@@ -32,19 +33,6 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
   const smallFontSize = SCREEN_WIDTH < 360 ? 10 : 12;
   const spacing = SCREEN_WIDTH < 360 ? 6 : 10;
   const progressHeight = SCREEN_WIDTH < 360 ? 6 : 10;
-
-  // Format ISO date to readable string
-  const formatDate = (isoDate: string) => {
-    const date = new Date(isoDate);
-    return date.toLocaleString("en-US", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
 
   const getHeaderLabel = () => {
     switch (status) {

@@ -7,7 +7,7 @@ import SelectModal from "@/app/components/general/SelectModal";
 export type PhoneValue = {
   raw: string;
   formatted?: string;
-  country: string; 
+  country: string;
   valid: boolean;
 };
 
@@ -74,7 +74,6 @@ export default function PhoneInput({
           className="flex-row items-center mr-2"
         >
           <Text className="text-xl mr-1">{selectedCountry.flag}</Text>
-          <Text className="text-xl">{selectedCountry.dialCode}</Text>
         </TouchableOpacity>
 
         <TextInput
