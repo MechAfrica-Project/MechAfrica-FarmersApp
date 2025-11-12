@@ -117,8 +117,8 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
       case 5: // Farm Location
         if (
           !data.farmLocation ||
-          !data.farmLocation.latitude ||
-          !data.farmLocation.longitude
+          data.farmLocation.latitude == null ||
+          data.farmLocation.longitude == null
         )
           return {
             valid: false,

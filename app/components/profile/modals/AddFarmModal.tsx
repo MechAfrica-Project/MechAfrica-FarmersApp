@@ -6,14 +6,16 @@ import {
   Pressable,
   ScrollView,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
-import { MapPin, Sprout } from "lucide-react-native";
+import { Sprout, MapPin } from "lucide-react-native";
 import { cropOptions } from "@/constants/cropOptions";
 import {
   getAllRegions,
   getDistrictsByRegion,
 } from "@/constants/ghana-regions-districts";
-import { useFarmerStore } from "@/stores/farmerStore";
+import { useFarmerStore, Farm } from "@/stores/farmerStore";
 import SelectModal from "@/app/components/general/SelectModal";
 import InputField from "../../onboarding/InputField";
 
@@ -23,7 +25,7 @@ type AddFarmModalProps = {
 };
 
 const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
-  const { addFarm } = useFarmerStore();
+  const { addFarm, farms } = useFarmerStore();
 
   const [farmName, setFarmName] = useState("");
   const [farmSize, setFarmSize] = useState("");
@@ -34,11 +36,10 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
   const [regionModal, setRegionModal] = useState(false);
   const [districtModal, setDistrictModal] = useState(false);
 
-  const toggleCrop = (crop: string) => {
+  const toggleCrop = (crop: string) =>
     setCropTypes((prev) =>
       prev.includes(crop) ? prev.filter((c) => c !== crop) : [...prev, crop]
     );
-  };
 
   const handleSave = () => {
     if (
@@ -48,23 +49,39 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
       !district ||
       cropTypes.length === 0
     ) {
-      alert("Please fill all fields");
+      alert("Please fill in all fields.");
       return;
     }
 
-    addFarm({
+    // Prevent duplicating onboarding farm
+    const exists = farms.some(
+      (f) =>
+        f.farmName.toLowerCase() === farmName.toLowerCase() &&
+        f.region === region &&
+        f.district === district
+    );
+    if (exists) {
+      alert("A farm with the same name, region, and district already exists.");
+      return;
+    }
+
+    const newFarm: Omit<Farm, "id"> = {
       farmName,
       farmSize: parseFloat(farmSize),
       region,
       district,
       cropTypes,
-    });
-    onClose();
+    };
+
+    addFarm(newFarm);
+
+    // Reset modal fields
     setFarmName("");
     setFarmSize("");
     setRegion("");
     setDistrict("");
     setCropTypes([]);
+    onClose();
   };
 
   const regions = getAllRegions().map((r) => ({
@@ -83,15 +100,23 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <View className="flex-1 bg-black/40 justify-center px-6">
-        <View className="bg-white rounded-2xl p-6 max-h-[90%]">
-          <ScrollView>
-            <Text className="text-lg font-bold mb-4">Add New Farm</Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        className="flex-1 justify-center bg-black/40 px-6"
+      >
+        <View className="bg-white rounded-2xl p-6 max-h-[90%] shadow-xl">
+          <Text className="text-xl font-bold mb-6 text-gray-900">
+            Add New Farm
+          </Text>
 
+          <ScrollView
+            contentContainerStyle={{ paddingBottom: 30 }}
+            keyboardShouldPersistTaps="handled"
+          >
             {/* Farm Name */}
             <InputField
               label="Farm Name"
-              placeholder="eg. Adom Farms"
+              placeholder="e.g., Adom Farms"
               icon="leaf"
               value={farmName}
               onChange={setFarmName}
@@ -102,25 +127,37 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
             />
 
             {/* Farm Size */}
-            <InputField
-              label="Farm Size (acres)"
-              placeholder="2.5"
-              icon="ruler"
-              value={farmSize}
-              onChange={setFarmSize}
-              keyboardType="numeric"
-              fieldKey="farmSize"
-              required
-              focused={focused}
-              setFocused={setFocused}
-            />
+            <View className="mt-5 relative">
+              <InputField
+                label="Farm Size (acres)"
+                placeholder="2.5"
+                icon="ruler"
+                value={farmSize}
+                onChange={setFarmSize}
+                keyboardType="decimal-pad"
+                allowDecimal
+                fieldKey="farmSize"
+                required
+                focused={focused}
+                setFocused={setFocused}
+              />
+              <Text className="absolute right-3 bottom-10 text-gray-500 font-medium">
+                Acre
+              </Text>
+            </View>
 
             {/* Region */}
-            <Pressable onPress={() => setRegionModal(true)} className="mt-4">
-              <Text className="font-medium">Region</Text>
-              <Text className="border p-3 rounded-lg text-gray-700">
-                {region || "Select Region"}
-              </Text>
+            <Pressable onPress={() => setRegionModal(true)} className="mt-5">
+              <Text className="text-sm font-semibold mb-1">Region</Text>
+              <View className="border p-3 rounded-lg bg-gray-50">
+                <Text
+                  className={`text-gray-700 ${
+                    region ? "font-medium" : "text-gray-400"
+                  }`}
+                >
+                  {region || "Select Region"}
+                </Text>
+              </View>
             </Pressable>
 
             {/* District */}
@@ -129,15 +166,23 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
               disabled={!region}
               className="mt-4"
             >
-              <Text className="font-medium">District</Text>
-              <Text className="border p-3 rounded-lg text-gray-700">
-                {district || "Select District"}
-              </Text>
+              <Text className="text-sm font-semibold mb-1">District</Text>
+              <View className="border p-3 rounded-lg bg-gray-50">
+                <Text
+                  className={`text-gray-700 ${
+                    district ? "font-medium" : "text-gray-400"
+                  }`}
+                >
+                  {district || "Select District"}
+                </Text>
+              </View>
             </Pressable>
 
             {/* Crop Types */}
             <View className="mt-6">
-              <Text className="font-semibold mb-2">Crop Types</Text>
+              <Text className="text-base font-semibold text-gray-800 mb-3">
+                Crop Types
+              </Text>
               <View className="flex-row flex-wrap">
                 {cropOptions.map((crop) => {
                   const selected = cropTypes.includes(crop);
@@ -145,28 +190,23 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
                     <TouchableOpacity
                       key={crop}
                       onPress={() => toggleCrop(crop)}
-                      className={`px-3 py-2 mr-2 mb-2 rounded-full border ${
-                        selected
-                          ? "bg-green-100 border-green-600"
-                          : "bg-white border-gray-300"
+                      activeOpacity={0.8}
+                      className={`flex-row items-center px-4 py-2 mr-2 mb-2 rounded-full ${
+                        selected ? "bg-green-700" : "bg-gray-100"
                       }`}
                     >
-                      <View className="flex-row items-center">
-                        <Sprout
-                          size={14}
-                          color={selected ? "green" : "gray"}
-                          className="mr-1"
-                        />
-                        <Text
-                          className={`text-sm ${
-                            selected
-                              ? "text-green-800 font-semibold"
-                              : "text-gray-700"
-                          }`}
-                        >
-                          {crop}
-                        </Text>
-                      </View>
+                      <Sprout
+                        size={14}
+                        color={selected ? "#fff" : "#4B5563"}
+                        className="mr-1"
+                      />
+                      <Text
+                        className={`text-sm font-semibold ${
+                          selected ? "text-white" : "text-gray-800"
+                        }`}
+                      >
+                        {crop}
+                      </Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -175,9 +215,9 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
           </ScrollView>
 
           {/* Actions */}
-          <View className="flex-row justify-end mt-4">
-            <Pressable onPress={onClose} className="mr-3 px-4 py-2">
-              <Text className="text-gray-600">Cancel</Text>
+          <View className="flex-row justify-end mt-6">
+            <Pressable onPress={onClose} className="mr-3 px-4 py-2 rounded-lg">
+              <Text className="text-gray-600 font-medium">Cancel</Text>
             </Pressable>
             <Pressable
               onPress={handleSave}
@@ -187,7 +227,7 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
             </Pressable>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
 
       {/* Region Modal */}
       <SelectModal

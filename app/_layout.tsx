@@ -1,21 +1,15 @@
-// app/_layout.tsx or app/(whatever)/RootLayout.tsx (the file you pasted)
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { View } from "react-native";
 import "./globals.css";
 import { useAuthStore } from "@/stores/authStore";
-// import GlobalLoader from "@/app/components/general/GlobalLoader"; // <- REMOVE
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const restoreSession = useAuthStore((s) => s.restoreSession);
-
-  useEffect(() => {
-    restoreSession(); // check token on app launch
-  }, []);
 
   const [fontsLoaded] = useFonts({
     MulishRegular: require("../assets/fonts/Mulish-Regular.ttf"),
@@ -24,18 +18,20 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
+    restoreSession();
+  }, []);
+
+  const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
-      SplashScreen.hideAsync();
+      await SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
 
-  if (!fontsLoaded) return <View style={{ flex: 1 }} />;
+  if (!fontsLoaded) return null;
 
   return (
-    <>
+    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <Stack screenOptions={{ headerShown: false }} />
-      {/* GlobalLoader removed so no overlay at startup.
-          You can mount GlobalLoader inside specific screens when you need it. */}
-    </>
+    </View>
   );
 }
