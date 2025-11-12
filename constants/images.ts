@@ -17,6 +17,8 @@ import coins from "@/assets/images/coins.png";
 import halfBg from "@/assets/images/half-bg.png";
 import tractor1 from "@/assets/images/tractor1.png";
 import tractor2 from "@/assets/images/tractor2.png";
+import farmField from "@/assets/images/farmField.png";
+
 export const images = {
   welcomeBg,
   mechafrica,
@@ -37,4 +39,5 @@ export const images = {
   halfBg,
   tractor1,
   tractor2,
+  farmField
 };

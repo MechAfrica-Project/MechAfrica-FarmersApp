@@ -1,4 +1,3 @@
-// components/profile/modals/TermsModal.tsx
 import React, { useState } from "react";
 import {
   Modal,
@@ -38,6 +37,11 @@ const sections = [
     title: "License and Site Access",
     content:
       "We grant you a limited license to access and make personal use of this website. You are not allowed to download or modify it without written consent from us.",
+  },
+  {
+    title: "Off-Platform Transactions",
+    content:
+      "If users engage service providers off the platform, bypassing app requests, they take full responsibility for outcomes. The company is not liable for any off-platform deals, payments, or issues.",
   },
 ];
 
@@ -136,11 +140,10 @@ const TermsModal = ({ visible, onClose }: Props) => {
               <View className="flex-row gap-4 mt-4">
                 <TouchableOpacity
                   onPress={() => {
-                    // Mark current step done, move next
                     if (activeIndex < sections.length - 1) {
-                      setActiveIndex((prev) => prev + 1);
+                      setActiveIndex(prev => prev + 1);
                     } else {
-                      onClose(); // finished all
+                      onClose();
                     }
                   }}
                   className="flex-1 bg-green-600 py-3 rounded-xl items-center justify-center"

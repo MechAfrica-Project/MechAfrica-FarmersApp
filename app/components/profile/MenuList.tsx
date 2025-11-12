@@ -1,4 +1,3 @@
-// components/profile/MenuList.tsx
 import React, { useState } from "react";
 import { View } from "react-native";
 import { useRouter, type Href } from "expo-router";
@@ -15,11 +14,36 @@ type MenuItemType =
   | { icon: string; label: string; type: "modal"; modalKey: ModalKey };
 
 const menuItems: MenuItemType[] = [
-  { icon: "person-outline", label: "Account", type: "modal", modalKey: "account" },
-  { icon: "globe-outline", label: "Farms", type: "route", route: "/components/profile/profilePages/farms" },
-  { icon: "shield-checkmark-outline", label: "Security", type: "route", route: "/components/profile/profilePages/security" },
-  { icon: "document-text-outline", label: "Terms & Conditions", type: "modal", modalKey: "terms" },
-  { icon: "chatbubble-ellipses-outline", label: "Contact Agent", type: "modal", modalKey: "contact" },
+  {
+    icon: "person-outline",
+    label: "Account",
+    type: "modal",
+    modalKey: "account",
+  },
+  {
+    icon: "globe-outline",
+    label: "Farms",
+    type: "route",
+    route: "/components/profile/profilePages/farms",
+  },
+  {
+    icon: "shield-checkmark-outline",
+    label: "Security",
+    type: "route",
+    route: "/components/profile/profilePages/security",
+  },
+  {
+    icon: "document-text-outline",
+    label: "Terms & Conditions",
+    type: "modal",
+    modalKey: "terms",
+  },
+  {
+    icon: "chatbubble-ellipses-outline",
+    label: "Contact Agent",
+    type: "modal",
+    modalKey: "contact",
+  },
 ];
 
 const MenuList = () => {
@@ -31,7 +55,6 @@ const MenuList = () => {
     await logout();
   };
 
-  // ✅ Modal registry
   const modalRegistry: Record<ModalKey, React.ReactNode> = {
     account: (
       <AccountEditModal
@@ -54,7 +77,7 @@ const MenuList = () => {
   };
 
   return (
-    <View className="mt-8 px-4">
+    <View className="mt-8 w-full px-5 sm:px-8 md:px-10">
       {menuItems.map((item, index) => (
         <MenuItem
           key={index}
@@ -70,7 +93,6 @@ const MenuList = () => {
         />
       ))}
 
-      {/* Logout separately styled */}
       <MenuItem
         icon="log-out-outline"
         label="Logout"
@@ -78,7 +100,6 @@ const MenuList = () => {
         onPress={handleLogout}
       />
 
-      {/* ✅ Render only the active modal */}
       {activeModal && modalRegistry[activeModal]}
     </View>
   );

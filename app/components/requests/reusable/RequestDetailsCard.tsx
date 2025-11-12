@@ -1,10 +1,18 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  Linking,
+} from "react-native";
 import MultiToneBackground from "../../general/MultiToneBackground";
 import BackButton from "../../general/BackButton";
 import FarmerDetails from "./FarmerDetails";
 import MessageFromFarmer from "./MessageFromFarmer";
 import RequestProgressBar from "../../general/RequestProgressBar";
+import { Phone } from "lucide-react-native";
 
 interface RequestDetailsCardProps {
   request: any;
@@ -23,10 +31,11 @@ const RequestDetailsCard: React.FC<RequestDetailsCardProps> = ({
   onDelete,
   onComplete,
 }) => {
+  const providerPhone = request?.providerPhone; // <-- dynamically fetched when provider accepts
+
   const renderActionButtons = () => {
     if (!showActions) return null;
 
-    // 🟡 Pending — farmer can only cancel
     if (type === "pending") {
       return (
         <TouchableOpacity
@@ -40,21 +49,35 @@ const RequestDetailsCard: React.FC<RequestDetailsCardProps> = ({
       );
     }
 
-    // 🟢 Ongoing — show Mark as Complete
     if (type === "ongoing") {
       return (
-        <TouchableOpacity
-          onPress={onComplete}
-          className="bg-[#388E3C] py-3 my-12 rounded-full items-center"
-        >
-          <Text className="text-white font-semibold text-lg">
-            Mark as Complete
-          </Text>
-        </TouchableOpacity>
+        <View className="my-12 space-y-5">
+          {/* ✅ Call Provider button */}
+          {providerPhone && (
+            <TouchableOpacity
+              onPress={() => Linking.openURL(`tel:${providerPhone}`)}
+              className="bg-[#16a34a] py-3 mb-3 rounded-full flex-row items-center justify-center gap-2"
+            >
+              <Phone size={20} color="white" />
+              <Text className="text-white font-semibold text-lg">
+                Call Provider
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* ✅ Mark as Complete */}
+          <TouchableOpacity
+            onPress={onComplete}
+            className="bg-[#388E3C] py-3 rounded-full items-center"
+          >
+            <Text className="text-white font-semibold text-lg">
+              Mark as Complete
+            </Text>
+          </TouchableOpacity>
+        </View>
       );
     }
 
-    // 🔴 Completed / Cancelled — allow delete
     if (type === "completed" || type === "cancelled") {
       return (
         <TouchableOpacity
@@ -84,7 +107,6 @@ const RequestDetailsCard: React.FC<RequestDetailsCardProps> = ({
           />
         )}
 
-        {/* Show Progress Bar for ongoing and completed tasks */}
         {(type === "ongoing" || type === "completed") && (
           <RequestProgressBar
             progress={type === "completed" ? 1 : request?.progress ?? 0}
@@ -92,12 +114,8 @@ const RequestDetailsCard: React.FC<RequestDetailsCardProps> = ({
           />
         )}
 
-        {/* Farmer Details */}
         <FarmerDetails service={request} />
-
-        {/* Farmer Message */}
         <MessageFromFarmer request={request} />
-
         {renderActionButtons()}
       </ScrollView>
     </MultiToneBackground>

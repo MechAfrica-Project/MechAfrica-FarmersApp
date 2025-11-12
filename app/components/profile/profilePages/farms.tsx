@@ -1,22 +1,64 @@
-import { View, Text, SectionList, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  SectionList,
+  Pressable,
+  Image,
+  LayoutAnimation,
+  Platform,
+  UIManager,
+  ActivityIndicator,
+} from "react-native";
 import React, { useState, useEffect } from "react";
 import { useFarmerStore } from "@/stores/farmerStore";
 import AddFarmModal from "../modals/AddFarmModal";
-import { ChevronDown, ChevronRight, Plus } from "lucide-react-native";
+import {
+  ChevronDown,
+  ChevronRight,
+  PlusCircle,
+  MapPin,
+  Trash2,
+} from "lucide-react-native";
+import { images } from "@/constants/images";
+
+// Enable LayoutAnimation on Android
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const Farms = () => {
-  const { farms, fetchProfile, loading, error } = useFarmerStore();
+  const { farms, fetchProfile, loading, error, removeFarm } = useFarmerStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [expandedDistricts, setExpandedDistricts] = useState<
     Record<string, boolean>
   >({});
 
-  // ✅ Fetch farms on mount
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
 
-  // Group farms by Region -> District
+  useEffect(() => {
+    const onboardingFarm = farms.find((f) => f.id === "onboarding-farm");
+    if (onboardingFarm) {
+      setExpandedDistricts((prev) => ({
+        ...prev,
+        [onboardingFarm.district]: true,
+      }));
+    }
+  }, [farms]);
+
+  const toggleDistrict = (district: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedDistricts((prev) => ({
+      ...prev,
+      [district]: !prev[district],
+    }));
+  };
+
+  // Group farms by region -> district
   const groupedData = farms.reduce((acc: any[], farm) => {
     const regionIdx = acc.findIndex((r) => r.title === farm.region);
     if (regionIdx === -1) {
@@ -38,32 +80,21 @@ const Farms = () => {
     return acc;
   }, []);
 
-  const toggleDistrict = (district: string) => {
-    setExpandedDistricts((prev) => ({
-      ...prev,
-      [district]: !prev[district],
-    }));
-  };
-
   return (
-    <View className="flex-1 mt-12 px-4 bg-gray-50">
+    <View className="flex-1 bg-gray-50 pt-12 px-4">
       {/* Header */}
       <View className="flex-row justify-between items-center mb-6">
         <Text className="text-2xl font-bold text-gray-900">My Farms</Text>
         <Pressable
           onPress={() => setModalVisible(true)}
-          className="flex-row items-center bg-green-600 px-4 py-2 rounded-lg shadow-sm"
+          className="flex-row items-center bg-green-600 px-4 py-2 rounded-xl shadow-md"
         >
-          <Plus size={18} color="white" />
+          <PlusCircle size={20} color="white" />
           <Text className="text-white font-semibold ml-2">Add Farm</Text>
         </Pressable>
       </View>
 
-      {/* Loading/Error states */}
-      {loading && <Text className="text-gray-500 italic">Loading farms...</Text>}
-      {error && <Text className="text-red-500">{error}</Text>}
-
-      {/* Grouped List */}
+      {/* Sectioned List */}
       <SectionList
         sections={groupedData}
         keyExtractor={(item, index) => item.district + index}
@@ -82,34 +113,67 @@ const Farms = () => {
                 className="flex-row items-center py-2 px-2 rounded-md bg-gray-100"
               >
                 {isExpanded ? (
-                  <ChevronDown size={18} color="#374151" />
+                  <ChevronDown size={20} color="#047857" />
                 ) : (
-                  <ChevronRight size={18} color="#374151" />
+                  <ChevronRight size={20} color="#047857" />
                 )}
+                <MapPin size={18} color="#047857" className="ml-2" />
                 <Text className="ml-2 font-semibold text-gray-800">
-                  📍 {item.district}
+                  {item.district}
                 </Text>
               </Pressable>
 
-              {/* Farms under district */}
+              {/* Farms */}
               {isExpanded &&
                 item.farms.map((farm: any) => (
                   <View
                     key={farm.id}
-                    className="border border-gray-200 rounded-lg p-4 mt-2 bg-white shadow-sm ml-6"
+                    className="bg-white rounded-xl shadow-lg mt-4 ml-6 mr-2 overflow-hidden"
                   >
-                    <Text className="font-bold text-lg text-gray-900">
-                      {farm.farmName}
-                    </Text>
-                    <Text className="text-gray-700 text-sm">
-                      {farm.farmSize} acres
-                    </Text>
-                    <Text className="text-gray-600 text-sm mt-1">
-                      Crops:{" "}
-                      {farm.cropTypes.length > 0
-                        ? farm.cropTypes.join(", ")
-                        : "None"}
-                    </Text>
+                    <Image
+                      source={images.farmField}
+                      className="w-full h-32"
+                      resizeMode="cover"
+                    />
+                    <View className="absolute top-0 left-0 w-full h-32 bg-black/5 rounded-t-xl" />
+                    <View className="p-4 flex-row justify-between items-start">
+                      <View className="flex-1">
+                        <Text className="text-lg font-bold text-gray-900">
+                          {farm.farmName}
+                        </Text>
+                        <Text className="text-gray-600 mt-1">
+                          {farm.farmSize} acres
+                        </Text>
+                        <View className="flex-row flex-wrap mt-2">
+                          {farm.cropTypes.length > 0 ? (
+                            farm.cropTypes.map((crop: string) => (
+                              <View
+                                key={crop}
+                                className="bg-green-100 px-2 py-1 mr-2 mb-1 rounded-full"
+                              >
+                                <Text className="text-xs text-green-800">
+                                  {crop}
+                                </Text>
+                              </View>
+                            ))
+                          ) : (
+                            <Text className="text-gray-500 text-sm mt-1">
+                              No crops
+                            </Text>
+                          )}
+                        </View>
+                      </View>
+
+                      {/* Delete Farm */}
+                      {farm.id !== "onboarding-farm" && (
+                        <Pressable
+                          onPress={() => removeFarm(farm.id)}
+                          className="p-2 rounded-full bg-red-50 ml-2 self-start"
+                        >
+                          <Trash2 size={20} color="#DC2626" />
+                        </Pressable>
+                      )}
+                    </View>
                   </View>
                 ))}
             </View>
@@ -122,6 +186,16 @@ const Farms = () => {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
       />
+
+      {/* ✅ Global Fullscreen Loader Overlay */}
+      {loading && (
+        <View className="absolute inset-0 flex items-center justify-center bg-black/40 z-50">
+          <ActivityIndicator size="large" color="#10B981" />
+          <Text className="text-white mt-3 font-medium">
+            Loading farms...
+          </Text>
+        </View>
+      )}
     </View>
   );
 };

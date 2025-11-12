@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+} from "react-native";
 import SentRequests from "../components/servicesTabs/SentRequests";
 import OnGoingRequests from "../components/servicesTabs/OnGoingRequests";
 import CompletedRequests from "../components/servicesTabs/CompletedRequests";
@@ -11,6 +16,15 @@ const tabs: TabType[] = ["Sent", "On-going", "Completed", "Cancelled"];
 
 const Requests = () => {
   const [activeTab, setActiveTab] = useState<TabType>("Sent");
+  const { width: SCREEN_WIDTH } = useWindowDimensions();
+
+  // Dynamic scaling
+  const padding = SCREEN_WIDTH < 360 ? 8 : 12;
+  const tabPaddingHorizontal = SCREEN_WIDTH < 360 ? 10 : 16;
+  const tabPaddingVertical = SCREEN_WIDTH < 360 ? 6 : 12;
+  const fontSize = SCREEN_WIDTH < 360 ? 12 : 14;
+  const tabSpacing = SCREEN_WIDTH < 360 ? 6 : 12;
+  const topPadding = SCREEN_WIDTH < 360 ? 60 : 80;
 
   const renderContent = () => {
     switch (activeTab) {
@@ -28,9 +42,22 @@ const Requests = () => {
   };
 
   return (
-    <View className="flex-1 bg-white p-2 pt-[4rem]">
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "#ffffff",
+        padding,
+        paddingTop: topPadding,
+      }}
+    >
       {/* Tabs */}
-      <View className="flex-row gap-2 justify-around mb-6">
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-around",
+          marginBottom: tabSpacing,
+        }}
+      >
         {tabs.map((tab) => {
           const isActive = activeTab === tab;
           return (
@@ -38,14 +65,22 @@ const Requests = () => {
               key={tab}
               activeOpacity={1}
               onPress={() => setActiveTab(tab)}
-              className={`px-4 py-3 rounded-2xl ${
-                isActive ? "bg-primary-green " : "border border-gray-300"
-              }`}
+              style={{
+                paddingHorizontal: tabPaddingHorizontal,
+                paddingVertical: tabPaddingVertical,
+                borderRadius: 24,
+                backgroundColor: isActive ? "#059669" : "#ffffff",
+                borderWidth: isActive ? 0 : 1,
+                borderColor: "#d1d5db",
+              }}
             >
               <Text
-                className={`font-mulish ${
-                  isActive ? "text-white font-semibold" : "text-gray-700"
-                }`}
+                style={{
+                  fontFamily: "Mulish",
+                  fontSize,
+                  color: isActive ? "#ffffff" : "#374151",
+                  fontWeight: isActive ? "600" : "400",
+                }}
               >
                 {tab}
               </Text>
@@ -55,7 +90,7 @@ const Requests = () => {
       </View>
 
       {/* Tab content */}
-      <View className="flex-1">{renderContent()}</View>
+      <View style={{ flex: 1 }}>{renderContent()}</View>
     </View>
   );
 };

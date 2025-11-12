@@ -2,8 +2,15 @@ import { images } from "@/constants/images";
 import { Request, RequestStatus } from "@/types/request";
 import { useRouter } from "expo-router";
 import React from "react";
-import { ImageBackground, Text, TouchableOpacity, View } from "react-native";
+import {
+  ImageBackground,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import * as Animatable from "react-native-animatable";
+import { formatDate } from "../../../utils/formatDate";
 
 interface ServiceTicketProps {
   fullRequest: Request;
@@ -19,6 +26,13 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
   onComplete,
 }) => {
   const router = useRouter();
+  const { width: SCREEN_WIDTH } = useWindowDimensions();
+
+  // Scale values based on screen width
+  const fontSize = SCREEN_WIDTH < 360 ? 12 : 14;
+  const smallFontSize = SCREEN_WIDTH < 360 ? 10 : 12;
+  const spacing = SCREEN_WIDTH < 360 ? 6 : 10;
+  const progressHeight = SCREEN_WIDTH < 360 ? 6 : 10;
 
   const getHeaderLabel = () => {
     switch (status) {
@@ -87,19 +101,28 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
         className="w-full relative rounded-xl overflow-hidden p-4 my-2"
       >
         {/* Header */}
-        <View className="mb-10">
+        <View style={{ marginBottom: spacing * 2 }}>
           <View className="flex-row justify-between items-center">
-            <Text className="text-gray-700 font-mulish font-semibold">
+            <Text
+              className="text-gray-700 font-mulish font-semibold"
+              style={{ fontSize }}
+            >
               Service name
             </Text>
             <View className={`${getHeaderStyle()} px-3 py-1 rounded-full`}>
-              <Text className="text-white font-mulish text-sm font-semibold">
+              <Text
+                className="text-white font-mulish font-semibold"
+                style={{ fontSize: smallFontSize }}
+              >
                 {getHeaderLabel()}
               </Text>
             </View>
           </View>
 
-          <Text className="text-green-800 font-extrabold text-base mt-2">
+          <Text
+            className="text-green-800 font-extrabold mt-2"
+            style={{ fontSize }}
+          >
             {fullRequest.serviceTitle}
             <Text className="text-gray-700 font-normal">
               {" "}
@@ -108,79 +131,103 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
           </Text>
         </View>
 
-        {/* Pending Section */}
+        {/* Pending */}
         {status === "pending" && (
-          <View>
-            <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-gray-500 font-mulish">Date requested:</Text>
-              <Text className="text-gray-900 font-semibold font-mulish">
-                {fullRequest.startDateTime}
-              </Text>
-            </View>
-
+          <View className="flex-row justify-between items-center my-3">
+            <Text className="text-gray-500 font-mulish" style={{ fontSize }}>
+              Date requested:
+            </Text>
+            <Text
+              className="text-gray-900 font-semibold font-mulish"
+              style={{ fontSize }}
+            >
+              {formatDate(fullRequest.startDateTime)}
+            </Text>
             {onCancel && (
               <TouchableOpacity
                 onPress={onCancel}
-                className="absolute p-1 px-2 bg-red-500 rounded-full flex-row bottom-9 right-0 self-start"
+                className="absolute p-1 mb-3 px-2 bg-red-500 rounded-full"
+                style={{ bottom: spacing, right: spacing }}
               >
-                <Text className="text-white font-mulish">cancel</Text>
+                <Text
+                  className="text-white font-mulish"
+                  style={{ fontSize: smallFontSize }}
+                >
+                  Cancel
+                </Text>
               </TouchableOpacity>
             )}
           </View>
         )}
 
-        {/* Ongoing Section */}
+        {/* Ongoing */}
         {status === "ongoing" && (
-          <View>
+          <View >
             <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-gray-500 font-mulish">Days left:</Text>
-              <Text className="text-gray-900 font-extrabold font-mulish">
+              <Text className="text-gray-500 font-mulish" style={{ fontSize }}>
+                Days left:
+              </Text>
+              <Text
+                className="text-gray-900 font-extrabold font-mulish"
+                style={{ fontSize }}
+              >
                 {fullRequest.daysLeft} Days left
               </Text>
             </View>
 
-            <View className="bg-yellow-400 rounded-lg h-2 w-full overflow-hidden">
+            <View
+              className="bg-yellow-400 rounded-lg w-full overflow-hidden mb-2"
+              style={{ height: progressHeight }}
+            >
               <View
                 style={{
                   width: `${Math.min(fullRequest.progress ?? 0, 1) * 100}%`,
-                  height: 10,
-                  borderRadius: 10,
+                  height: progressHeight,
+                  borderRadius: progressHeight,
                   backgroundColor: "#065f46",
                 }}
               />
             </View>
 
             {onComplete && (
-              <TouchableOpacity
-                onPress={onComplete}
-                className="self-end mt-3 px-3 py-1 bg-green-700 rounded-full"
-              >
-                <Text className="text-white font-mulish">Mark complete</Text>
+              <TouchableOpacity className="self-end mt-3 px-3 py-1 bg-green-700 rounded-full">
+                <Text
+                  className="text-white font-mulish"
+                  style={{ fontSize: smallFontSize }}
+                >
+                  Mark complete
+                </Text>
               </TouchableOpacity>
             )}
           </View>
         )}
 
-        {/* Completed Section */}
+        {/* Completed */}
         {status === "completed" && (
-          <View>
+          <View style={{ marginTop: spacing }}>
             <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-gray-500 font-mulish">
+              <Text className="text-gray-500 font-mulish" style={{ fontSize }}>
                 Completion Date:
               </Text>
-              <Text className="text-gray-900 font-extrabold font-mulish">
-                {fullRequest.endDateTime}
+              <Text
+                className="text-gray-900 font-extrabold font-mulish"
+                style={{ fontSize }}
+              >
+                {formatDate(fullRequest.endDateTime)}
               </Text>
             </View>
 
-            <View className="bg-yellow-400 rounded-lg h-2 w-full overflow-hidden">
+            <View
+              className="bg-yellow-400 rounded-lg w-full overflow-hidden"
+              style={{ height: progressHeight }}
+            >
               <Animatable.View
                 animation={{ 0: { width: "0%" }, 1: { width: "100%" } }}
                 duration={800}
                 useNativeDriver={false}
                 style={{
-                  height: 10,
-                  borderRadius: 10,
+                  height: progressHeight,
+                  borderRadius: progressHeight,
                   backgroundColor: "#facc15",
                 }}
               />
@@ -188,12 +235,17 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
           </View>
         )}
 
-        {/* Cancelled Section */}
+        {/* Cancelled */}
         {status === "cancelled" && (
-          <View className="flex-row justify-between items-center">
-            <Text className="text-gray-500">Date requested:</Text>
-            <Text className="text-gray-900 font-extrabold font-mulish">
-              {fullRequest.startDateTime}
+          <View className="flex-row justify-between items-center mt-2">
+            <Text className="text-gray-500 font-mulish" style={{ fontSize }}>
+              Date requested:
+            </Text>
+            <Text
+              className="text-gray-900 font-extrabold font-mulish"
+              style={{ fontSize }}
+            >
+              {formatDate(fullRequest.startDateTime)}
             </Text>
           </View>
         )}
