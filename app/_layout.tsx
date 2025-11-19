@@ -1,3 +1,4 @@
+import RouterStateOverlay from "@/app/components/general/RouterStateOverlay";
 import { useAuthStore } from "@/stores/authStore";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
@@ -32,6 +33,7 @@ export default function RootLayout() {
   return (
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <Stack screenOptions={{ headerShown: false }} />
+      <RouterStateOverlay />
     </View>
   );
 }

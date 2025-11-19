@@ -1,10 +1,11 @@
 // stores/authStore.ts
-import { create } from "zustand";
-import * as SecureStore from "expo-secure-store";
-import { setAuthToken } from "@/lib/api";
-import { router } from "expo-router";
 import { PhoneValue } from "@/app/(auth)/login/components/PhoneInput";
+import { setAuthToken } from "@/lib/api";
+import useDebugStore from "@/stores/debugStore";
 import { useOnboardingStore } from "@/stores/onboardingStore";
+import { router } from "expo-router";
+import * as SecureStore from "expo-secure-store";
+import { create } from "zustand";
 
 interface User {
   id: string;
@@ -24,7 +25,7 @@ interface AuthState {
   setPhone: (val: PhoneValue) => void;
   sendPhone: () => Promise<void>;
   verifyOtp: (code: string) => Promise<boolean>;
-  logout: () => Promise<void>;
+  logout: (mode?: "dev" | "prod") => Promise<void>;
   restoreSession: () => Promise<void>;
 }
 
@@ -92,11 +93,49 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  logout: async () => {
-    await SecureStore.deleteItemAsync("token");
+  logout: async (mode: "dev" | "prod" = "prod") => {
+    // Remove persisted token first
+    try {
+      await SecureStore.deleteItemAsync("token");
+    } catch {}
     setAuthToken(null);
     set({ user: null, token: null });
-    router.replace("/(auth)/login/signIn");
+
+    if (mode === "dev") {
+      // Dev: show sign-in and capture router state to debug store
+      try {
+        router.replace("/(auth)/login/signIn");
+      } catch {
+        try {
+          router.replace("/");
+          router.push("/(auth)/login/signIn");
+        } catch {
+          try {
+            router.replace("/(auth)/login/signIn");
+          } catch {}
+        }
+      }
+
+      try {
+         
+        const anyRouter: any = router as any;
+        const maybeGetState = anyRouter.getState || anyRouter.getRootState || anyRouter.getInitialState;
+        const state = typeof maybeGetState === "function" ? maybeGetState() : undefined;
+        useDebugStore.getState().setLastRouterState(state ?? { note: "router.getState() unavailable" });
+         
+        console.debug("logout(dev): captured router state", state);
+      } catch {}
+    } else {
+      // Prod: conservative navigation to sign-in and index as previous route
+      try {
+        router.replace("/");
+        router.push("/(auth)/login/signIn");
+      } catch {
+        try {
+          router.replace("/(auth)/login/signIn");
+        } catch {}
+      }
+    }
   },
 
   restoreSession: async () => {
