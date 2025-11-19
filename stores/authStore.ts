@@ -1,6 +1,6 @@
 // stores/authStore.ts
 import { PhoneValue } from "@/app/(auth)/login/components/PhoneInput";
-import { setAuthToken } from "@/lib/api";
+import { apiFetch, setAuthToken } from "@/lib/api";
 import useDebugStore from "@/stores/debugStore";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import { router } from "expo-router";
@@ -45,12 +45,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return;
     }
 
-    // ⛔️ Skipping backend for now
-    // await apiFetch("/auth/send-otp", { ... });
+    set({ loading: true, error: null });
+    try {
+      await apiFetch<{ ok: boolean }>("/auth/send-otp", {
+        method: "POST",
+        body: JSON.stringify({ phone: phone?.raw, country: phone?.country }),
+      });
 
-    // ✅ Simulate sending OTP
-    set({ loading: false });
-    router.push("/(auth)/login/verifyPhone");
+      // If API succeeded, navigate to verify screen
+      set({ loading: false });
+      router.push("/(auth)/login/verifyPhone");
+    } catch (err: any) {
+      set({ loading: false, error: err?.message ?? "Failed to send code" });
+    }
   },
 
   verifyOtp: async (code) => {
@@ -59,32 +66,28 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { phone } = get();
       if (!phone?.valid) throw new Error("No valid phone set");
 
-      // ⛔ Skipping backend for now
-      // const data = await apiFetch<LoginResponse>("/auth/verify-otp", { ... });
+      // Call backend to verify OTP and receive token + user
+      const data = await apiFetch<{ token: string; user?: User }>(
+        "/auth/verify-otp",
+        {
+          method: "POST",
+          body: JSON.stringify({ phone: phone.raw, code }),
+        }
+      );
 
-      // ✅ Ensure onboarding is loaded from storage
-      const onboardingStore = useOnboardingStore.getState();
-      await onboardingStore.loadFromStorage();
-      const onboarding = onboardingStore.data;
-
-      if (!onboarding.personalInfo?.name) {
-        set({ error: "No onboarding data found", loading: false });
-        return false;
+      if (!data || !data.token) {
+        throw new Error("Invalid verification response");
       }
 
-      const fakeUser: User = {
-        id: Date.now().toString(),
-        name: onboarding.personalInfo.name,
-        phone: onboarding.personalInfo.phone?.raw,
-        avatar: onboarding.profilePicture,
-      };
+      // Persist token and update fetch wrapper
+      await SecureStore.setItemAsync("token", data.token);
+      setAuthToken(data.token);
 
-      const fakeToken = "local-token-" + fakeUser.id;
+      // Ensure onboarding store is loaded (some flows rely on it)
+      const onboardingStore = useOnboardingStore.getState();
+      await onboardingStore.loadFromStorage();
 
-      await SecureStore.setItemAsync("token", fakeToken);
-      setAuthToken(fakeToken);
-
-      set({ user: fakeUser, token: fakeToken, loading: false });
+      set({ user: data.user ?? null, token: data.token, loading: false });
       router.replace("/(tabs)");
       return true;
     } catch (err: any) {

@@ -1,11 +1,13 @@
-import React from "react";
-import { View, Text, TouchableOpacity, Image, Dimensions } from "react-native";
-import * as ImagePicker from "expo-image-picker";
+import { uploadFile } from "@/lib/api";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import React, { useState } from "react";
+import { Dimensions, Image, Text, TouchableOpacity, View } from "react-native";
 
 export default function ProfilePictureStep() {
   const { data, updateData } = useOnboardingStore();
+  const [uploading, setUploading] = useState(false);
   const screenWidth = Dimensions.get("window").width;
 
   // 📸 Take a new photo using the camera
@@ -22,7 +24,26 @@ export default function ProfilePictureStep() {
     });
 
     if (!result.canceled && result.assets?.length) {
-      updateData({ profilePicture: result.assets[0].uri });
+      const uri = result.assets[0].uri;
+      // Optimistically set local URI so UI updates immediately
+      updateData({ profilePicture: uri });
+
+      // Try to upload and replace with remote URL when available
+      (async () => {
+        try {
+          setUploading(true);
+          const resp: any = await uploadFile("/uploads", { uri });
+          // Expect response like { url: 'https://...' }
+          if (resp && (resp.url || resp.location)) {
+            updateData({ profilePicture: resp.url ?? resp.location });
+          }
+        } catch (err) {
+          // keep local URI on failure
+          console.warn("upload failed", err);
+        } finally {
+          setUploading(false);
+        }
+      })();
     }
   };
 
@@ -82,7 +103,7 @@ export default function ProfilePictureStep() {
           className="px-5 py-3 rounded-lg border bg-white"
         >
           <Text className="text-sm font-semibold text-black">
-            Upload Picture
+            {uploading ? "Uploading..." : "Upload Picture"}
           </Text>
         </TouchableOpacity>
       </View>
