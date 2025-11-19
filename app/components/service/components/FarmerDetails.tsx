@@ -1,8 +1,8 @@
-import React, { useReducer, useState } from "react";
-import { View, Text, Pressable, ScrollView, Dimensions, Platform } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { useFarmerStore } from "@/stores/farmerStore";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { ChevronDown, ChevronUp } from "lucide-react-native";
+import React, { useReducer, useState } from "react";
+import { Dimensions, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
 const { height } = Dimensions.get("window");
 

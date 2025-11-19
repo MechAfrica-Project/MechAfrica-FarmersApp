@@ -1,9 +1,9 @@
+import { useServiceFlowStore } from "@/stores/serviceFlowStore";
+import { useVoiceStore } from "@/stores/voiceStore";
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder, useAudioRecorderState } from "expo-audio";
 import React, { useEffect } from "react";
 import { Alert, Text, TextInput, View } from "react-native";
 import VoiceRecorderButton from "../../general/VoiceRecorderButton";
-import { useServiceFlowStore } from "@/stores/serviceFlowStore";
-import { useVoiceStore } from "@/stores/voiceStore";
 
 const MessageToProvider = () => {
   const message = useServiceFlowStore((s) => s.draft.message || "");

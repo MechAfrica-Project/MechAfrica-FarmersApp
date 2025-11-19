@@ -1,22 +1,22 @@
 import { servicesData } from "@/constants/servicesData";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFarmerStore } from "@/stores/farmerStore";
+import { useRequestsStore } from "@/stores/requestsStore";
+import { useServiceFlowStore } from "@/stores/serviceFlowStore";
+import { useRouter } from "expo-router";
 import React from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import {
-  Image,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-  Dimensions,
+    Dimensions,
+    Image,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import BackButton from "../general/BackButton";
 import MultiToneBackground from "../general/MultiToneBackground";
 import FarmerDetails from "./components/FarmerDetails";
 import MessageToProvider from "./components/MessageToProvider";
-import { useServiceFlowStore } from "@/stores/serviceFlowStore";
-import { useRequestsStore } from "@/stores/requestsStore";
-import { useFarmerStore } from "@/stores/farmerStore";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 

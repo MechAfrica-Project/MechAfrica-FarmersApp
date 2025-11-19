@@ -1,6 +1,6 @@
 import { servicesData } from "@/constants/servicesData";
-import React from "react";
 import { useUIStore } from "@/stores/uiStore";
+import React from "react";
 import { FlatList } from "react-native";
 import MultiToneBackground from "../components/general/MultiToneBackground";
 import SearchService from "../components/service/components/SearchService";

@@ -1,8 +1,8 @@
-import React from "react";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import ServiceDateTimePicker from "./components/ServiceDateTimePicker";
 import { servicesData } from "@/constants/servicesData";
 import { useServiceFlowStore } from "@/stores/serviceFlowStore";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React from "react";
+import ServiceDateTimePicker from "./components/ServiceDateTimePicker";
 
 const ServiceStart = () => {
   const router = useRouter();

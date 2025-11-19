@@ -1,26 +1,26 @@
-import {
-  View,
-  Text,
-  SectionList,
-  Pressable,
-  Image,
-  LayoutAnimation,
-  Platform,
-  UIManager,
-  ActivityIndicator,
-} from "react-native";
-import React, { useEffect, useState } from "react";
+import { images } from "@/constants/images";
 import { useFarmerStore } from "@/stores/farmerStore";
 import { useUIStore } from "@/stores/uiStore";
-import AddFarmModal from "../modals/AddFarmModal";
 import {
   ChevronDown,
   ChevronRight,
-  PlusCircle,
   MapPin,
+  PlusCircle,
   Trash2,
 } from "lucide-react-native";
-import { images } from "@/constants/images";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  LayoutAnimation,
+  Platform,
+  Pressable,
+  SectionList,
+  Text,
+  UIManager,
+  View,
+} from "react-native";
+import AddFarmModal from "../modals/AddFarmModal";
 
 // Enable LayoutAnimation on Android
 if (
