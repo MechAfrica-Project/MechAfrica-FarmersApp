@@ -1,12 +1,12 @@
+import { Mic } from "lucide-react-native";
 import React, { useEffect } from "react";
 import { TouchableOpacity, View } from "react-native";
-import { Mic } from "lucide-react-native";
 import Animated, {
-  useSharedValue,
   useAnimatedStyle,
+  useSharedValue,
+  withDelay,
   withRepeat,
   withTiming,
-  withDelay,
 } from "react-native-reanimated";
 
 // Props for Ripple

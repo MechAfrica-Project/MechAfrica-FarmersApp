@@ -1,15 +1,15 @@
+import { useOnboardingStore } from "@/stores/onboardingStore";
+import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import React, { useEffect } from "react";
 import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
   Dimensions,
+  Image,
   Platform,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useOnboardingStore } from "@/stores/onboardingStore";
-import * as ImagePicker from "expo-image-picker";
 
 const { width } = Dimensions.get("window");
 

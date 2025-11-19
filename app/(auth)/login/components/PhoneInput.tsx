@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TextInput } from "react-native";
 import { COUNTRIES, Country } from "@/constants/countries";
-import { parsePhoneNumberFromString, AsYouType } from "libphonenumber-js";
+import { AsYouType, parsePhoneNumberFromString } from "libphonenumber-js";
+import React, { useEffect, useState } from "react";
+import { Text, TextInput, View } from "react-native";
 
 export type PhoneValue = {
   raw: string;

@@ -1,9 +1,9 @@
-import React, { useReducer, useEffect } from "react";
-import { View, Text, TouchableOpacity, Platform } from "react-native";
-import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useOnboardingStore } from "@/stores/onboardingStore";
-import moment from "moment";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { Calendar } from "lucide-react-native";
+import moment from "moment";
+import React, { useEffect, useReducer } from "react";
+import { Platform, Text, TouchableOpacity, View } from "react-native";
 
 type State = {
   dob: Date | null;

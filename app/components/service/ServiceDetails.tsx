@@ -5,12 +5,12 @@ import { useServiceFlowStore } from "@/stores/serviceFlowStore";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-    Dimensions,
-    Image,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BackButton from "../general/BackButton";

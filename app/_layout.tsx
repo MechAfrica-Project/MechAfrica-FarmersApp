@@ -1,10 +1,10 @@
+import { useAuthStore } from "@/stores/authStore";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { View } from "react-native";
 import "./globals.css";
-import { useAuthStore } from "@/stores/authStore";
 
 SplashScreen.preventAutoHideAsync();
 
