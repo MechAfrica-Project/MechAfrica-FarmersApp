@@ -65,21 +65,41 @@ const DateTimeRow = ({ label, value, type, onPress }: any) => (
 
 const FarmerDetails = ({ service, startDate, endDate, initialFarm, initialCrop }: any) => {
   const { farms } = useFarmerStore();
+  const parseSafeDate = (s?: string) => {
+    if (!s) return new Date();
+    const d = new Date(s);
+    if (isNaN(d.getTime()) || d.getTime() === 0) return new Date();
+    return d;
+  };
+
   const initialFromProps = {
     selectedFarm: initialFarm ?? null,
     selectedCrop: initialCrop ?? null,
-    startDate: startDate ? new Date(startDate) : new Date(),
-    startTime: startDate ? new Date(startDate) : new Date(),
-    endDate: endDate ? new Date(endDate) : new Date(),
-    endTime: endDate ? new Date(endDate) : new Date(),
+    startDate: parseSafeDate(startDate),
+    startTime: parseSafeDate(startDate),
+    endDate: parseSafeDate(endDate),
+    endTime: parseSafeDate(endDate),
   };
 
   const [state, dispatch] = useReducer(reducer, initialFromProps);
   const [showPicker, setShowPicker] = useState<{ type: null | "startDate" | "startTime" | "endDate" | "endTime" }>({ type: null });
 
   const onChange = (event: any, selectedDate?: Date) => {
-    if (event.type === "dismissed") return setShowPicker({ type: null });
-    if (selectedDate && showPicker.type) dispatch({ type: `SET_${showPicker.type.toUpperCase()}`, payload: selectedDate });
+    // On iOS `event.type` may be undefined — rely on `selectedDate` when provided.
+    if (event?.type === "dismissed") return setShowPicker({ type: null });
+
+    if (selectedDate && showPicker.type) {
+      dispatch({ type: `SET_${showPicker.type.toUpperCase()}`, payload: selectedDate });
+    }
+
+    // Debug iOS picker events to help diagnose 'stuck' behaviour
+    if (__DEV__ && Platform.OS === "ios") {
+      try {
+        // eslint-disable-next-line no-console
+        console.debug("FarmerDetails:DateTimePicker:onChange", { event, selectedDate, showPicker });
+      } catch (err) {}
+    }
+
     if (Platform.OS === "android") setShowPicker({ type: null });
   };
 

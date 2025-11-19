@@ -48,6 +48,14 @@ const ServiceDateTimePicker: React.FC<ServiceDateTimePickerProps> = ({
       // Accept any provided `selected` value (safe) and only rely on `event.type`
       // for Android dismissal behaviour.
       if (selected) setter(selected);
+
+      // Debugging: log picker events on iOS so we can inspect stuck behaviour
+      if (__DEV__ && Platform.OS === "ios") {
+        try {
+          // eslint-disable-next-line no-console
+          console.debug("ServiceDateTimePicker:onChange", { event, selected });
+        } catch (err) {}
+      }
       // On Android we need to explicitly close the native picker after selection/dismiss
       if (Platform.OS === "android") close();
     };
