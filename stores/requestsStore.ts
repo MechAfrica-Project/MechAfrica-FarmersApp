@@ -1,4 +1,5 @@
 import { requestsData } from "@/dummy-data/dummy_data";
+import { apiFetch } from "@/lib/api";
 import { Request, RequestStatus } from "@/types/request";
 import { create } from "zustand";
 
@@ -77,11 +78,23 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
       }),
 
     deleteRequest: (id) =>
-      set((s) => {
-        const byId = { ...s.byId };
-        delete byId[id];
-        return { byId, listsByStatus: computeListsByStatus(byId) };
-      }),
+      async (id: string) => {
+        try {
+          await apiFetch(`/requests/${id}`, { method: "DELETE" });
+          set((s) => {
+            const byId = { ...s.byId };
+            delete byId[id];
+            return { byId, listsByStatus: computeListsByStatus(byId) };
+          });
+        } catch (err) {
+          // Fallback to local delete if API fails
+          set((s) => {
+            const byId = { ...s.byId };
+            delete byId[id];
+            return { byId, listsByStatus: computeListsByStatus(byId) };
+          });
+        }
+      },
 
     deleteCancelled: () =>
       set((s) => {
@@ -101,17 +114,37 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
         return { byId, listsByStatus: computeListsByStatus(byId) };
       }),
 
-    // Add a new request to the store (simulated)
-    addRequest: (req: Omit<Request, "id" | "status">) =>
-      set((s) => {
-        const id = Date.now().toString();
-        const newReq: Request = {
-          id,
-          ...req,
-          status: "pending",
-        } as Request;
-        const byId = { ...s.byId, [id]: newReq };
-        return { byId, listsByStatus: computeListsByStatus(byId) };
-      }),
+    // Add a new request to the store (tries backend, falls back locally)
+    addRequest: async (req: Omit<Request, "id" | "status">) => {
+      try {
+        const saved = await apiFetch<Request>("/requests", {
+          method: "POST",
+          body: JSON.stringify(req),
+        });
+        set((s) => ({ byId: { ...s.byId, [saved.id]: saved }, listsByStatus: computeListsByStatus({ ...s.byId, [saved.id]: saved }) }));
+      } catch (err) {
+        // Fallback: create local request id
+        set((s) => {
+          const id = Date.now().toString();
+          const newReq: Request = { id, ...req, status: "pending" } as Request;
+          const byId = { ...s.byId, [id]: newReq };
+          return { byId, listsByStatus: computeListsByStatus(byId) };
+        });
+      }
+    },
+
+    // Fetch requests from backend (merge into store); call this on app start or when needed
+    fetchRequests: async () => {
+      try {
+        const data = await apiFetch<{ requests: Request[] }>("/requests");
+        const byId: Record<string, Request> = {};
+        for (const r of data.requests || []) byId[r.id] = r;
+        // Merge with existing local items (local items keep priority if ids clash)
+        set((s) => ({ byId: { ...byId, ...s.byId }, listsByStatus: computeListsByStatus({ ...byId, ...s.byId }) }));
+      } catch (err) {
+        // keep local dummy data on failure
+        console.warn("fetchRequests failed, using local data", err);
+      }
+    },
   };
 });
