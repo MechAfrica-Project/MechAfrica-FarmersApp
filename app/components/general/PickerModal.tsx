@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, Modal, Pressable, Dimensions, Platform } from "react-native";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import React, { useEffect, useState } from "react";
+import { Dimensions, Modal, Pressable, Text, View } from "react-native";
 
 type PickerModalProps = {
   visible: boolean;

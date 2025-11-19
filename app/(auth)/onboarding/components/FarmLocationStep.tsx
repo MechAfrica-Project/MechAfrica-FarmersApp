@@ -1,9 +1,9 @@
-import { View, Text, Alert, TouchableOpacity, ActivityIndicator } from "react-native";
-import React, { useEffect, useReducer, useRef, useCallback, useState } from "react";
-import MapView, { Marker, Region } from "react-native-maps";
-import * as Location from "expo-location";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import { Ionicons } from "@expo/vector-icons";
+import * as Location from "expo-location";
+import React, { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
+import MapView, { Marker, Region } from "react-native-maps";
 
 type Coords = { latitude: number; longitude: number };
 
@@ -105,7 +105,7 @@ const FarmLocationStep = () => {
     if (!data.farmLocation) {
       preloadLocation(); // preload on mount
     }
-  }, []);
+  }, [data.farmLocation, preloadLocation]);
 
   return (
     <View className="flex-1 items-center justify-center px-6">

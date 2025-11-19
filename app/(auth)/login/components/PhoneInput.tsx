@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { COUNTRIES, Country } from "@/constants/countries";
-import { parsePhoneNumberFromString, AsYouType } from "libphonenumber-js";
-import SelectModal from "@/app/components/general/SelectModal";
+import { AsYouType, parsePhoneNumberFromString } from "libphonenumber-js";
+import React, { useEffect, useState } from "react";
+import { Text, TextInput, View } from "react-native";
 
 export type PhoneValue = {
   raw: string;
@@ -30,14 +29,13 @@ export default function PhoneInput({
       COUNTRIES[0]
   );
   const [isValid, setIsValid] = useState<boolean | null>(value?.valid ?? null);
-  const [modalVisible, setModalVisible] = useState(false);
 
   // 🔄 Sync with parent value if it changes
   useEffect(() => {
     if (value) {
       setPhone(value.formatted || "");
       setSelectedCountry(
-        COUNTRIES.find((c) => c.code === value.country) ?? selectedCountry
+        (prev) => COUNTRIES.find((c) => c.code === value.country) ?? prev
       );
       setIsValid(value.valid);
     }
@@ -69,12 +67,9 @@ export default function PhoneInput({
       {label && <Text className="mb-2 font-mulish">{label}</Text>}
 
       <View className="flex flex-row border border-gray-300 rounded-lg px-3 py-1">
-        <TouchableOpacity
-          onPress={() => setModalVisible(true)}
-          className="flex-row items-center mr-2"
-        >
+        <View className="flex-row items-center mr-2">
           <Text className="text-xl mr-1">{selectedCountry.flag}</Text>
-        </TouchableOpacity>
+        </View>
 
         <TextInput
           value={phone}
@@ -92,22 +87,7 @@ export default function PhoneInput({
         <Text className="text-green-500 mt-1">Valid number</Text>
       )}
 
-      <SelectModal
-        visible={modalVisible}
-        title="Select country"
-        options={COUNTRIES.map((c) => ({
-          label: `${c.flag} ${c.name} (${c.dialCode})`,
-          value: c.code,
-        }))}
-        onSelect={(code) => {
-          const country = COUNTRIES.find((c) => c.code === code)!;
-          setSelectedCountry(country);
-          setPhone("");
-          setIsValid(null);
-          setModalVisible(false);
-        }}
-        onClose={() => setModalVisible(false)}
-      />
+      {/* Country selection is disabled; only Ghana is supported */}
     </View>
   );
 }

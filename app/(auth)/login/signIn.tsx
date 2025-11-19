@@ -1,7 +1,8 @@
 // app/(auth)/login/signIn.tsx
 import PrimaryButton from "@/app/components/general/PrimaryButton";
 import { useAuthStore } from "@/stores/authStore";
-import React from "react";
+import { useNavigation } from "@react-navigation/native";
+import React, { useEffect } from "react";
 import { Text, View } from "react-native";
 import AuthLayout from "./components/AuthLayout";
 import PhoneInput from "./components/PhoneInput";
@@ -10,6 +11,16 @@ export default function SignIn() {
   const setPhone = useAuthStore((s) => s.setPhone);
   const sendPhone = useAuthStore((s) => s.sendPhone);
   const error = useAuthStore((s) => s.error);
+
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    // no-op: avoid intercepting navigation here to prevent interfering
+    // with router internals (previous attempts caused navigator errors
+    // in development). If needed, gesture disabling is handled in
+    // `app/(auth)/_layout.tsx`.
+    return () => {};
+  }, [navigation]);
 
   return (
     <AuthLayout

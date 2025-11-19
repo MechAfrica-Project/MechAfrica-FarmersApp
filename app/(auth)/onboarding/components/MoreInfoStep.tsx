@@ -1,8 +1,8 @@
+import DOBPicker from "@/app/components/onboarding/DOBSelect";
+import GenderSelect from "@/app/components/onboarding/GenderSelector";
+import { useOnboardingStore } from "@/stores/onboardingStore";
 import React, { useEffect, useReducer } from "react";
 import { View } from "react-native";
-import { useOnboardingStore } from "@/stores/onboardingStore";
-import GenderSelect from "@/app/components/onboarding/GenderSelector";
-import DOBPicker from "@/app/components/onboarding/DOBSelect";
 
 type State = {
   gender?: "Male" | "Female";
@@ -27,8 +27,10 @@ const MoreInfoStep = () => {
   );
 
   useEffect(() => {
+    // Only update store when gender actually changes to avoid loops
+    if (moreInfo.gender === state.gender) return;
     updateData({ moreInfo: { ...moreInfo, gender: state.gender } });
-  }, [state.gender]);
+  }, [state.gender, moreInfo, updateData]);
 
   return (
     <View className="px-4 py-6 gap-4">

@@ -1,15 +1,18 @@
 import { servicesData } from "@/constants/servicesData";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFarmerStore } from "@/stores/farmerStore";
+import { useRequestsStore } from "@/stores/requestsStore";
+import { useServiceFlowStore } from "@/stores/serviceFlowStore";
+import { useRouter } from "expo-router";
 import React from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import {
+  Dimensions,
   Image,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
-  Dimensions,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import BackButton from "../general/BackButton";
 import MultiToneBackground from "../general/MultiToneBackground";
 import FarmerDetails from "./components/FarmerDetails";
@@ -18,10 +21,11 @@ import MessageToProvider from "./components/MessageToProvider";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const ServiceDetails = () => {
-  const { id, startDate, startTime, endDate, endTime } = useLocalSearchParams();
   const router = useRouter();
-
-  const service = servicesData.find((s) => s.id === id);
+  const draft = useServiceFlowStore((s) => s.draft);
+  const service = servicesData.find((s) => s.id === draft.serviceId);
+  const farms = useFarmerStore((s) => s.farms);
+  const profile = useFarmerStore((s) => s.profile);
 
   return (
     <MultiToneBackground topColor="#FFF9D6" topHeight={200} mainColor="#FFFFFF">
@@ -50,10 +54,9 @@ const ServiceDetails = () => {
           {/* Farmer Details */}
           <FarmerDetails
             service={service}
-            startDate={startDate}
-            startTime={startTime}
-            endDate={endDate}
-            endTime={endTime}
+            startDate={draft.startDate}
+            endDate={draft.endDate}
+            initialFarm={farms[0]}
           />
 
           {/* Message to Provider */}
@@ -61,7 +64,35 @@ const ServiceDetails = () => {
 
           {/* Done Button */}
           <TouchableOpacity
-            onPress={() => router.replace("/(tabs)/requests")}
+            onPress={() => {
+              // assemble request from draft and small defaults
+              const farmerName = profile?.personalInfo?.name || "Farmer";
+              const farmLocation = (farms && farms[0] && farms[0].farmName) || "Unknown farm";
+
+              const newReq: any = {
+                serviceId: draft.serviceId || "",
+                serviceTitle: service?.title || "",
+                serviceDetails: service?.subtitle || "",
+                serviceImage: service?.image,
+                farmerName,
+                farmLocation,
+                providerName: "",
+                startDateTime: draft.startDate || new Date().toISOString(),
+                endDateTime: draft.endDate || new Date().toISOString(),
+                progress: 0,
+                daysLeft: undefined,
+                crop: farms?.[0]?.cropTypes?.[0],
+                messageFromFarmer: draft.message,
+                voiceNoteUrl: draft.attachments?.[0] ?? null,
+              };
+
+              // submit to requests store
+              (useRequestsStore.getState() as any).addRequest(newReq);
+
+              // clear flow and navigate
+              useServiceFlowStore.getState().clearDraft();
+              router.replace("/(tabs)/requests");
+            }}
             className="bg-teal-700 py-4 rounded-full items-center mt-8"
           >
             <Text className="text-white font-semibold text-lg">Done</Text>

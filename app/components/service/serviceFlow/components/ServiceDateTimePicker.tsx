@@ -1,17 +1,16 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Dimensions,
-  Platform,
-  Image,
-} from "react-native";
-import { CircleX } from "lucide-react-native";
+import PickerModal from "@/app/components/general/PickerModal";
 import { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
-import PickerModal from "@/app/components/general/PickerModal";
-import { images } from "@/constants/images";
+import { CircleX } from "lucide-react-native";
+import React, { useState } from "react";
+import {
+  Dimensions,
+  Image,
+  Platform,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -45,7 +44,19 @@ const ServiceDateTimePicker: React.FC<ServiceDateTimePickerProps> = ({
   const handleChange =
     (setter: React.Dispatch<React.SetStateAction<Date>>, close: () => void) =>
     (event: DateTimePickerEvent, selected?: Date) => {
-      if (event.type === "set" && selected) setter(selected);
+      // On iOS the `event.type` may be undefined but `selected` will be provided.
+      // Accept any provided `selected` value (safe) and only rely on `event.type`
+      // for Android dismissal behaviour.
+      if (selected) setter(selected);
+
+      // Debugging: log picker events on iOS so we can inspect stuck behaviour
+      if (__DEV__ && Platform.OS === "ios") {
+        try {
+          // eslint-disable-next-line no-console
+          console.debug("ServiceDateTimePicker:onChange", { event, selected });
+        } catch (err) {}
+      }
+      // On Android we need to explicitly close the native picker after selection/dismiss
       if (Platform.OS === "android") close();
     };
 

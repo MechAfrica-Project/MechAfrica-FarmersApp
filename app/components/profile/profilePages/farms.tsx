@@ -1,25 +1,26 @@
-import {
-  View,
-  Text,
-  SectionList,
-  Pressable,
-  Image,
-  LayoutAnimation,
-  Platform,
-  UIManager,
-  ActivityIndicator,
-} from "react-native";
-import React, { useState, useEffect } from "react";
+import { images } from "@/constants/images";
 import { useFarmerStore } from "@/stores/farmerStore";
-import AddFarmModal from "../modals/AddFarmModal";
+import { useUIStore } from "@/stores/uiStore";
 import {
   ChevronDown,
   ChevronRight,
-  PlusCircle,
   MapPin,
+  PlusCircle,
   Trash2,
 } from "lucide-react-native";
-import { images } from "@/constants/images";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  LayoutAnimation,
+  Platform,
+  Pressable,
+  SectionList,
+  Text,
+  UIManager,
+  View,
+} from "react-native";
+import AddFarmModal from "../modals/AddFarmModal";
 
 // Enable LayoutAnimation on Android
 if (
@@ -30,11 +31,10 @@ if (
 }
 
 const Farms = () => {
-  const { farms, fetchProfile, loading, error, removeFarm } = useFarmerStore();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [expandedDistricts, setExpandedDistricts] = useState<
-    Record<string, boolean>
-  >({});
+  const { farms, fetchProfile, loading, removeFarm } = useFarmerStore();
+  const modalVisible = useUIStore((s) => s.addFarmModalVisible);
+  const setModalVisible = useUIStore((s) => s.setAddFarmModalVisible);
+  const [expandedDistricts, setExpandedDistricts] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchProfile();
@@ -43,7 +43,7 @@ const Farms = () => {
   useEffect(() => {
     const onboardingFarm = farms.find((f) => f.id === "onboarding-farm");
     if (onboardingFarm) {
-      setExpandedDistricts((prev) => ({
+      setExpandedDistricts((prev: Record<string, boolean>) => ({
         ...prev,
         [onboardingFarm.district]: true,
       }));
@@ -52,7 +52,7 @@ const Farms = () => {
 
   const toggleDistrict = (district: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpandedDistricts((prev) => ({
+    setExpandedDistricts((prev: Record<string, boolean>) => ({
       ...prev,
       [district]: !prev[district],
     }));
@@ -182,10 +182,7 @@ const Farms = () => {
       />
 
       {/* Add Farm Modal */}
-      <AddFarmModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-      />
+      <AddFarmModal visible={modalVisible} onClose={() => setModalVisible(false)} />
 
       {/* ✅ Global Fullscreen Loader Overlay */}
       {loading && (

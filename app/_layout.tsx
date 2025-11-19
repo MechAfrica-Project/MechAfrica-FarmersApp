@@ -1,10 +1,11 @@
+import RouterStateOverlay from "@/app/components/general/RouterStateOverlay";
+import { useAuthStore } from "@/stores/authStore";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { View } from "react-native";
 import "./globals.css";
-import { useAuthStore } from "@/stores/authStore";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -19,7 +20,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     restoreSession();
-  }, []);
+  }, [restoreSession]);
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
@@ -32,6 +33,7 @@ export default function RootLayout() {
   return (
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <Stack screenOptions={{ headerShown: false }} />
+      <RouterStateOverlay />
     </View>
   );
 }

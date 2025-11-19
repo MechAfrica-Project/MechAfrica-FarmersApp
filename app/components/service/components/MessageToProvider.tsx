@@ -1,10 +1,13 @@
+import { useServiceFlowStore } from "@/stores/serviceFlowStore";
+import { useVoiceStore } from "@/stores/voiceStore";
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder, useAudioRecorderState } from "expo-audio";
 import React, { useEffect } from "react";
 import { Alert, Text, TextInput, View } from "react-native";
 import VoiceRecorderButton from "../../general/VoiceRecorderButton";
 
 const MessageToProvider = () => {
-  const [message, setMessage] = React.useState("");
+  const message = useServiceFlowStore((s) => s.draft.message || "");
+  const setMessage = useServiceFlowStore((s) => s.setMessage);
 
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recorderState = useAudioRecorderState(audioRecorder);
@@ -21,7 +24,13 @@ const MessageToProvider = () => {
   const stopRecording = async () => {
     try {
       await audioRecorder.stop();
-      Alert.alert("Recording saved", audioRecorder.uri ?? "No URI found");
+      const uri = audioRecorder.uri;
+      if (uri) {
+        // persist recording URI in both voiceStore (global) and service flow attachments
+        useVoiceStore.getState().addRecording(uri);
+        useServiceFlowStore.getState().addAttachment(uri);
+      }
+      Alert.alert("Recording saved", uri ?? "No URI found");
     } catch (err) {
       console.error("Error stopping recording:", err);
     }
@@ -49,7 +58,7 @@ const MessageToProvider = () => {
         placeholder="Type a message"
         placeholderTextColor="#999"
         value={message}
-        onChangeText={setMessage}
+        onChangeText={(t) => setMessage(t)}
         multiline
       />
 

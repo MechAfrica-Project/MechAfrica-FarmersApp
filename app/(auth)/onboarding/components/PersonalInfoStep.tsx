@@ -1,14 +1,13 @@
-import React, { useState } from "react";
-import { View, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useOnboardingStore } from "@/stores/onboardingStore";
-import PhoneInput from "../../login/components/PhoneInput";
 import InputField from "@/app/components/onboarding/InputField";
+import { useOnboardingStore } from "@/stores/onboardingStore";
+import React, { useState } from "react";
+import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import PhoneInput from "../../login/components/PhoneInput";
 
 export default function PersonalInfoStep() {
   const { data, updateData } = useOnboardingStore();
   const [focused, setFocused] = useState<string | null>(null);
-  const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -33,7 +32,7 @@ export default function PersonalInfoStep() {
               focused={focused}
               setFocused={setFocused}
               fieldKey="name"
-              error={errors.name}
+                  error={false}
             />
 
             {/* Other Names (Optional) */}

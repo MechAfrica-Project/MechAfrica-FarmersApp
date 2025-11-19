@@ -1,7 +1,8 @@
-import React from "react";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import ServiceDateTimePicker from "./components/ServiceDateTimePicker";
 import { servicesData } from "@/constants/servicesData";
+import { useServiceFlowStore } from "@/stores/serviceFlowStore";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React from "react";
+import ServiceDateTimePicker from "./components/ServiceDateTimePicker";
 
 const ServiceStart = () => {
   const router = useRouter();
@@ -18,10 +19,11 @@ const ServiceStart = () => {
         const combinedStart = new Date(date);
         combinedStart.setHours(time.getHours(), time.getMinutes());
 
-        router.push({
-          pathname: "/components/service/serviceFlow/ServiceEnd",
-          params: { id, startDate: combinedStart.toISOString() },
-        });
+        // Save draft to global service flow store so subsequent steps can read it
+        useServiceFlowStore.getState().setServiceId(id as string);
+        useServiceFlowStore.getState().setStartDate(combinedStart.toISOString());
+
+        router.push({ pathname: "/components/service/serviceFlow/ServiceEnd" });
       }}
     />
   );

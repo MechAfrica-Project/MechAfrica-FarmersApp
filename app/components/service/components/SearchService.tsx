@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { FlatList, View } from "react-native";
+import { FlatList } from "react-native";
 import ServiceCard from "../../general/ServiceCard";
 
 interface Service {

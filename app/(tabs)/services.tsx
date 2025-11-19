@@ -1,12 +1,14 @@
 import { servicesData } from "@/constants/servicesData";
-import React, { useState } from "react";
+import { useUIStore } from "@/stores/uiStore";
+import React from "react";
 import { FlatList } from "react-native";
 import MultiToneBackground from "../components/general/MultiToneBackground";
 import SearchService from "../components/service/components/SearchService";
 import ServiceHeader from "../components/service/components/ServiceHeader";
 
 const Services = () => {
-  const [search, setSearch] = useState("");
+  const search = useUIStore((s) => s.serviceSearch);
+  const setSearch = useUIStore((s) => s.setServiceSearch);
 
   // Filter services globally here
   const filteredServices = servicesData.filter((service) =>

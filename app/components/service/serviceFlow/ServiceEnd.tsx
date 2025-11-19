@@ -1,13 +1,14 @@
-// ServiceEnd.tsx
-import React from "react";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import ServiceDateTimePicker from "./components/ServiceDateTimePicker";
 import { servicesData } from "@/constants/servicesData";
+import { useServiceFlowStore } from "@/stores/serviceFlowStore";
+import { useRouter } from "expo-router";
+import React from "react";
+import ServiceDateTimePicker from "./components/ServiceDateTimePicker";
 
 const ServiceEnd = () => {
   const router = useRouter();
-  const { id, startDate } = useLocalSearchParams();
-  const service = servicesData.find((s) => s.id === id);
+  const draft = useServiceFlowStore((s) => s.draft);
+  const service = servicesData.find((s) => s.id === draft.serviceId);
+
   return (
     <ServiceDateTimePicker
       heading="When must the work be completed?"
@@ -17,10 +18,10 @@ const ServiceEnd = () => {
         const combinedEnd = new Date(date);
         combinedEnd.setHours(time.getHours(), time.getMinutes());
 
-        router.push({
-          pathname: "/components/service/ServiceDetails",
-          params: { id, startDate, endDate: combinedEnd.toISOString() },
-        });
+        // persist end date in the draft and navigate to details
+        useServiceFlowStore.getState().setEndDate(combinedEnd.toISOString());
+
+        router.push({ pathname: "/components/service/ServiceDetails" });
       }}
     />
   );

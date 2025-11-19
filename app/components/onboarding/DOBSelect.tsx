@@ -1,9 +1,9 @@
-import React, { useReducer, useEffect } from "react";
-import { View, Text, TouchableOpacity, Platform } from "react-native";
-import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useOnboardingStore } from "@/stores/onboardingStore";
-import moment from "moment";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { Calendar } from "lucide-react-native";
+import moment from "moment";
+import React, { useEffect, useReducer } from "react";
+import { Platform, Text, TouchableOpacity, View } from "react-native";
 
 type State = {
   dob: Date | null;
@@ -42,14 +42,18 @@ const DOBPicker = ({ label = "Date of Birth" }) => {
   });
 
   useEffect(() => {
+    const dobIso = state.dob?.toISOString();
+    // Avoid redundant store updates which can cause render loops
+    if (moreInfo.dob === dobIso && moreInfo.age === state.age) return;
+
     updateData({
       moreInfo: {
         ...moreInfo,
-        dob: state.dob?.toISOString(),
+        dob: dobIso,
         age: state.age,
       },
     });
-  }, [state.dob]);
+  }, [state.dob, state.age, moreInfo, updateData]);
 
   const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     dispatch({ type: "setShowPicker", payload: Platform.OS === "ios" });

@@ -2,8 +2,7 @@
 import { useRequestsStore } from "@/stores/requestsStore";
 import { Request } from "@/types/request";
 import React from "react";
-import { ScrollView, useWindowDimensions, View, Text } from "react-native";
-import CashCard from "./CashCard";
+import { ScrollView, Text, useWindowDimensions, View } from "react-native";
 import ServiceTicket from "./ServiceTicket";
 
 const CompletedRequests: React.FC = () => {
