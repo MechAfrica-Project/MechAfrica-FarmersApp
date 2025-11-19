@@ -16,6 +16,11 @@ interface FarmerState {
   farms: Farm[];
   loading: boolean;
   error: string | null;
+  selectedFarmId?: string | null;
+  selectedCrop?: string | null;
+
+  setSelectedFarm: (id?: string | null) => void;
+  setSelectedCrop: (crop?: string | null) => void;
 
   fetchProfile: () => Promise<void>;
   addFarm: (farm: Omit<Farm, "id">) => void;
@@ -41,8 +46,13 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
   return {
     profile: onboardingData || null,
     farms: initialFarms,
+    selectedFarmId: initialFarms[0]?.id ?? null,
+    selectedCrop: initialFarms[0]?.cropTypes?.[0] ?? null,
     loading: false,
     error: null,
+
+    setSelectedFarm: (id) => set(() => ({ selectedFarmId: id ?? null })),
+    setSelectedCrop: (crop) => set(() => ({ selectedCrop: crop ?? null })),
 
     fetchProfile: async () => {
       set({ loading: true, error: null });

@@ -9,8 +9,9 @@ import {
   UIManager,
   ActivityIndicator,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useFarmerStore } from "@/stores/farmerStore";
+import { useUIStore } from "@/stores/uiStore";
 import AddFarmModal from "../modals/AddFarmModal";
 import {
   ChevronDown,
@@ -31,10 +32,9 @@ if (
 
 const Farms = () => {
   const { farms, fetchProfile, loading, error, removeFarm } = useFarmerStore();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [expandedDistricts, setExpandedDistricts] = useState<
-    Record<string, boolean>
-  >({});
+  const modalVisible = useUIStore((s) => s.addFarmModalVisible);
+  const setModalVisible = useUIStore((s) => s.setAddFarmModalVisible);
+  const [expandedDistricts, setExpandedDistricts] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchProfile();
@@ -43,7 +43,7 @@ const Farms = () => {
   useEffect(() => {
     const onboardingFarm = farms.find((f) => f.id === "onboarding-farm");
     if (onboardingFarm) {
-      setExpandedDistricts((prev) => ({
+      setExpandedDistricts((prev: Record<string, boolean>) => ({
         ...prev,
         [onboardingFarm.district]: true,
       }));
@@ -52,7 +52,7 @@ const Farms = () => {
 
   const toggleDistrict = (district: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpandedDistricts((prev) => ({
+    setExpandedDistricts((prev: Record<string, boolean>) => ({
       ...prev,
       [district]: !prev[district],
     }));
@@ -182,10 +182,7 @@ const Farms = () => {
       />
 
       {/* Add Farm Modal */}
-      <AddFarmModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-      />
+      <AddFarmModal visible={modalVisible} onClose={() => setModalVisible(false)} />
 
       {/* ✅ Global Fullscreen Loader Overlay */}
       {loading && (

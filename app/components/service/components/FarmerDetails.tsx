@@ -72,9 +72,18 @@ const DateTimeRow = ({ label, value, type, onPress }: any) => (
   </Pressable>
 );
 
-const FarmerDetails = ({ service }: any) => {
+const FarmerDetails = ({ service, startDate, endDate, initialFarm, initialCrop }: any) => {
   const { farms } = useFarmerStore();
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const initialFromProps = {
+    selectedFarm: initialFarm ?? null,
+    selectedCrop: initialCrop ?? null,
+    startDate: startDate ? new Date(startDate) : new Date(),
+    startTime: startDate ? new Date(startDate) : new Date(),
+    endDate: endDate ? new Date(endDate) : new Date(),
+    endTime: endDate ? new Date(endDate) : new Date(),
+  };
+
+  const [state, dispatch] = useReducer(reducer, initialFromProps);
   const [showPicker, setShowPicker] = useState<{ type: null | "startDate" | "startTime" | "endDate" | "endTime" }>({ type: null });
 
   const onChange = (event: any, selectedDate?: Date) => {

@@ -6,6 +6,9 @@ type RequestsState = {
   byId: Record<string, Request>;
   listsByStatus: Record<RequestStatus, Request[]>;
   getByStatus: (status: RequestStatus) => Request[];
+  activeRequestId?: string | null;
+  setActiveRequest: (id?: string | null) => void;
+  getActiveRequest: () => Request | null;
   cancelRequest: (id: string) => void;
   completeRequest: (id: string) => void;
   deleteRequest: (id: string) => void;
@@ -33,8 +36,17 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
   return {
     byId: initialById,
     listsByStatus: computeListsByStatus(initialById),
+    activeRequestId: null,
 
     getByStatus: (status) => get().listsByStatus[status],
+
+    setActiveRequest: (id) => set(() => ({ activeRequestId: id ?? null })),
+
+    getActiveRequest: () => {
+      const id = get().activeRequestId;
+      if (!id) return null;
+      return get().byId[id] ?? null;
+    },
 
     // ✅ Farmer can only cancel their sent request
     cancelRequest: (id) =>
@@ -86,6 +98,19 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
         for (const [id, r] of Object.entries(s.byId)) {
           if (r.status !== "completed") byId[id] = r;
         }
+        return { byId, listsByStatus: computeListsByStatus(byId) };
+      }),
+
+    // Add a new request to the store (simulated)
+    addRequest: (req: Omit<Request, "id" | "status">) =>
+      set((s) => {
+        const id = Date.now().toString();
+        const newReq: Request = {
+          id,
+          ...req,
+          status: "pending",
+        } as Request;
+        const byId = { ...s.byId, [id]: newReq };
         return { byId, listsByStatus: computeListsByStatus(byId) };
       }),
   };
