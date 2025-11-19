@@ -27,8 +27,10 @@ const MoreInfoStep = () => {
   );
 
   useEffect(() => {
+    // Only update store when gender actually changes to avoid loops
+    if (moreInfo.gender === state.gender) return;
     updateData({ moreInfo: { ...moreInfo, gender: state.gender } });
-  }, [state.gender]);
+  }, [state.gender, moreInfo.gender, updateData]);
 
   return (
     <View className="px-4 py-6 gap-4">

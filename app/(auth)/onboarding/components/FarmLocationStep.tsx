@@ -105,7 +105,7 @@ const FarmLocationStep = () => {
     if (!data.farmLocation) {
       preloadLocation(); // preload on mount
     }
-  }, []);
+  }, [data.farmLocation, preloadLocation]);
 
   return (
     <View className="flex-1 items-center justify-center px-6">

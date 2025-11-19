@@ -6,15 +6,6 @@ import { Dimensions, Platform, Pressable, ScrollView, Text, View } from "react-n
 
 const { height } = Dimensions.get("window");
 
-const initialState = {
-  selectedFarm: null,
-  selectedCrop: null,
-  startDate: new Date(),
-  startTime: new Date(),
-  endDate: new Date(),
-  endTime: new Date(),
-};
-
 function reducer(state: any, action: any) {
   const { type, payload } = action;
   switch (type) {

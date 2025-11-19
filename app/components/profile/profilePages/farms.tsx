@@ -31,7 +31,7 @@ if (
 }
 
 const Farms = () => {
-  const { farms, fetchProfile, loading, error, removeFarm } = useFarmerStore();
+  const { farms, fetchProfile, loading, removeFarm } = useFarmerStore();
   const modalVisible = useUIStore((s) => s.addFarmModalVisible);
   const setModalVisible = useUIStore((s) => s.setAddFarmModalVisible);
   const [expandedDistricts, setExpandedDistricts] = useState<Record<string, boolean>>({});

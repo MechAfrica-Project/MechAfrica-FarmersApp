@@ -26,7 +26,6 @@ const ServiceDetails = () => {
   const service = servicesData.find((s) => s.id === draft.serviceId);
   const farms = useFarmerStore((s) => s.farms);
   const profile = useFarmerStore((s) => s.profile);
-  const addRequest = useRequestsStore((s) => (s as any).addRequest);
 
   return (
     <MultiToneBackground topColor="#FFF9D6" topHeight={200} mainColor="#FFFFFF">

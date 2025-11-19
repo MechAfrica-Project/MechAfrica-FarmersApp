@@ -19,7 +19,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     restoreSession();
-  }, []);
+  }, [restoreSession]);
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Modal, Pressable, Dimensions, Platform } from "react-native";
+import { View, Text, Modal, Pressable, Dimensions } from "react-native";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 
 type PickerModalProps = {

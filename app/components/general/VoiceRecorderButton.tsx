@@ -35,7 +35,7 @@ const Ripple: React.FC<RippleProps> = ({ delay }) => {
       -1,
       false
     );
-  }, [delay]);
+  }, [delay, opacity, scale]);
 
   return (
     <Animated.View

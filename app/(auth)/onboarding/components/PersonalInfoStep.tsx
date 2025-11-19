@@ -8,7 +8,6 @@ import InputField from "@/app/components/onboarding/InputField";
 export default function PersonalInfoStep() {
   const { data, updateData } = useOnboardingStore();
   const [focused, setFocused] = useState<string | null>(null);
-  const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -33,7 +32,7 @@ export default function PersonalInfoStep() {
               focused={focused}
               setFocused={setFocused}
               fieldKey="name"
-              error={errors.name}
+                  error={false}
             />
 
             {/* Other Names (Optional) */}

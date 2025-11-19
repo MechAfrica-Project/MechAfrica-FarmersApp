@@ -42,14 +42,18 @@ const DOBPicker = ({ label = "Date of Birth" }) => {
   });
 
   useEffect(() => {
+    const dobIso = state.dob?.toISOString();
+    // Avoid redundant store updates which can cause render loops
+    if (moreInfo.dob === dobIso && moreInfo.age === state.age) return;
+
     updateData({
       moreInfo: {
         ...moreInfo,
-        dob: state.dob?.toISOString(),
+        dob: dobIso,
         age: state.age,
       },
     });
-  }, [state.dob]);
+  }, [state.dob, state.age, moreInfo, updateData]);
 
   const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     dispatch({ type: "setShowPicker", payload: Platform.OS === "ios" });

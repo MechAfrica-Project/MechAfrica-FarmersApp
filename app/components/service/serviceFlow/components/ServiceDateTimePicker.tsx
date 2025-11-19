@@ -11,7 +11,6 @@ import { CircleX } from "lucide-react-native";
 import { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 import PickerModal from "@/app/components/general/PickerModal";
-import { images } from "@/constants/images";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 

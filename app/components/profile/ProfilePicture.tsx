@@ -18,7 +18,7 @@ const ProfilePicture = () => {
 
   useEffect(() => {
     loadFromStorage();
-  }, []);
+  }, [loadFromStorage]);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
