@@ -1,7 +1,7 @@
 // stores/authStore.ts
 import { PhoneValue } from "@/app/(auth)/login/components/PhoneInput";
 import { apiFetch, setAuthToken } from "@/lib/api";
-import API_ENDPOINTS from "@/lib/apiEndpoints";
+import { API_ENDPOINTS } from "@/lib/apiEndpoints";
 import useDebugStore from "@/stores/debugStore";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import { router } from "expo-router";

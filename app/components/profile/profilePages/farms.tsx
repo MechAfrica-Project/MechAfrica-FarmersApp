@@ -138,9 +138,16 @@ const Farms = () => {
                     <View className="absolute top-0 left-0 w-full h-32 bg-black/5 rounded-t-xl" />
                     <View className="p-4 flex-row justify-between items-start">
                       <View className="flex-1">
-                        <Text className="text-lg font-bold text-gray-900">
-                          {farm.farmName}
-                        </Text>
+                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                          <Text className="text-lg font-bold text-gray-900">
+                            {farm.farmName}
+                          </Text>
+                          {(farm as any)?._queued && (
+                            <View className="ml-2 bg-yellow-500 px-2 py-1 rounded-full">
+                              <Text className="text-white text-xs">Queued</Text>
+                            </View>
+                          )}
+                        </View>
                         <Text className="text-gray-600 mt-1">
                           {farm.farmSize} acres
                         </Text>

@@ -1,6 +1,21 @@
 // lib/api.ts
 
-import API_ENDPOINTS from "./apiEndpoints";
+import { API_ENDPOINTS } from "./apiEndpoints";
+import { useUIStore } from "@/stores/uiStore";
+
+// offline enqueue helper: enqueue write requests when offline
+async function enqueueIfOffline(method: string, endpoint: string, body?: any) {
+  try {
+    const online = useUIStore.getState().online;
+    if (online) return null;
+    if (!['POST', 'PUT', 'DELETE'].includes(method.toUpperCase())) return null;
+    const queue = await import('./offlineQueue');
+    const id = await queue.enqueueRequest(method, endpoint, body);
+    return id;
+  } catch {
+    return null;
+  }
+}
 
 let authToken: string | null = null;
 
@@ -36,6 +51,18 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
   };
 
   if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
+
+  // If offline and this is a write request, enqueue and throw to allow callers to fallback.
+  const method = (options.method ?? 'GET').toUpperCase();
+  try {
+    const queuedId = await enqueueIfOffline(method, endpoint, options.body ? JSON.parse(String(options.body)) : undefined);
+    if (queuedId) {
+      // Return a friendly queued response instead of throwing so callers can continue.
+      return ({ queued: true, queuedId } as unknown) as T;
+    }
+  } catch (err) {
+    // if enqueue failed silently, proceed to try remote fetch (will fail)
+  }
 
   const res = await fetch(`${baseUrl}${endpoint}`, { ...options, headers });
 

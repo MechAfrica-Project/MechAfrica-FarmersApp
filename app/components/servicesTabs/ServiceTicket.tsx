@@ -109,13 +109,21 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
             >
               Service name
             </Text>
-            <View className={`${getHeaderStyle()} px-3 py-1 rounded-full`}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View className={`${getHeaderStyle()} px-3 py-1 rounded-full`}>
               <Text
                 className="text-white font-mulish font-semibold"
                 style={{ fontSize: smallFontSize }}
               >
                 {getHeaderLabel()}
               </Text>
+              </View>
+              {/* Queued badge */}
+              {(fullRequest as any)?._queued && (
+                <View className="ml-2 bg-yellow-500 px-2 py-1 rounded-full">
+                  <Text className="text-white text-xs">Queued</Text>
+                </View>
+              )}
             </View>
           </View>
 

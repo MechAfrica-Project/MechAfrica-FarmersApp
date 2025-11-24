@@ -44,6 +44,12 @@ const menuItems: MenuItemType[] = [
     type: "modal",
     modalKey: "contact",
   },
+  {
+    icon: "time-outline",
+    label: "Queued Items",
+    type: "route",
+    route: "/queued",
+  },
 ];
 
 const MenuList = () => {

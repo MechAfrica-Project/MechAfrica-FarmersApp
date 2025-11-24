@@ -1,5 +1,5 @@
 import { uploadFile } from "@/lib/api";
-import API_ENDPOINTS from "@/lib/apiEndpoints";
+import { API_ENDPOINTS } from "@/lib/apiEndpoints";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";

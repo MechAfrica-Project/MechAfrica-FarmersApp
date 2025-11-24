@@ -1,5 +1,6 @@
 import { apiFetch } from "@/lib/api";
-import API_ENDPOINTS from "@/lib/apiEndpoints";
+import { API_ENDPOINTS } from "@/lib/apiEndpoints";
+import Toast from "react-native-toast-message";
 import { create } from "zustand";
 import { OnboardingData, useOnboardingStore } from "./onboardingStore";
 
@@ -109,11 +110,26 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
 
     addFarm: async (farm) => {
       try {
-        const savedFarm = await apiFetch<Farm>(API_ENDPOINTS.FARMER_FARMS, {
-          method: "POST",
-          body: JSON.stringify(farm),
-        });
-        set((s) => ({ farms: [...s.farms, savedFarm] }));
+        const savedFarm = await apiFetch<Farm | { queued: true; queuedId: string }>(
+          API_ENDPOINTS.FARMER_FARMS,
+          {
+            method: "POST",
+            body: JSON.stringify(farm),
+          }
+        );
+
+        if ((savedFarm as any)?.queued) {
+          // create a local placeholder farm marked as queued
+          const id = `local-farm-${Date.now()}`;
+          const local: any = { id, ...farm, _queued: true, _queuedId: (savedFarm as any).queuedId };
+          set((s) => ({ farms: [...s.farms, local] }));
+          try {
+            Toast.show({ type: "info", text1: "Saved offline", text2: "Farm queued for upload" });
+          } catch {}
+          return;
+        }
+
+        set((s) => ({ farms: [...s.farms, savedFarm as Farm] }));
       } catch (err: any) {
         console.error("Failed to add farm", err);
         alert("Failed to save farm. Try again.");
@@ -122,7 +138,16 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
 
     removeFarm: async (id) => {
       try {
-        await apiFetch(`${API_ENDPOINTS.FARMER_FARMS}/${id}`, { method: "DELETE" });
+        const res = await apiFetch(API_ENDPOINTS.FARMER_FARMS + `/${id}`, { method: "DELETE" });
+        // if queued, optimistically remove locally and notify
+        if ((res as any)?.queued) {
+          set((s) => ({ farms: s.farms.filter((f) => f.id !== id) }));
+          try {
+            Toast.show({ type: "info", text1: "Queued delete", text2: "Farm deletion queued for upload" });
+          } catch {}
+          return;
+        }
+
         set((s) => ({ farms: s.farms.filter((f) => f.id !== id) }));
       } catch (err: any) {
         console.error("Failed to remove farm", err);

@@ -1,5 +1,5 @@
+import { API_ENDPOINTS } from "@/lib/apiEndpoints";
 import { create } from "zustand";
-import API_ENDPOINTS from "@/lib/apiEndpoints";
 
 export type NotificationItem = {
   id: string;

@@ -1,5 +1,5 @@
 import { apiFetch } from "@/lib/api";
-import API_ENDPOINTS from "@/lib/apiEndpoints";
+import { API_ENDPOINTS } from "@/lib/apiEndpoints";
 import { Request, RequestStatus } from "@/types/request";
 import { create } from "zustand";
 
@@ -118,11 +118,26 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
     // Add a new request to the store (tries backend, falls back locally)
     addRequest: async (req: Omit<Request, "id" | "status">) => {
       try {
-        const saved = await apiFetch<Request>(API_ENDPOINTS.REQUESTS, {
+        const saved = await apiFetch<Request | { queued: true; queuedId: string }>(API_ENDPOINTS.REQUESTS, {
           method: "POST",
           body: JSON.stringify(req),
         });
-        set((s) => ({ byId: { ...s.byId, [saved.id]: saved }, listsByStatus: computeListsByStatus({ ...s.byId, [saved.id]: saved }) }));
+
+        // If the API wrapper enqueued the request while offline it returns { queued: true, queuedId }
+        if ((saved as any)?.queued) {
+          const id = Date.now().toString();
+          const newReq: any = { id, ...(req as any), status: "pending", _queued: true, _queuedId: (saved as any).queuedId };
+          set((s) => ({ byId: { ...s.byId, [id]: newReq }, listsByStatus: computeListsByStatus({ ...s.byId, [id]: newReq }) }));
+          try {
+            const Toast = (await import("react-native-toast-message")).default;
+            Toast.show({ type: "info", text1: "Saved offline", text2: "Request queued for upload" });
+          } catch {}
+          return;
+        }
+
+        // Normal server-saved response
+        const serverReq = saved as Request;
+        set((s) => ({ byId: { ...s.byId, [serverReq.id]: serverReq }, listsByStatus: computeListsByStatus({ ...s.byId, [serverReq.id]: serverReq }) }));
       } catch (err) {
         // Fallback: create local request id
         set((s) => {
