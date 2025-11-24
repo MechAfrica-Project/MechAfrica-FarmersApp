@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import API_ENDPOINTS from "@/lib/apiEndpoints";
 
 export type NotificationItem = {
   id: string;
@@ -49,7 +50,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         // lazy import to avoid circular deps in some setups
         const { apiFetch } = await import("@/lib/api");
         // accept either { notifications: [] } or an array directly
-        const data: any = await apiFetch("/notifications");
+        const data: any = await apiFetch(API_ENDPOINTS.NOTIFICATIONS);
         const list = Array.isArray(data) ? data : data?.notifications ?? [];
         if (Array.isArray(list)) set({ items: list });
       } catch (err) {

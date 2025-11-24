@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api";
+import API_ENDPOINTS from "@/lib/apiEndpoints";
 import { Request, RequestStatus } from "@/types/request";
 import { create } from "zustand";
 
@@ -80,7 +81,7 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
 
     deleteRequest: async (id: string) => {
       try {
-        await apiFetch(`/requests/${id}`, { method: "DELETE" });
+        await apiFetch(`${API_ENDPOINTS.REQUESTS}/${id}`, { method: "DELETE" });
         set((s) => {
           const byId = { ...s.byId };
           delete byId[id];
@@ -117,7 +118,7 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
     // Add a new request to the store (tries backend, falls back locally)
     addRequest: async (req: Omit<Request, "id" | "status">) => {
       try {
-        const saved = await apiFetch<Request>("/requests", {
+        const saved = await apiFetch<Request>(API_ENDPOINTS.REQUESTS, {
           method: "POST",
           body: JSON.stringify(req),
         });
@@ -136,7 +137,7 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
     // Fetch requests from backend (merge into store); call this on app start or when needed
     fetchRequests: async () => {
       try {
-        const data = await apiFetch<{ requests: Request[] }>("/requests");
+        const data = await apiFetch<{ requests: Request[] }>(API_ENDPOINTS.REQUESTS);
         const byId: Record<string, Request> = {};
         for (const r of data.requests || []) byId[r.id] = r;
         // Merge with existing local items (local items keep priority if ids clash)

@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api";
+import API_ENDPOINTS from "@/lib/apiEndpoints";
 import { create } from "zustand";
 import { OnboardingData, useOnboardingStore } from "./onboardingStore";
 
@@ -58,7 +59,7 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
       set({ loading: true, error: null });
       try {
         const data = await apiFetch<{ profile: OnboardingData; farms: Farm[] }>(
-          "/farmer/profile"
+          API_ENDPOINTS.FARMER_PROFILE
         );
 
         // Convert onboarding farm from backend profile
@@ -108,7 +109,7 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
 
     addFarm: async (farm) => {
       try {
-        const savedFarm = await apiFetch<Farm>("/farmer/farms", {
+        const savedFarm = await apiFetch<Farm>(API_ENDPOINTS.FARMER_FARMS, {
           method: "POST",
           body: JSON.stringify(farm),
         });
@@ -121,7 +122,7 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
 
     removeFarm: async (id) => {
       try {
-        await apiFetch(`/farmer/farms/${id}`, { method: "DELETE" });
+        await apiFetch(`${API_ENDPOINTS.FARMER_FARMS}/${id}`, { method: "DELETE" });
         set((s) => ({ farms: s.farms.filter((f) => f.id !== id) }));
       } catch (err: any) {
         console.error("Failed to remove farm", err);
