@@ -1,5 +1,6 @@
 // lib/api.ts
 
+import { toastError } from '@/lib/toast';
 import { useUIStore } from "@/stores/uiStore";
 import { API_ENDPOINTS } from "./apiEndpoints";
 
@@ -63,31 +64,41 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
   } catch {
     // if enqueue failed silently, proceed to try remote fetch (will fail)
   }
+  try {
+    const res = await fetch(`${baseUrl}${endpoint}`, { ...options, headers });
 
-  const res = await fetch(`${baseUrl}${endpoint}`, { ...options, headers });
-
-  if (!res.ok) {
-    const text = await res.text();
-    let parsed: any = undefined;
-    try {
-      parsed = JSON.parse(text);
-    } catch {}
-    throw new ApiError(parsed?.message ?? text ?? `API error: ${res.status}`, res.status, parsed);
-  }
-
-  // attempt to parse json
-  const contentType = res.headers.get("content-type") ?? "";
-  if (contentType.includes("application/json")) {
-    try {
-      return (await res.json()) as T;
-    } catch {
-      throw new ApiError("Failed to parse JSON response", res.status);
+    if (!res.ok) {
+      const text = await res.text();
+      let parsed: any = undefined;
+      try {
+        parsed = JSON.parse(text);
+      } catch {}
+      const message = parsed?.message ?? text ?? `API error: ${res.status}`;
+      // show toast for non-2xx responses
+      try { toastError('Request failed', message); } catch {}
+      throw new ApiError(message, res.status, parsed);
     }
-  }
 
-  // fallback: try to return text as any
-  const text = await res.text();
-  return text as unknown as T;
+    // attempt to parse json
+    const contentType = res.headers.get("content-type") ?? "";
+    if (contentType.includes("application/json")) {
+      try {
+        return (await res.json()) as T;
+      } catch {
+        const msg = "Failed to parse JSON response";
+        try { toastError('Response error', msg); } catch {}
+        throw new ApiError(msg, res.status);
+      }
+    }
+
+    // fallback: try to return text as any
+    const text = await res.text();
+    return text as unknown as T;
+  } catch (err: any) {
+    // Network or other unexpected errors
+    try { toastError('Network error', err?.message ?? String(err)); } catch {}
+    throw err;
+  }
 }
 
 /* ---------- Small API client helpers ---------- */

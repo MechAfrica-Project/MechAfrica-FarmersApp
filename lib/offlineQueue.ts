@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { API_ENDPOINTS } from './apiEndpoints';
 
@@ -31,6 +30,10 @@ function computeListsByStatusLocal(byId: Record<string, any>) {
 
 async function readQueue(): Promise<QueuedRequest[]> {
   try {
+    // require AsyncStorage lazily so tests can mock the module before use
+    // (jest setup mocks are applied in setupFilesAfterEnv)
+     
+    const AsyncStorage = require('@react-native-async-storage/async-storage');
     const raw = await AsyncStorage.getItem(QUEUE_KEY);
     if (!raw) return [];
     return JSON.parse(raw) as QueuedRequest[];
@@ -41,6 +44,9 @@ async function readQueue(): Promise<QueuedRequest[]> {
 
 async function writeQueue(queue: QueuedRequest[]) {
   try {
+    // require AsyncStorage lazily so tests can mock the module before use
+     
+    const AsyncStorage = require('@react-native-async-storage/async-storage');
     await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
   } catch {
     // ignore
@@ -63,6 +69,10 @@ export async function enqueueRequest(method: string, endpoint: string, body?: an
 }
 
 async function delay(ms: number) {
+  // During unit tests we want retries to be fast and deterministic.
+  if (process.env.NODE_ENV === 'test' || typeof process.env.JEST_WORKER_ID !== 'undefined') {
+    return Promise.resolve();
+  }
   return new Promise((r) => setTimeout(r, ms));
 }
 
@@ -252,11 +262,25 @@ export async function retryQueueItem(id: string) {
     item.attempts = (item.attempts ?? 0) + 1;
     if ((item.attempts ?? 0) >= 5) return { ok: false, error: 'failed' };
     const backoff = Math.min(60000, 1000 * Math.pow(2, item.attempts ?? 1)) + Math.floor(Math.random() * 1000);
-    await delay(backoff);
+    // Ensure the item is written back to storage immediately so callers can observe
+    // the queued state before any optional delay/backoff (helps tests and resilience).
     const newQueue = [item, ...remaining];
+    // debug logs for test troubleshooting
+     
+    console.debug('[offlineQueue] retryQueueItem - requeuing item', item.id, 'queueBeforeWriteLength=', (await readQueue()).length);
     await writeQueue(newQueue);
+     
+    console.debug('[offlineQueue] retryQueueItem - requeued item, queueAfterWriteLength=', (await readQueue()).length);
+    await delay(backoff);
     return { ok: false, error: 'retry_scheduled' };
   }
 }
 
-export default { enqueueRequest, processQueue, getQueue, clearQueue, removeFromQueue, retryQueueItem };
+// ---- Test helpers ----
+// Expose a small helper used only by unit tests to seed the queue deterministically.
+// This is intentionally named with a leading underscore to indicate non-production usage.
+export async function _test_setQueue(items: QueuedRequest[]) {
+  await writeQueue(items);
+}
+
+export default { enqueueRequest, processQueue, getQueue, clearQueue, removeFromQueue, retryQueueItem, _test_setQueue };

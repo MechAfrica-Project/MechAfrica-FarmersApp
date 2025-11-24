@@ -1,6 +1,6 @@
 import { apiFetch } from "@/lib/api";
 import { API_ENDPOINTS } from "@/lib/apiEndpoints";
-import Toast from "react-native-toast-message";
+import { toastError, toastInfo } from "@/lib/toast";
 import { create } from "zustand";
 import { OnboardingData, useOnboardingStore } from "./onboardingStore";
 
@@ -124,7 +124,7 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
           const local: any = { id, ...farm, _queued: true, _queuedId: (savedFarm as any).queuedId };
           set((s) => ({ farms: [...s.farms, local] }));
           try {
-            Toast.show({ type: "info", text1: "Saved offline", text2: "Farm queued for upload" });
+            toastInfo("Saved offline", "Farm queued for upload");
           } catch {}
           return;
         }
@@ -132,7 +132,9 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
         set((s) => ({ farms: [...s.farms, savedFarm as Farm] }));
       } catch (err: any) {
         console.error("Failed to add farm", err);
-        alert("Failed to save farm. Try again.");
+        try {
+          toastError('Save failed', 'Failed to save farm. Try again.');
+        } catch {}
       }
     },
 
@@ -143,7 +145,7 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
         if ((res as any)?.queued) {
           set((s) => ({ farms: s.farms.filter((f) => f.id !== id) }));
           try {
-            Toast.show({ type: "info", text1: "Queued delete", text2: "Farm deletion queued for upload" });
+            toastInfo("Queued delete", "Farm deletion queued for upload");
           } catch {}
           return;
         }
@@ -151,7 +153,9 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
         set((s) => ({ farms: s.farms.filter((f) => f.id !== id) }));
       } catch (err: any) {
         console.error("Failed to remove farm", err);
-        alert("Failed to delete farm. Try again.");
+        try {
+          toastError('Delete failed', 'Failed to delete farm. Try again.');
+        } catch {}
       }
     },
   };

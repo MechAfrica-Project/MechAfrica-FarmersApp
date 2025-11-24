@@ -1,7 +1,4 @@
 // Mock AsyncStorage before importing the module under test so imports use the mock
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { clearQueue, enqueueRequest, getQueue, removeFromQueue } from '../lib/offlineQueue';
-
 const __storageMock: Record<string, string> = {};
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: async (k: string) => (__storageMock.hasOwnProperty(k) ? __storageMock[k] : null),
@@ -10,6 +7,9 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   clear: async () => { for (const k of Object.keys(__storageMock)) delete __storageMock[k]; return null; },
   __INTERNAL__storage: __storageMock
 }));
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { clearQueue, enqueueRequest, getQueue, removeFromQueue } from '../lib/offlineQueue';
 
 describe('offlineQueue basic operations', () => {
   beforeEach(async () => {

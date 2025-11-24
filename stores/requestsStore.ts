@@ -125,8 +125,8 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
           const newReq: any = { id, ...(req as any), status: "pending", _queued: true, _queuedId: (saved as any).queuedId };
           set((s) => ({ byId: { ...s.byId, [id]: newReq }, listsByStatus: computeListsByStatus({ ...s.byId, [id]: newReq }) }));
           try {
-            const Toast = (await import("react-native-toast-message")).default;
-            Toast.show({ type: "info", text1: "Saved offline", text2: "Request queued for upload" });
+            const { toastInfo } = await import('@/lib/toast');
+            toastInfo("Saved offline", "Request queued for upload");
           } catch {}
           return;
         }

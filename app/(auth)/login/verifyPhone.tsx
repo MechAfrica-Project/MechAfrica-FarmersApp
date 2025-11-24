@@ -77,6 +77,7 @@ export default function VerifyPhone() {
               title={loading ? "Verifying..." : "Log in"}
               onPress={handleVerify}
               textClassName="text-white"
+              loading={loading}
             />
 
             <View className="flex flex-row justify-center mt-4">

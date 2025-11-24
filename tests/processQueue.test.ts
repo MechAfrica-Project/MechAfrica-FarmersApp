@@ -1,6 +1,4 @@
-// Mock stores and native modules before importing the module under test
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { enqueueRequest, getQueue, processQueue } from '../lib/offlineQueue';
 
 const mockReqStore = {
   state: { byId: {}, listsByStatus: {} },
@@ -11,9 +9,6 @@ const mockReqStore = {
     this.state = newState;
   }
 };
-
-jest.mock('@/stores/requestsStore', () => ({ useRequestsStore: mockReqStore }));
-jest.mock('@/stores/farmerStore', () => ({ useFarmerStore: { getState: () => ({ farms: [] }), setState: jest.fn() } }));
 
 // Provide a fetch mock and ensure AsyncStorage is available (jest.setup provides general mocks)
 beforeEach(() => {
@@ -32,9 +27,16 @@ describe('processQueue mapping and send', () => {
     await AsyncStorage.clear();
     // reset mock store
     mockReqStore.state = { byId: {}, listsByStatus: {} };
+    jest.resetModules();
   });
 
   test('processQueue sends queued request and maps server response into requestsStore', async () => {
+    // mock the stores before importing the queue module
+    jest.doMock('@/stores/requestsStore', () => ({ useRequestsStore: mockReqStore }));
+    jest.doMock('@/stores/farmerStore', () => ({ useFarmerStore: { getState: () => ({ farms: [] }), setState: jest.fn() } }));
+
+    const { enqueueRequest, processQueue, getQueue } = require('../lib/offlineQueue');
+
     // arrange: enqueue a request
     const id = await enqueueRequest('POST', '/requests', { title: 'local' });
 

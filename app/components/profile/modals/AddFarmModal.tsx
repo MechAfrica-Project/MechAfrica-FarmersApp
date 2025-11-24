@@ -1,22 +1,23 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Modal,
-  Pressable,
-  ScrollView,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
-import { Sprout, MapPin } from "lucide-react-native";
+import SelectModal from "@/app/components/general/SelectModal";
 import { cropOptions } from "@/constants/cropOptions";
 import {
   getAllRegions,
   getDistrictsByRegion,
 } from "@/constants/ghana-regions-districts";
-import { useFarmerStore, Farm } from "@/stores/farmerStore";
-import SelectModal from "@/app/components/general/SelectModal";
+import { Farm, useFarmerStore } from "@/stores/farmerStore";
+import { MapPin, Sprout } from "lucide-react-native";
+import React, { useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  ActivityIndicator,
+} from "react-native";
 import InputField from "../../onboarding/InputField";
 
 type AddFarmModalProps = {
@@ -35,6 +36,7 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
   const [focused, setFocused] = useState<string | null>(null);
   const [regionModal, setRegionModal] = useState(false);
   const [districtModal, setDistrictModal] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const toggleCrop = (crop: string) =>
     setCropTypes((prev) =>
@@ -49,7 +51,9 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
       !district ||
       cropTypes.length === 0
     ) {
-      alert("Please fill in all fields.");
+      import('@/lib/toast')
+        .then((m) => m.toastError('Validation', 'Please fill in all fields.'))
+        .catch(() => {});
       return;
     }
 
@@ -61,7 +65,9 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
         f.district === district
     );
     if (exists) {
-      alert("A farm with the same name, region, and district already exists.");
+      import('@/lib/toast')
+        .then((m) => m.toastInfo('Duplicate', 'A farm with the same name, region, and district already exists.'))
+        .catch(() => {});
       return;
     }
 
@@ -73,15 +79,25 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
       cropTypes,
     };
 
-    addFarm(newFarm);
+    // show a local saving state while addFarm resolves
+    (async () => {
+      try {
+        setSaving(true);
+        await addFarm(newFarm);
 
-    // Reset modal fields
-    setFarmName("");
-    setFarmSize("");
-    setRegion("");
-    setDistrict("");
-    setCropTypes([]);
-    onClose();
+        // Reset modal fields
+        setFarmName("");
+        setFarmSize("");
+        setRegion("");
+        setDistrict("");
+        setCropTypes([]);
+        onClose();
+      } catch (err) {
+        // swallow - store shows toast on error; keep modal open for retry
+      } finally {
+        setSaving(false);
+      }
+    })();
   };
 
   const regions = getAllRegions().map((r) => ({
@@ -216,14 +232,22 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
 
           {/* Actions */}
           <View className="flex-row justify-end mt-6">
-            <Pressable onPress={onClose} className="mr-3 px-4 py-2 rounded-lg">
+            <Pressable onPress={onClose} className="mr-3 px-4 py-2 rounded-lg" disabled={saving}>
               <Text className="text-gray-600 font-medium">Cancel</Text>
             </Pressable>
             <Pressable
               onPress={handleSave}
               className="bg-green-600 px-6 py-2 rounded-lg"
+              disabled={saving}
             >
-              <Text className="text-white font-semibold">Save</Text>
+              {saving ? (
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                  <Text className="text-white font-semibold">Saving...</Text>
+                </View>
+              ) : (
+                <Text className="text-white font-semibold">Save</Text>
+              )}
             </Pressable>
           </View>
         </View>

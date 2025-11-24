@@ -2,6 +2,7 @@
 import { PhoneValue } from "@/app/(auth)/login/components/PhoneInput";
 import { apiFetch, setAuthToken } from "@/lib/api";
 import { API_ENDPOINTS } from "@/lib/apiEndpoints";
+import { toastError } from '@/lib/toast';
 import { useDebugStore } from "@/stores/debugStore";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import { router } from "expo-router";
@@ -57,7 +58,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ loading: false });
       router.push("/(auth)/login/verifyPhone");
     } catch (err: any) {
-      set({ loading: false, error: err?.message ?? "Failed to send code" });
+      const msg = err?.message ?? "Failed to send code";
+      try { toastError('Send failed', msg); } catch {}
+      set({ loading: false, error: msg });
     }
   },
 
@@ -105,7 +108,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       router.replace("/(tabs)");
       return true;
     } catch (err: any) {
-      set({ error: err?.message ?? "Verification failed", loading: false });
+      const msg = err?.message ?? "Verification failed";
+      try { toastError('Verification failed', msg); } catch {}
+      set({ error: msg, loading: false });
       return false;
     }
   },

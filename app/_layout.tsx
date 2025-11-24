@@ -1,6 +1,7 @@
 import OfflineQueueIndicator from "@/app/components/general/OfflineQueueIndicator";
 import RouterStateOverlay from "@/app/components/general/RouterStateOverlay";
 import { startNetworkMonitoring } from "@/lib/network";
+import { setToastRef } from '@/lib/toast';
 import { useAuthStore } from "@/stores/authStore";
 import { useFarmerStore } from "@/stores/farmerStore";
 import { useNotificationStore } from "@/stores/notificationStore";
@@ -10,7 +11,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect } from "react";
 import { View } from "react-native";
-import Toast from "react-native-toast-message";
+import { ToastProvider, useToast } from 'react-native-toast-notifications';
 import "./globals.css";
 
 SplashScreen.preventAutoHideAsync();
@@ -69,11 +70,32 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <OfflineQueueIndicator />
-      <Stack screenOptions={{ headerShown: false }} />
-      <RouterStateOverlay />
-      <Toast />
-    </View>
+    <ToastProvider
+      placement="top"
+      duration={4000}
+      offsetTop={50}
+      animationType="slide-in"
+    >
+      {/* Register provider's imperative API to our lib/toast via hook inside the provider */}
+      <ToastRegistrar />
+      <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+        <OfflineQueueIndicator />
+        <Stack screenOptions={{ headerShown: false }} />
+        <RouterStateOverlay />
+      </View>
+    </ToastProvider>
   );
+}
+
+function ToastRegistrar() {
+  const toast = useToast();
+  useEffect(() => {
+    try {
+      setToastRef(toast as any);
+      return () => setToastRef(null);
+    } catch {
+      return;
+    }
+  }, [toast]);
+  return null;
 }

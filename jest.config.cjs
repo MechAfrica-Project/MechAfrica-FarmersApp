@@ -13,7 +13,7 @@ module.exports = {
   ,
   moduleNameMapper: {
     '^@\/(.*)$': '<rootDir>/$1',
-    '^react-native-toast-message$': '<rootDir>/tests/__mocks__/react-native-toast-message.js'
+    '^react-native-toast-notifications$': '<rootDir>/tests/__mocks__/react-native-toast-notifications.js'
   }
 };
 

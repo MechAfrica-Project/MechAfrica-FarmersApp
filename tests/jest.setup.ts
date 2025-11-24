@@ -13,6 +13,17 @@ jest.mock('expo-secure-store', () => ({
   deleteItemAsync: jest.fn(async (k: string) => null)
 }));
 
+// Mock expo-router to avoid importing ESM/JSX from node_modules in Jest.
+jest.mock('expo-router', () => ({
+  router: {
+    push: jest.fn(),
+    replace: jest.fn(),
+    getState: jest.fn(),
+    getRootState: jest.fn(),
+    getInitialState: jest.fn(),
+  },
+}));
+
 // In-memory AsyncStorage mock used by tests
 const __asyncStorageMock: Record<string, string> = {};
 jest.mock('@react-native-async-storage/async-storage', () => ({
