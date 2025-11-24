@@ -1,4 +1,3 @@
-import { requestsData } from "@/dummy-data/dummy_data";
 import { apiFetch } from "@/lib/api";
 import { Request, RequestStatus } from "@/types/request";
 import { create } from "zustand";
@@ -12,9 +11,11 @@ type RequestsState = {
   getActiveRequest: () => Request | null;
   cancelRequest: (id: string) => void;
   completeRequest: (id: string) => void;
-  deleteRequest: (id: string) => void;
+  deleteRequest: (id: string) => Promise<void>;
   deleteCancelled: () => void;
   deleteCompleted: () => void;
+  addRequest: (req: Omit<Request, "id" | "status">) => Promise<void>;
+  fetchRequests: () => Promise<void>;
 };
 
 const indexById = (list: Request[]): Record<string, Request> => {
@@ -33,7 +34,7 @@ const computeListsByStatus = (
 });
 
 export const useRequestsStore = create<RequestsState>((set, get) => {
-  const initialById = indexById(requestsData);
+  const initialById: Record<string, Request> = {};
   return {
     byId: initialById,
     listsByStatus: computeListsByStatus(initialById),
@@ -77,24 +78,23 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
         return { byId, listsByStatus: computeListsByStatus(byId) };
       }),
 
-    deleteRequest: (id) =>
-      async (id: string) => {
-        try {
-          await apiFetch(`/requests/${id}`, { method: "DELETE" });
-          set((s) => {
-            const byId = { ...s.byId };
-            delete byId[id];
-            return { byId, listsByStatus: computeListsByStatus(byId) };
-          });
-        } catch (err) {
-          // Fallback to local delete if API fails
-          set((s) => {
-            const byId = { ...s.byId };
-            delete byId[id];
-            return { byId, listsByStatus: computeListsByStatus(byId) };
-          });
-        }
-      },
+    deleteRequest: async (id: string) => {
+      try {
+        await apiFetch(`/requests/${id}`, { method: "DELETE" });
+        set((s) => {
+          const byId = { ...s.byId };
+          delete byId[id];
+          return { byId, listsByStatus: computeListsByStatus(byId) };
+        });
+      } catch (err) {
+        // Fallback to local delete if API fails
+        set((s) => {
+          const byId = { ...s.byId };
+          delete byId[id];
+          return { byId, listsByStatus: computeListsByStatus(byId) };
+        });
+      }
+    },
 
     deleteCancelled: () =>
       set((s) => {
@@ -142,8 +142,8 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
         // Merge with existing local items (local items keep priority if ids clash)
         set((s) => ({ byId: { ...byId, ...s.byId }, listsByStatus: computeListsByStatus({ ...byId, ...s.byId }) }));
       } catch (err) {
-        // keep local dummy data on failure
-        console.warn("fetchRequests failed, using local data", err);
+        // no dummy data: just log the failure and keep current store
+        console.warn("fetchRequests failed", err);
       }
     },
   };

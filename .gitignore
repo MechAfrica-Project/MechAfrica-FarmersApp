@@ -39,6 +39,5 @@ yarn-error.*
 app-example
 
 # Server stub and related files
-server-stub-go/
 API_CONTRACT.md
 openapi.yaml

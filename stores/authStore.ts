@@ -88,6 +88,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await onboardingStore.loadFromStorage();
 
       set({ user: data.user ?? null, token: data.token, loading: false });
+
+      // After successful verification, kick off background synces (non-blocking)
+      try {
+        const rs = (await import("@/stores/requestsStore")).useRequestsStore.getState();
+        const fs = (await import("@/stores/farmerStore")).useFarmerStore.getState();
+        const ns = (await import("@/stores/notificationStore")).useNotificationStore.getState();
+        Promise.allSettled([
+          rs.fetchRequests ? rs.fetchRequests() : Promise.resolve(),
+          fs.fetchProfile ? fs.fetchProfile() : Promise.resolve(),
+          ns.fetchNotifications ? ns.fetchNotifications() : Promise.resolve(),
+        ]).catch(() => {});
+      } catch {}
+
       router.replace("/(tabs)");
       return true;
     } catch (err: any) {
