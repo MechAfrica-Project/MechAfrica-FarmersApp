@@ -1,6 +1,6 @@
-import React from "react";
-import { TouchableOpacity, Text, ActivityIndicator, TouchableOpacityProps } from "react-native";
 import { useUIStore } from "@/stores/uiStore";
+import React from "react";
+import { ActivityIndicator, Text, TouchableOpacity, TouchableOpacityProps } from "react-native";
 
 type Props = TouchableOpacityProps & {
   title: string;

@@ -8,6 +8,7 @@ import { Farm, useFarmerStore } from "@/stores/farmerStore";
 import { MapPin, Sprout } from "lucide-react-native";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -16,7 +17,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ActivityIndicator,
 } from "react-native";
 import InputField from "../../onboarding/InputField";
 

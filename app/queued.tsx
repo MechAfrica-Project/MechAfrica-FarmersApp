@@ -1,7 +1,7 @@
 import { clearQueue, getQueue, processQueue, removeFromQueue, retryQueueItem } from "@/lib/offlineQueue";
 import { toastError, toastInfo, toastSuccess } from '@/lib/toast';
 import React, { useEffect, useState } from "react";
-import { Pressable, ScrollView, Text, View, ActivityIndicator } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 
 export default function QueuedScreen() {
   const [items, setItems] = useState<any[]>([]);
