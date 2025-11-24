@@ -1,4 +1,5 @@
 import { uploadFile } from "@/lib/api";
+import { API_ENDPOINTS } from "@/lib/apiEndpoints";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -32,7 +33,7 @@ export default function ProfilePictureStep() {
       (async () => {
         try {
           setUploading(true);
-          const resp: any = await uploadFile("/uploads", { uri });
+          const resp: any = await uploadFile(API_ENDPOINTS.UPLOADS, { uri });
           // Expect response like { url: 'https://...' }
           if (resp && (resp.url || resp.location)) {
             updateData({ profilePicture: resp.url ?? resp.location });

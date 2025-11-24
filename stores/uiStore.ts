@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 type UIState = {
   loading: boolean;
+  online: boolean;
   setLoading: (val: boolean) => void;
   serviceSearch: string;
   setServiceSearch: (val: string) => void;
@@ -14,6 +15,7 @@ type UIState = {
   setRegionPickerVisible: (v: boolean) => void;
   districtPickerVisible: boolean;
   setDistrictPickerVisible: (v: boolean) => void;
+  setOnline: (v: boolean) => void;
   // Service filters
   serviceFilters: { category?: string | null; minPrice?: number | null; maxPrice?: number | null };
   setServiceFilters: (filters: { category?: string | null; minPrice?: number | null; maxPrice?: number | null }) => void;
@@ -21,6 +23,7 @@ type UIState = {
 
 export const useUIStore = create<UIState>((set) => ({
   loading: false,
+  online: true,
   setLoading: (val) => set({ loading: val }),
   serviceSearch: "",
   setServiceSearch: (val: string) => set({ serviceSearch: val }),
@@ -32,6 +35,7 @@ export const useUIStore = create<UIState>((set) => ({
   setRegionPickerVisible: (v: boolean) => set({ regionPickerVisible: v }),
   districtPickerVisible: false,
   setDistrictPickerVisible: (v: boolean) => set({ districtPickerVisible: v }),
+  setOnline: (v: boolean) => set({ online: v }),
   // Service filters
   serviceFilters: { category: null, minPrice: null, maxPrice: null },
   setServiceFilters: (filters: { category?: string | null; minPrice?: number | null; maxPrice?: number | null }) => set({ serviceFilters: filters }),

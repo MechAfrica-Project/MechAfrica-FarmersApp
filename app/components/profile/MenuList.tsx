@@ -1,11 +1,11 @@
+import { useAuthStore } from "@/stores/authStore";
+import { useRouter, type Href } from "expo-router";
 import React, { useState } from "react";
 import { View } from "react-native";
-import { useRouter, type Href } from "expo-router";
 import MenuItem from "./MenuItems";
-import { useAuthStore } from "@/stores/authStore";
 import AccountEditModal from "./modals/AccountEditModal";
-import TermsModal from "./modals/TermsModal";
 import ContactAgentModal from "./modals/ContactAgentModal";
+import TermsModal from "./modals/TermsModal";
 
 type ModalKey = "account" | "terms" | "contact";
 
@@ -43,6 +43,12 @@ const menuItems: MenuItemType[] = [
     label: "Contact Agent",
     type: "modal",
     modalKey: "contact",
+  },
+  {
+    icon: "time-outline",
+    label: "Queued Items",
+    type: "route",
+    route: "/queued",
   },
 ];
 

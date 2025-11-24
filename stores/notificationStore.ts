@@ -1,3 +1,4 @@
+import { API_ENDPOINTS } from "@/lib/apiEndpoints";
 import { create } from "zustand";
 
 export type NotificationItem = {
@@ -21,62 +22,11 @@ type NotificationState = {
   remove: (id: string) => void;
   addMany: (items: NotificationItem[]) => void;
   clear: () => void;
+  fetchNotifications: () => Promise<void>;
 };
 
-// 🧑🏾‍🌾 Notifications tailored for a FARMER user
-const seed: NotificationItem[] = [
-  {
-    id: "n1",
-    title: "Request accepted",
-    body: "Your Harvesting request in Ejisu Adadientem has been accepted by ServicePro.",
-    time: "5m ago",
-    type: "request",
-    read: false,
-  },
-  {
-    id: "n2",
-    title: "Service in progress",
-    body: "ServicePro has started your Ploughing request in New Tafo.",
-    time: "30m ago",
-    type: "request",
-    read: false,
-  },
-  {
-    id: "n3",
-    title: "Payment processed",
-    body: "₵850.00 has been deducted for your completed Ripping service at Adenta Block A.",
-    time: "2h ago",
-    type: "request",
-    read: false,
-  },
-  {
-    id: "n4",
-    title: "Request completed",
-    body: "Your Harrowing request at Fumesua has been marked as completed.",
-    time: "Yesterday",
-    type: "system",
-    read: true,
-  },
-  {
-    id: "n5",
-    title: "System update",
-    body: "We’ve added new tractor services available in your district.",
-    time: "2 days ago",
-    type: "system",
-    read: true,
-  },
-  {
-    id: "n6",
-    title: "Request cancelled",
-    body: "Your Ripping request in Mamponteng was cancelled by the operator.",
-    time: "3 days ago",
-    type: "request",
-    read: true,
-  },
-];
-
 export const useNotificationStore = create<NotificationState>((set, get) => ({
-  items: seed,
+  items: [],
   filter: "all",
 
   setFilter: (f) => set({ filter: f }),
@@ -92,6 +42,19 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   remove: (id) => set((s) => ({ items: s.items.filter((n) => n.id !== id) })),
 
   addMany: (list) => set((s) => ({ items: [...list, ...s.items] })),
-
   clear: () => set({ items: [] }),
+
+  // Fetch notifications from backend (if available). Expected shape: { notifications: NotificationItem[] }
+    fetchNotifications: async () => {
+      try {
+        // lazy import to avoid circular deps in some setups
+        const { apiFetch } = await import("@/lib/api");
+        // accept either { notifications: [] } or an array directly
+        const data: any = await apiFetch(API_ENDPOINTS.NOTIFICATIONS);
+        const list = Array.isArray(data) ? data : data?.notifications ?? [];
+        if (Array.isArray(list)) set({ items: list });
+      } catch (err) {
+        console.warn("fetchNotifications failed", err);
+      }
+    },
 }));
