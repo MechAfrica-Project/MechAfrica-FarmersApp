@@ -95,9 +95,8 @@ const FarmerDetails = ({ service, startDate, endDate, initialFarm, initialCrop }
     // Debug iOS picker events to help diagnose 'stuck' behaviour
     if (__DEV__ && Platform.OS === "ios") {
       try {
-        // eslint-disable-next-line no-console
         console.debug("FarmerDetails:DateTimePicker:onChange", { event, selectedDate, showPicker });
-      } catch (err) {}
+      } catch {}
     }
 
     if (Platform.OS === "android") setShowPicker({ type: null });

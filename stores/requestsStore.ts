@@ -19,11 +19,7 @@ type RequestsState = {
   fetchRequests: () => Promise<void>;
 };
 
-const indexById = (list: Request[]): Record<string, Request> => {
-  const out: Record<string, Request> = {};
-  for (const r of list) out[r.id] = r;
-  return out;
-};
+// helper removed (unused): indexById
 
 const computeListsByStatus = (
   byId: Record<string, Request>
@@ -87,7 +83,7 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
           delete byId[id];
           return { byId, listsByStatus: computeListsByStatus(byId) };
         });
-      } catch (err) {
+      } catch {
         // Fallback to local delete if API fails
         set((s) => {
           const byId = { ...s.byId };
@@ -138,7 +134,7 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
         // Normal server-saved response
         const serverReq = saved as Request;
         set((s) => ({ byId: { ...s.byId, [serverReq.id]: serverReq }, listsByStatus: computeListsByStatus({ ...s.byId, [serverReq.id]: serverReq }) }));
-      } catch (err) {
+      } catch {
         // Fallback: create local request id
         set((s) => {
           const id = Date.now().toString();

@@ -60,7 +60,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
       // Return a friendly queued response instead of throwing so callers can continue.
       return ({ queued: true, queuedId } as unknown) as T;
     }
-  } catch (err) {
+  } catch {
     // if enqueue failed silently, proceed to try remote fetch (will fail)
   }
 
@@ -80,7 +80,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
   if (contentType.includes("application/json")) {
     try {
       return (await res.json()) as T;
-    } catch (err) {
+    } catch {
       throw new ApiError("Failed to parse JSON response", res.status);
     }
   }
@@ -143,7 +143,7 @@ export async function uploadFile(endpoint: string, file: { uri: string; name?: s
 
   try {
     return await res.json();
-  } catch (err) {
+  } catch {
     return await res.text();
   }
 }

@@ -1,4 +1,4 @@
-import useDebugStore from "@/stores/debugStore";
+import { useDebugStore } from "@/stores/debugStore";
 import React from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
