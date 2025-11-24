@@ -1,7 +1,7 @@
 // lib/api.ts
 
-import { API_ENDPOINTS } from "./apiEndpoints";
 import { useUIStore } from "@/stores/uiStore";
+import { API_ENDPOINTS } from "./apiEndpoints";
 
 // offline enqueue helper: enqueue write requests when offline
 async function enqueueIfOffline(method: string, endpoint: string, body?: any) {

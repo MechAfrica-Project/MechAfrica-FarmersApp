@@ -1,10 +1,10 @@
-import RouterStateOverlay from "@/app/components/general/RouterStateOverlay";
 import OfflineQueueIndicator from "@/app/components/general/OfflineQueueIndicator";
+import RouterStateOverlay from "@/app/components/general/RouterStateOverlay";
+import startNetworkMonitoring from "@/lib/network";
 import { useAuthStore } from "@/stores/authStore";
 import { useFarmerStore } from "@/stores/farmerStore";
 import { useNotificationStore } from "@/stores/notificationStore";
 import { useRequestsStore } from "@/stores/requestsStore";
-import startNetworkMonitoring from "@/lib/network";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";

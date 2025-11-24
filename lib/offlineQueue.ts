@@ -3,8 +3,8 @@ import * as SecureStore from 'expo-secure-store';
 import { API_ENDPOINTS } from './apiEndpoints';
 
 // Import stores to map server responses back to local placeholders
-import { useRequestsStore } from '@/stores/requestsStore';
 import { useFarmerStore } from '@/stores/farmerStore';
+import { useRequestsStore } from '@/stores/requestsStore';
 
 const QUEUE_KEY = 'offlineRequestQueue:v1';
 
