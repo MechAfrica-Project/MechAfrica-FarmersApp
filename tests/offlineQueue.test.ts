@@ -9,7 +9,7 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 }));
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { enqueueRequest, getQueue, clearQueue, removeFromQueue } from '../lib/offlineQueue';
+import { clearQueue, enqueueRequest, getQueue, removeFromQueue } from '../lib/offlineQueue';
 
 describe('offlineQueue basic operations', () => {
   beforeEach(async () => {
