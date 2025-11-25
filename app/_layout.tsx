@@ -1,6 +1,6 @@
+import CustomToastTW from "@/app/components/general/CustomToastTW";
 import OfflineQueueIndicator from "@/app/components/general/OfflineQueueIndicator";
 import RouterStateOverlay from "@/app/components/general/RouterStateOverlay";
-import { CustomToast } from "@/app/components/general/CustomToast";
 import { startNetworkMonitoring } from "@/lib/network";
 import { setToastRef } from '@/lib/toast';
 import { useAuthStore } from "@/stores/authStore";
@@ -14,6 +14,8 @@ import { useCallback, useEffect } from "react";
 import { View } from "react-native";
 import { ToastProvider, useToast } from 'react-native-toast-notifications';
 import "./globals.css";
+// The library's Props type differs between versions — cast to `any` for compatibility
+const AnyToastProvider: any = ToastProvider;
 
 SplashScreen.preventAutoHideAsync();
 
@@ -71,7 +73,7 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <ToastProvider
+    <AnyToastProvider
       placement="top"
       duration={4000}
       offsetTop={50} // Adjusted for better positioning across devices
@@ -79,9 +81,8 @@ export default function RootLayout() {
       animationType="slide-in"
       animationDuration={250} // Slightly faster animation
       swipeEnabled={true}
-      maxToasts={5} // Allow more concurrent toasts
-      renderToast={(toast) => (
-        <CustomToast
+      renderToast={(toast: any) => (
+        <CustomToastTW
           message={toast.message}
           type={toast.type as 'success' | 'error' | 'info' | 'warning' | 'normal'}
           title={toast.data?.title}
@@ -102,7 +103,7 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }} />
         <RouterStateOverlay />
       </View>
-    </ToastProvider>
+    </AnyToastProvider>
   );
 }
 

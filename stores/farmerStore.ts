@@ -1,6 +1,6 @@
 import { apiFetch } from "@/lib/api";
 import { API_ENDPOINTS } from "@/lib/apiEndpoints";
-import { toastError, toastInfo } from "@/lib/toast";
+import { toastError } from "@/lib/toast";
 import { create } from "zustand";
 import { OnboardingData, useOnboardingStore } from "./onboardingStore";
 
