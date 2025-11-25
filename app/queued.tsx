@@ -1,7 +1,7 @@
 import { clearQueue, getQueue, processQueue, removeFromQueue, retryQueueItem } from "@/lib/offlineQueue";
+import { toastError, toastInfo, toastSuccess } from '@/lib/toast';
 import React, { useEffect, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import Toast from "react-native-toast-message";
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 
 export default function QueuedScreen() {
   const [items, setItems] = useState<any[]>([]);
@@ -22,13 +22,13 @@ export default function QueuedScreen() {
     try {
       const res = await retryQueueItem(it.id);
       if ((res as any)?.ok) {
-        Toast.show({ type: "success", text1: "Queued item sent", text2: `${it.method} ${it.endpoint}` });
+        toastSuccess("Queued item sent", `${it.method} ${it.endpoint}`);
       } else {
         const msg = (res as any)?.status ? `Status ${ (res as any).status }` : (res as any)?.error ?? "Failed";
-        Toast.show({ type: "error", text1: "Retry failed", text2: msg });
+        toastError("Retry failed", msg);
       }
     } catch {
-      Toast.show({ type: "error", text1: "Retry failed", text2: "Unexpected error" });
+      toastError("Retry failed", "Unexpected error");
     } finally {
       await refresh();
       setBusyIds((s) => {
@@ -43,9 +43,9 @@ export default function QueuedScreen() {
     setGlobalBusy(true);
     try {
       await processQueue();
-      Toast.show({ type: "success", text1: "Processing queued items" });
+      toastSuccess("Processing queued items");
     } catch {
-      Toast.show({ type: "error", text1: "Processing failed" });
+      toastError("Processing failed");
     } finally {
       await refresh();
       setGlobalBusy(false);
@@ -58,9 +58,16 @@ export default function QueuedScreen() {
         <Text style={{ fontSize: 20, fontWeight: "700" }}>Queued Items</Text>
         <View style={{ flexDirection: "row" }}>
           <Pressable onPress={retryAll} style={{ marginRight: 8, backgroundColor: "#10B981", padding: 8, borderRadius: 8 }}>
-            <Text style={{ color: "white" }}>{globalBusy ? "Processing..." : "Retry All"}</Text>
+            {globalBusy ? (
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                <Text style={{ color: "white" }}>Processing...</Text>
+              </View>
+            ) : (
+              <Text style={{ color: "white" }}>Retry All</Text>
+            )}
           </Pressable>
-          <Pressable onPress={async () => { await clearQueue(); await refresh(); Toast.show({ type: "info", text1: "Queue cleared" }); }} style={{ backgroundColor: "#EF4444", padding: 8, borderRadius: 8 }}>
+          <Pressable onPress={async () => { await clearQueue(); await refresh(); toastInfo("Queue cleared"); }} style={{ backgroundColor: "#EF4444", padding: 8, borderRadius: 8 }}>
             <Text style={{ color: "white" }}>Clear All</Text>
           </Pressable>
         </View>
@@ -80,9 +87,16 @@ export default function QueuedScreen() {
                 onPress={async () => retryOne(it)}
                 style={{ marginRight: 8, backgroundColor: "#3B82F6", padding: 8, borderRadius: 8 }}
               >
-                <Text style={{ color: "white" }}>{busyIds[it.id] ? "Working..." : "Retry"}</Text>
+                {busyIds[it.id] ? (
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                    <Text style={{ color: "white" }}>Working...</Text>
+                  </View>
+                ) : (
+                  <Text style={{ color: "white" }}>Retry</Text>
+                )}
               </Pressable>
-              <Pressable onPress={async () => { await removeFromQueue(it.id); await refresh(); Toast.show({ type: "info", text1: "Removed from queue" }); }} style={{ backgroundColor: "#F97316", padding: 8, borderRadius: 8 }}>
+              <Pressable onPress={async () => { await removeFromQueue(it.id); await refresh(); toastInfo("Removed from queue"); }} style={{ backgroundColor: "#F97316", padding: 8, borderRadius: 8 }}>
                 <Text style={{ color: "white" }}>Remove</Text>
               </Pressable>
             </View>

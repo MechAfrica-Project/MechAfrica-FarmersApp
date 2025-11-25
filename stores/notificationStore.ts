@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 import { API_ENDPOINTS } from "@/lib/apiEndpoints";
 import { create } from "zustand";
 
@@ -45,16 +46,14 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   clear: () => set({ items: [] }),
 
   // Fetch notifications from backend (if available). Expected shape: { notifications: NotificationItem[] }
-    fetchNotifications: async () => {
-      try {
-        // lazy import to avoid circular deps in some setups
-        const { apiFetch } = await import("@/lib/api");
-        // accept either { notifications: [] } or an array directly
-        const data: any = await apiFetch(API_ENDPOINTS.NOTIFICATIONS);
-        const list = Array.isArray(data) ? data : data?.notifications ?? [];
-        if (Array.isArray(list)) set({ items: list });
-      } catch (err) {
-        console.warn("fetchNotifications failed", err);
-      }
-    },
+  fetchNotifications: async () => {
+    try {
+      // accept either { notifications: [] } or an array directly
+      const data: any = await apiFetch(API_ENDPOINTS.NOTIFICATIONS);
+      const list = Array.isArray(data) ? data : data?.notifications ?? [];
+      if (Array.isArray(list)) set({ items: list });
+    } catch (err) {
+      console.warn("fetchNotifications failed", err);
+    }
+  },
 }));

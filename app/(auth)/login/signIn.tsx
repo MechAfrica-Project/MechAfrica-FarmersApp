@@ -1,5 +1,6 @@
 // app/(auth)/login/signIn.tsx
 import PrimaryButton from "@/app/components/general/PrimaryButton";
+import { toastError } from '@/lib/toast';
 import { useAuthStore } from "@/stores/authStore";
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect } from "react";
@@ -11,6 +12,7 @@ export default function SignIn() {
   const setPhone = useAuthStore((s) => s.setPhone);
   const sendPhone = useAuthStore((s) => s.sendPhone);
   const error = useAuthStore((s) => s.error);
+  const loading = useAuthStore((s) => s.loading);
 
   const navigation = useNavigation();
 
@@ -21,6 +23,13 @@ export default function SignIn() {
     // `app/(auth)/_layout.tsx`.
     return () => {};
   }, [navigation]);
+
+  // Show toast when authStore reports an error
+  useEffect(() => {
+    if (error) {
+      toastError('Sign in error', error);
+    }
+  }, [error]);
 
   return (
     <AuthLayout
@@ -40,16 +49,13 @@ export default function SignIn() {
           }}
         />
 
-        {error && (
-          <Text className="text-red-500 mt-1 font-mulish text-center">
-            {error}
-          </Text>
-        )}
+        {/* errors are surfaced via toast messages */}
 
         <PrimaryButton
           title="Log in"
           onPress={() => sendPhone()}
           textClassName="text-white"
+          loading={loading}
         />
       </View>
     </AuthLayout>

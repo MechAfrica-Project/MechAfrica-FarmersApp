@@ -34,6 +34,7 @@ const Farms = () => {
   const { farms, fetchProfile, loading, removeFarm } = useFarmerStore();
   const modalVisible = useUIStore((s) => s.addFarmModalVisible);
   const setModalVisible = useUIStore((s) => s.setAddFarmModalVisible);
+  const [busyIds, setBusyIds] = useState<Record<string, boolean>>({});
   const [expandedDistricts, setExpandedDistricts] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -174,10 +175,25 @@ const Farms = () => {
                       {/* Delete Farm */}
                       {farm.id !== "onboarding-farm" && (
                         <Pressable
-                          onPress={() => removeFarm(farm.id)}
+                          onPress={async () => {
+                            setBusyIds((s) => ({ ...s, [farm.id]: true }));
+                            try {
+                              await removeFarm(farm.id);
+                            } catch {}
+                            setBusyIds((s) => {
+                              const c = { ...s };
+                              delete c[farm.id];
+                              return c;
+                            });
+                          }}
                           className="p-2 rounded-full bg-red-50 ml-2 self-start"
+                          disabled={!!busyIds[farm.id]}
                         >
-                          <Trash2 size={20} color="#DC2626" />
+                          {busyIds[farm.id] ? (
+                            <ActivityIndicator size="small" color="#DC2626" />
+                          ) : (
+                            <Trash2 size={20} color="#DC2626" />
+                          )}
                         </Pressable>
                       )}
                     </View>
