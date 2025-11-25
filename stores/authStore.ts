@@ -59,7 +59,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       router.push("/(auth)/login/verifyPhone");
     } catch (err: any) {
       const msg = err?.message ?? "Failed to send code";
-      try { toastError('Send failed', msg); } catch {}
+      toastError('Send failed', msg);
       set({ loading: false, error: msg });
     }
   },
@@ -109,7 +109,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return true;
     } catch (err: any) {
       const msg = err?.message ?? "Verification failed";
-      try { toastError('Verification failed', msg); } catch {}
+      toastError('Verification failed', msg);
       set({ error: msg, loading: false });
       return false;
     }

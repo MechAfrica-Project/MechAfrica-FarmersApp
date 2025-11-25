@@ -31,7 +31,7 @@ const MessageToProvider = () => {
         useVoiceStore.getState().addRecording(uri);
         useServiceFlowStore.getState().addAttachment(uri);
       }
-      try { toastSuccess('Recording saved', uri ?? 'No URI found'); } catch {}
+      toastSuccess('Recording saved', uri ?? 'No URI found');
     } catch (err) {
       console.error("Error stopping recording:", err);
     }
@@ -45,7 +45,7 @@ const MessageToProvider = () => {
   useEffect(() => {
     (async () => {
       const status = await AudioModule.requestRecordingPermissionsAsync();
-      if (!status.granted) try { toastError('Permission denied', 'Permission to access microphone was denied'); } catch {}
+      if (!status.granted) toastError('Permission denied', 'Permission to access microphone was denied');
 
       await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: true });
     })();

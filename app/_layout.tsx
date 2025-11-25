@@ -1,5 +1,6 @@
 import OfflineQueueIndicator from "@/app/components/general/OfflineQueueIndicator";
 import RouterStateOverlay from "@/app/components/general/RouterStateOverlay";
+import { CustomToast } from "@/app/components/general/CustomToast";
 import { startNetworkMonitoring } from "@/lib/network";
 import { setToastRef } from '@/lib/toast';
 import { useAuthStore } from "@/stores/authStore";
@@ -73,8 +74,26 @@ export default function RootLayout() {
     <ToastProvider
       placement="top"
       duration={4000}
-      offsetTop={50}
+      offsetTop={50} // Adjusted for better positioning across devices
+      offsetBottom={40}
       animationType="slide-in"
+      animationDuration={250} // Slightly faster animation
+      swipeEnabled={true}
+      maxToasts={5} // Allow more concurrent toasts
+      renderToast={(toast) => (
+        <CustomToast
+          message={toast.message}
+          type={toast.type as 'success' | 'error' | 'info' | 'warning' | 'normal'}
+          title={toast.data?.title}
+          onDismiss={toast.onHide}
+          actions={toast.data?.actions}
+        />
+      )}
+      successColor="#10B981"
+      errorColor="#EF4444"
+      warningColor="#F59E0B"
+      infoColor="#3B82F6"
+      normalColor="#6B7280"
     >
       {/* Register provider's imperative API to our lib/toast via hook inside the provider */}
       <ToastRegistrar />

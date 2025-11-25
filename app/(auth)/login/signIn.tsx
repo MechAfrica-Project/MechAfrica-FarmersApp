@@ -27,7 +27,7 @@ export default function SignIn() {
   // Show toast when authStore reports an error
   useEffect(() => {
     if (error) {
-      try { toastError('Sign in error', error); } catch {}
+      toastError('Sign in error', error);
     }
   }, [error]);
 

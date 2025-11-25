@@ -42,7 +42,7 @@ export default function OnboardingLayout() {
   const onNextPress = () => {
     const res = validateStep(currentStep);
     if (!res.valid) {
-      try { toastError('Missing information', res.message ?? 'Please complete this step.'); } catch {}
+      toastError('Missing information', res.message ?? 'Please complete this step.');
       return;
     }
     nextStep();
@@ -51,18 +51,18 @@ export default function OnboardingLayout() {
   const handleFinish = async () => {
     const res = validateStep(currentStep);
     if (!res.valid) {
-      try { toastError('Missing information', res.message ?? 'Please complete this step.'); } catch {}
+      toastError('Missing information', res.message ?? 'Please complete this step.');
       return;
     }
 
     try {
       await SecureStore.setItemAsync("onboardingData", JSON.stringify(data));
       await SecureStore.setItemAsync("onboardingCompleted", "true");
-      try { toastSuccess('Onboarding completed', 'Onboarding completed successfully!'); } catch {}
+      toastSuccess('Onboarding completed', 'Onboarding completed successfully!');
       reset();
       router.replace("/(tabs)");
     } catch (err) {
-      try { toastError('Save failed', 'Failed to save onboarding data.'); } catch {}
+      toastError('Save failed', 'Failed to save onboarding data.');
       console.error(err);
     }
   };

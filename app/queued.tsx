@@ -22,13 +22,13 @@ export default function QueuedScreen() {
     try {
       const res = await retryQueueItem(it.id);
       if ((res as any)?.ok) {
-        try { toastSuccess("Queued item sent", `${it.method} ${it.endpoint}`); } catch {}
+        toastSuccess("Queued item sent", `${it.method} ${it.endpoint}`);
       } else {
         const msg = (res as any)?.status ? `Status ${ (res as any).status }` : (res as any)?.error ?? "Failed";
-        try { toastError("Retry failed", msg); } catch {}
+        toastError("Retry failed", msg);
       }
     } catch {
-      try { toastError("Retry failed", "Unexpected error"); } catch {}
+      toastError("Retry failed", "Unexpected error");
     } finally {
       await refresh();
       setBusyIds((s) => {
@@ -43,9 +43,9 @@ export default function QueuedScreen() {
     setGlobalBusy(true);
     try {
       await processQueue();
-      try { toastSuccess("Processing queued items"); } catch {}
+      toastSuccess("Processing queued items");
     } catch {
-      try { toastError("Processing failed"); } catch {}
+      toastError("Processing failed");
     } finally {
       await refresh();
       setGlobalBusy(false);
@@ -67,7 +67,7 @@ export default function QueuedScreen() {
               <Text style={{ color: "white" }}>Retry All</Text>
             )}
           </Pressable>
-          <Pressable onPress={async () => { await clearQueue(); await refresh(); try { toastInfo("Queue cleared"); } catch {} }} style={{ backgroundColor: "#EF4444", padding: 8, borderRadius: 8 }}>
+          <Pressable onPress={async () => { await clearQueue(); await refresh(); toastInfo("Queue cleared"); }} style={{ backgroundColor: "#EF4444", padding: 8, borderRadius: 8 }}>
             <Text style={{ color: "white" }}>Clear All</Text>
           </Pressable>
         </View>
@@ -96,7 +96,7 @@ export default function QueuedScreen() {
                   <Text style={{ color: "white" }}>Retry</Text>
                 )}
               </Pressable>
-              <Pressable onPress={async () => { await removeFromQueue(it.id); await refresh(); try { toastInfo("Removed from queue"); } catch {} }} style={{ backgroundColor: "#F97316", padding: 8, borderRadius: 8 }}>
+              <Pressable onPress={async () => { await removeFromQueue(it.id); await refresh(); toastInfo("Removed from queue"); }} style={{ backgroundColor: "#F97316", padding: 8, borderRadius: 8 }}>
                 <Text style={{ color: "white" }}>Remove</Text>
               </Pressable>
             </View>

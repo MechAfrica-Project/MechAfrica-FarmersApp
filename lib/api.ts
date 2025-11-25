@@ -75,7 +75,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
       } catch {}
       const message = parsed?.message ?? text ?? `API error: ${res.status}`;
       // show toast for non-2xx responses
-      try { toastError('Request failed', message); } catch {}
+      toastError('Request failed', message);
       throw new ApiError(message, res.status, parsed);
     }
 
@@ -86,7 +86,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
         return (await res.json()) as T;
       } catch {
         const msg = "Failed to parse JSON response";
-        try { toastError('Response error', msg); } catch {}
+        toastError('Response error', msg);
         throw new ApiError(msg, res.status);
       }
     }
@@ -96,7 +96,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
     return text as unknown as T;
   } catch (err: any) {
     // Network or other unexpected errors
-    try { toastError('Network error', err?.message ?? String(err)); } catch {}
+    toastError('Network error', err?.message ?? String(err));
     throw err;
   }
 }

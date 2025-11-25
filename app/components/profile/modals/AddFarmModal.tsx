@@ -5,6 +5,7 @@ import {
   getDistrictsByRegion,
 } from "@/constants/ghana-regions-districts";
 import { Farm, useFarmerStore } from "@/stores/farmerStore";
+import { toastError, toastInfo } from "@/lib/toast";
 import { MapPin, Sprout } from "lucide-react-native";
 import React, { useState } from "react";
 import {
@@ -51,9 +52,7 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
       !district ||
       cropTypes.length === 0
     ) {
-      import('@/lib/toast')
-        .then((m) => m.toastError('Validation', 'Please fill in all fields.'))
-        .catch(() => {});
+      toastError('Validation', 'Please fill in all fields.');
       return;
     }
 
@@ -65,9 +64,7 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
         f.district === district
     );
     if (exists) {
-      import('@/lib/toast')
-        .then((m) => m.toastInfo('Duplicate', 'A farm with the same name, region, and district already exists.'))
-        .catch(() => {});
+      toastInfo('Duplicate', 'A farm with the same name, region, and district already exists.');
       return;
     }
 

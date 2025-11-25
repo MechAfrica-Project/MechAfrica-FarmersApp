@@ -60,7 +60,7 @@ const FarmLocationStep = () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== "granted") {
-        try { toastError('Permission denied', 'Location access is required.'); } catch {}
+        toastError('Permission denied', 'Location access is required.');
         setLoading(false);
         return;
       }

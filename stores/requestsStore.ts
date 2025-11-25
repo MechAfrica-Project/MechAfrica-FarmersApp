@@ -124,10 +124,8 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
           const id = Date.now().toString();
           const newReq: any = { id, ...(req as any), status: "pending", _queued: true, _queuedId: (saved as any).queuedId };
           set((s) => ({ byId: { ...s.byId, [id]: newReq }, listsByStatus: computeListsByStatus({ ...s.byId, [id]: newReq }) }));
-          try {
-            const { toastInfo } = await import('@/lib/toast');
-            toastInfo("Saved offline", "Request queued for upload");
-          } catch {}
+          const { toastQueued } = await import('@/lib/toast');
+          toastQueued("Saved offline", "Request queued for upload");
           return;
         }
 

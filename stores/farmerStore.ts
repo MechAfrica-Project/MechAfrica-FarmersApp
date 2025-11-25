@@ -123,18 +123,15 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
           const id = `local-farm-${Date.now()}`;
           const local: any = { id, ...farm, _queued: true, _queuedId: (savedFarm as any).queuedId };
           set((s) => ({ farms: [...s.farms, local] }));
-          try {
-            toastInfo("Saved offline", "Farm queued for upload");
-          } catch {}
+          const { toastQueued } = await import('@/lib/toast');
+          toastQueued("Saved offline", "Farm queued for upload");
           return;
         }
 
         set((s) => ({ farms: [...s.farms, savedFarm as Farm] }));
       } catch (err: any) {
         console.error("Failed to add farm", err);
-        try {
-          toastError('Save failed', 'Failed to save farm. Try again.');
-        } catch {}
+        toastError('Save failed', 'Failed to save farm. Try again.');
       }
     },
 
@@ -144,18 +141,15 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
         // if queued, optimistically remove locally and notify
         if ((res as any)?.queued) {
           set((s) => ({ farms: s.farms.filter((f) => f.id !== id) }));
-          try {
-            toastInfo("Queued delete", "Farm deletion queued for upload");
-          } catch {}
+          const { toastQueued } = await import('@/lib/toast');
+          toastQueued("Queued delete", "Farm deletion queued for upload");
           return;
         }
 
         set((s) => ({ farms: s.farms.filter((f) => f.id !== id) }));
       } catch (err: any) {
         console.error("Failed to remove farm", err);
-        try {
-          toastError('Delete failed', 'Failed to delete farm. Try again.');
-        } catch {}
+        toastError('Delete failed', 'Failed to delete farm. Try again.');
       }
     },
   };

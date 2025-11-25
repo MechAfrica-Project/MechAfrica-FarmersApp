@@ -16,7 +16,7 @@ export default function ProfilePictureStep() {
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
-      try { toastError('Permission denied', 'Camera permission is required to take photos.'); } catch {}
+      toastError('Permission denied', 'Camera permission is required to take photos.');
       return;
     }
 
