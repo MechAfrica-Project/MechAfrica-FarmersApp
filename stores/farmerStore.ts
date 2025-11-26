@@ -152,5 +152,11 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
         toastError('Delete failed', 'Failed to delete farm. Try again.');
       }
     },
+    // Restore a farm (used for Undo actions in the UI)
+    restoreFarm: (farm: Farm) =>
+      set((s) => {
+        if (s.farms.find((f) => f.id === farm.id)) return { farms: s.farms };
+        return { farms: [...s.farms, farm] };
+      }),
   };
 });
