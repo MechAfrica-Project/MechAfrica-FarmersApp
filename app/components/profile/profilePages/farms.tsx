@@ -178,7 +178,31 @@ const Farms = () => {
                           onPress={async () => {
                             setBusyIds((s) => ({ ...s, [farm.id]: true }));
                             try {
-                              await removeFarm(farm.id);
+                              // capture farm snapshot for undo
+                              const snapshot = { ...farm } as any;
+                              // call delete (fire-and-forget)
+                              removeFarm(farm.id).catch(() => {});
+                              // show actionable toast with Undo
+                              const { default: showToast } = await import('@/lib/toast');
+                              const { restoreFarm } = await import('@/stores/farmerStore');
+                              showToast({
+                                type: 'info',
+                                text1: 'Farm deleted',
+                                text2: undefined,
+                                visibilityTime: 5000,
+                                placement: 'top',
+                                actions: [
+                                  {
+                                    label: 'Undo',
+                                    onPress: () => {
+                                      try {
+                                        restoreFarm(snapshot);
+                                      } catch {}
+                                    },
+                                    style: 'primary',
+                                  },
+                                ],
+                              });
                             } catch {}
                             setBusyIds((s) => {
                               const c = { ...s };

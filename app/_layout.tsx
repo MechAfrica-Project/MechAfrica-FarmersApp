@@ -1,8 +1,8 @@
-import CustomToastTW from "@/app/components/general/CustomToastTW";
+import CustomToast from "@/app/components/general/CustomToast";
 import OfflineQueueIndicator from "@/app/components/general/OfflineQueueIndicator";
 import RouterStateOverlay from "@/app/components/general/RouterStateOverlay";
 import { startNetworkMonitoring } from "@/lib/network";
-import { setToastRef } from '@/lib/toast';
+import { setToastRef, toastInfo } from '@/lib/toast';
 import { useAuthStore } from "@/stores/authStore";
 import { useFarmerStore } from "@/stores/farmerStore";
 import { useNotificationStore } from "@/stores/notificationStore";
@@ -11,11 +11,10 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect } from "react";
-import { View } from "react-native";
-import { ToastProvider, useToast } from 'react-native-toast-notifications';
+import { View, Text } from "react-native";
+import { useToast, ToastProvider } from 'react-native-toast-notifications';
+import ToastProviderWrapper from '@/app/components/ui/ToastProviderWrapper';
 import "./globals.css";
-// The library's Props type differs between versions — cast to `any` for compatibility
-const AnyToastProvider: any = ToastProvider;
 
 SplashScreen.preventAutoHideAsync();
 
@@ -73,7 +72,7 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <AnyToastProvider
+    <ToastProvider
       placement="top"
       duration={4000}
       offsetTop={50} // Adjusted for better positioning across devices
@@ -82,7 +81,7 @@ export default function RootLayout() {
       animationDuration={250} // Slightly faster animation
       swipeEnabled={true}
       renderToast={(toast: any) => (
-        <CustomToastTW
+        <CustomToast
           message={toast.message}
           type={toast.type as 'success' | 'error' | 'info' | 'warning' | 'normal'}
           title={toast.data?.title}
@@ -90,11 +89,6 @@ export default function RootLayout() {
           actions={toast.data?.actions}
         />
       )}
-      successColor="#10B981"
-      errorColor="#EF4444"
-      warningColor="#F59E0B"
-      infoColor="#3B82F6"
-      normalColor="#6B7280"
     >
       {/* Register provider's imperative API to our lib/toast via hook inside the provider */}
       <ToastRegistrar />
@@ -103,7 +97,7 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }} />
         <RouterStateOverlay />
       </View>
-    </AnyToastProvider>
+    </ToastProvider>
   );
 }
 

@@ -93,6 +93,14 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
       }
     },
 
+      // Restore a request (used for Undo actions in the UI)
+      restoreRequest: (req: Request) =>
+        set((s) => {
+          if (s.byId[req.id]) return { byId: s.byId, listsByStatus: s.listsByStatus };
+          const byId = { ...s.byId, [req.id]: req };
+          return { byId, listsByStatus: computeListsByStatus(byId) };
+        }, false),
+
     deleteCancelled: () =>
       set((s) => {
         const byId: Record<string, Request> = {};

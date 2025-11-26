@@ -32,8 +32,27 @@ const CancelledDetailsScreen: React.FC = () => {
       request={parsedRequest}
       type="cancelled"
       showActions
-      onDelete={() => {
-        deleteRequest(parsedRequest!.id);
+      onDelete={async () => {
+        // capture snapshot for undo
+        const snapshot = parsedRequest!;
+        deleteRequest(snapshot.id).catch(() => {});
+        const { default: showToast } = await import('@/lib/toast');
+        const { restoreRequest } = await import('@/stores/requestsStore');
+        showToast({
+          type: 'info',
+          text1: 'Request deleted',
+          visibilityTime: 5000,
+          placement: 'top',
+          actions: [
+            {
+              label: 'Undo',
+              onPress: () => {
+                try { restoreRequest(snapshot); } catch {}
+              },
+              style: 'primary',
+            },
+          ],
+        });
         router.back();
       }}
     />
