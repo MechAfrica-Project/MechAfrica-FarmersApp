@@ -1,4 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
+import { getAuthToken } from '@/lib/api';
 import { API_ENDPOINTS } from './apiEndpoints';
 
 // Import stores to map server responses back to local placeholders
@@ -118,7 +119,9 @@ export async function processQueue() {
     const baseUrl = process.env.EXPO_PUBLIC_API_URL ?? 'https://your-api.com';
     let token: string | null = null;
     try {
-      token = await SecureStore.getItemAsync('token');
+      // prefer in-memory/AsyncStorage-backed token from api client
+      token = getAuthToken() ?? null;
+      if (!token) token = await SecureStore.getItemAsync('token');
     } catch {}
 
     const remaining: QueuedRequest[] = [];
@@ -236,7 +239,8 @@ export async function retryQueueItem(id: string) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL ?? 'https://your-api.com';
   let token: string | null = null;
   try {
-    token = await SecureStore.getItemAsync('token');
+    token = getAuthToken() ?? null;
+    if (!token) token = await SecureStore.getItemAsync('token');
   } catch {}
 
   try {

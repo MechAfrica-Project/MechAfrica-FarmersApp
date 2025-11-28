@@ -46,11 +46,7 @@ export default function ToastProviderWrapper(props: ToastProviderWrapperProps) {
       animationDuration={animationDuration}
       swipeEnabled={swipeEnabled}
       renderToast={renderToast as any}
-      successColor={successColor}
-      errorColor={errorColor}
-      warningColor={warningColor}
-      infoColor={infoColor}
-      normalColor={normalColor}
+      // color props intentionally not forwarded - CustomToast handles colors
     >
       {children}
     </ToastProvider>

@@ -1,6 +1,6 @@
 // stores/authStore.ts
 import { PhoneValue } from "@/app/(auth)/login/components/PhoneInput";
-import { apiFetch, setAuthToken } from "@/lib/api";
+import { apiFetch, setAuthToken, setTokens } from "@/lib/api";
 import { API_ENDPOINTS } from "@/lib/apiEndpoints";
 import { toastError } from '@/lib/toast';
 import { useDebugStore } from "@/stores/debugStore";
@@ -83,8 +83,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw new Error("Invalid verification response");
       }
 
-      // Persist token and update fetch wrapper
-      await SecureStore.setItemAsync("token", data.token);
+      // Persist token to both SecureStore (legacy) and unified token storage
+      try { await SecureStore.setItemAsync("token", data.token); } catch {}
+      // Persist using new setTokens (will save to AsyncStorage and in-memory)
+      try { await setTokens(data.token, (data as any).refreshToken ?? null); } catch {}
+      // Keep backwards-compatible in-memory token setter
       setAuthToken(data.token);
 
       // Ensure onboarding store is loaded (some flows rely on it)
@@ -163,7 +166,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   restoreSession: async () => {
     set({ loading: true });
     try {
-      const token = await SecureStore.getItemAsync("token");
+      // Prefer the token already loaded into api client memory, fall back to SecureStore
+      const { getAuthToken } = await import('@/lib/api');
+      let token = getAuthToken();
+      if (!token) token = await SecureStore.getItemAsync("token");
       if (token) {
         setAuthToken(token);
 
