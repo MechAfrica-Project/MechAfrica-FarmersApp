@@ -1,6 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useMemo } from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 interface CustomToastProps {
 	message: string;

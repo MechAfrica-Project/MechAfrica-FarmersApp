@@ -1,6 +1,7 @@
 import CustomToast from "@/app/components/general/CustomToast";
 import OfflineQueueIndicator from "@/app/components/general/OfflineQueueIndicator";
 import RouterStateOverlay from "@/app/components/general/RouterStateOverlay";
+import ToastProviderWrapper from '@/app/components/ui/ToastProviderWrapper';
 import { startNetworkMonitoring } from "@/lib/network";
 import { setToastRef } from '@/lib/toast';
 import { useAuthStore } from "@/stores/authStore";
@@ -13,7 +14,6 @@ import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect } from "react";
 import { View } from "react-native";
 import { useToast } from 'react-native-toast-notifications';
-import ToastProviderWrapper from '@/app/components/ui/ToastProviderWrapper';
 import "./globals.css";
 
 SplashScreen.preventAutoHideAsync();

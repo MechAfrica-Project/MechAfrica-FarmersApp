@@ -25,8 +25,10 @@ interface FarmerState {
   setSelectedCrop: (crop?: string | null) => void;
 
   fetchProfile: () => Promise<void>;
-  addFarm: (farm: Omit<Farm, "id">) => void;
-  removeFarm: (id: string) => void;
+  addFarm: (farm: Omit<Farm, "id">) => Promise<void>;
+  removeFarm: (id: string) => Promise<void>;
+  // Restore a farm (used for Undo flows)
+  restoreFarm: (farm: Farm) => void;
 }
 
 export const useFarmerStore = create<FarmerState>((set, get) => {
