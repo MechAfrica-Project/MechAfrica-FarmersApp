@@ -1,9 +1,9 @@
-import React from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import RequestDetailsCard from "../reusable/RequestDetailsCard";
-import { Request } from "@/types/request";
-import { Text, View } from "react-native";
 import { useRequestsStore } from "@/stores/requestsStore";
+import { Request } from "@/types/request";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React from "react";
+import { Text, View } from "react-native";
+import RequestDetailsCard from "../reusable/RequestDetailsCard";
 
 const CancelledDetailsScreen: React.FC = () => {
   const { request } = useLocalSearchParams();
