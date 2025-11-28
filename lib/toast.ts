@@ -6,12 +6,22 @@ type ToastRef = any;
 let _toastRef: ToastRef | null = null;
 
 // Debounce mechanism to prevent toast spam
-let lastToastTime = 0;
-const TOAST_DEBOUNCE_MS = 200;
+// Prevent duplicate toasts from showing in a short window (ms).
+// We prefer deduping identical messages rather than globally delaying all toasts.
+const DEDUPE_WINDOW_MS = 800;
+const recentToastTimestamps: Record<string, number> = {};
 
 // In-memory queue for toasts fired before provider mounts
 const queuedToasts: ToastOpts[] = [];
 const MAX_QUEUE_LENGTH = 20;
+// Track visible toasts and enforce a maximum so new toasts aren't delayed.
+const MAX_VISIBLE_TOASTS = 3;
+type VisibleToast = { id: string | number; type?: string; isActionable: boolean; ts: number };
+const visibleToasts: VisibleToast[] = [];
+// Aggregation state for queued/info toasts (avoid many repeated small toasts)
+const AGGREGATION_WINDOW_MS = 2000;
+type AggState = { id?: string | number; count: number; timeout?: ReturnType<typeof setTimeout> };
+const aggregation: Record<string, AggState> = {};
 
 export function setToastRef(ref: ToastRef | null) {
   _toastRef = ref;
@@ -22,14 +32,29 @@ export function setToastRef(ref: ToastRef | null) {
       while (queuedToasts.length) {
         const t = queuedToasts.shift();
         try {
-          if (t) {
-            _toastRef.show(t.text2 || t.text1, {
-              type: t.type ?? 'normal',
-              duration: t.visibilityTime ?? 4000,
-              placement: t.placement ?? 'top',
-              data: { title: t.text2 ? t.text1 : undefined, actions: t.actions },
-            });
-          }
+          if (!t) continue;
+          const title = t.text2 ? t.text1 : undefined;
+          const message = t.text2 || t.text1;
+          const duration = t.visibilityTime ?? (function getDefaultDuration(type?: string) {
+            switch (type) {
+              case 'error':
+                return 5000;
+              case 'warning':
+                return 4500;
+              case 'success':
+                return 3500;
+              default:
+                return 4000;
+            }
+          })(t.type);
+
+          // show directly on provider to avoid re-entrancy into showToast's queue logic
+          _toastRef.show(message, {
+            type: t.type ?? 'normal',
+            duration,
+            placement: t.placement ?? 'top',
+            data: { title, actions: t.actions },
+          });
         } catch {}
       }
     }
@@ -71,13 +96,19 @@ export function showToast(opts: ToastOpts) {
       return;
     }
 
-    // Prevent toast spam by debouncing
-    const now = Date.now();
-    if (now - lastToastTime < TOAST_DEBOUNCE_MS) {
-      console.debug('Toast debounced to prevent spam');
-      return;
+    // Deduplicate identical toasts shown in a short window to avoid spammy repeats.
+    // Exempt errors and actionable toasts (they should always be visible).
+    const isActionable = Array.isArray(opts.actions) && opts.actions.length > 0;
+    if (opts.type !== 'error' && !isActionable) {
+      const key = `${opts.type || 'normal'}|${opts.text1}|${opts.text2 || ''}`;
+      const now = Date.now();
+      const last = recentToastTimestamps[key] || 0;
+      if (now - last < DEDUPE_WINDOW_MS) {
+        // skip duplicate
+        return;
+      }
+      recentToastTimestamps[key] = now;
     }
-    lastToastTime = now;
 
     // Use appropriate duration based on toast type
     const getDefaultDuration = (type?: string) => {
@@ -98,7 +129,7 @@ export function showToast(opts: ToastOpts) {
     const message = opts.text2 || opts.text1;
 
     // Some toast providers return an id when showing; preserve that if available
-    return _toastRef.show(message, {
+    const id = _toastRef.show(message, {
       type: opts.type ?? 'normal',
       duration: opts.visibilityTime ?? getDefaultDuration(opts.type),
       placement: opts.placement ?? 'top',
@@ -107,6 +138,29 @@ export function showToast(opts: ToastOpts) {
         actions: opts.actions,
       },
     });
+
+    try {
+      // Track visible toasts if provider returned an id
+      if (id) {
+        visibleToasts.push({ id, type: opts.type, isActionable: isActionable, ts: Date.now() });
+
+        // If we exceed the visible limit, dismiss the oldest low-priority toast
+        if (visibleToasts.length > MAX_VISIBLE_TOASTS) {
+          const idx = visibleToasts.findIndex((v) => v.type !== 'error' && !v.isActionable);
+          const removeIdx = idx >= 0 ? idx : 0; // fallback to oldest if none found
+          const removed = visibleToasts.splice(removeIdx, 1)[0];
+          try {
+            // Dismiss via provider if supported
+            if (_toastRef) {
+              if (typeof _toastRef.hide === 'function') _toastRef.hide(removed.id);
+              else if (typeof _toastRef.dismiss === 'function') _toastRef.dismiss(removed.id);
+            }
+          } catch {}
+        }
+      }
+    } catch {}
+
+    return id;
   } catch (err) {
     if (process.env.NODE_ENV !== 'test') console.warn('Toast failed to show:', err);
     // Swallow - toast failure shouldn't crash the app
@@ -120,10 +174,22 @@ export function dismissToasts() {
   try {
     if (!_toastRef) return;
     // Try common API names
-    if (typeof _toastRef.hideAll === 'function') return _toastRef.hideAll();
-    if (typeof _toastRef.hide === 'function') return _toastRef.hide();
-    if (typeof _toastRef.dismissAll === 'function') return _toastRef.dismissAll();
-    if (typeof _toastRef.dismiss === 'function') return _toastRef.dismiss();
+    if (typeof _toastRef.hideAll === 'function') {
+      visibleToasts.length = 0;
+      return _toastRef.hideAll();
+    }
+    if (typeof _toastRef.hide === 'function') {
+      visibleToasts.length = 0;
+      return _toastRef.hide();
+    }
+    if (typeof _toastRef.dismissAll === 'function') {
+      visibleToasts.length = 0;
+      return _toastRef.dismissAll();
+    }
+    if (typeof _toastRef.dismiss === 'function') {
+      visibleToasts.length = 0;
+      return _toastRef.dismiss();
+    }
   } catch {}
 }
 
@@ -135,6 +201,9 @@ export function dismissToast(toastId: string | number) {
     if (!_toastRef) return;
     // Try to hide specific toast if API supports it
     if (typeof _toastRef.hide === 'function' && toastId) {
+      // remove from our tracking list
+      const idx = visibleToasts.findIndex((v) => v.id === toastId);
+      if (idx >= 0) visibleToasts.splice(idx, 1);
       return _toastRef.hide(toastId);
     }
   } catch {}
@@ -151,7 +220,61 @@ export const toastInfo = (text1: string, text2?: string, visibilityTime?: number
 
 // Queued/background notifications are shown at the bottom by default.
 export const toastQueued = (text1: string, text2?: string, visibilityTime?: number) =>
-  showToast({ type: 'info', text1, text2, visibilityTime, placement: 'bottom' });
+  showQueuedAggregated(text1, text2, visibilityTime);
+
+function showQueuedAggregated(text1: string, text2?: string, visibilityTime?: number) {
+  const key = `${text1}|${text2 || ''}`;
+
+  // If provider not ready, fall back to queueing via showToast to preserve behavior
+  if (!_toastRef) {
+    return showToast({ type: 'info', text1, text2, visibilityTime, placement: 'bottom' });
+  }
+
+  try {
+    const nowState = aggregation[key] || { count: 0 };
+    nowState.count = (nowState.count || 0) + 1;
+
+    // Build user-facing message: prefer a concise aggregated message
+    const title = text1;
+    const message = text2 ? `${nowState.count} ${text2}` : `${title} (${nowState.count})`;
+
+    // If there is an existing toast id, dismiss it and re-show updated count.
+    if (nowState.id && _toastRef) {
+      try {
+        if (typeof _toastRef.hide === 'function') _toastRef.hide(nowState.id);
+        else if (typeof _toastRef.dismiss === 'function') _toastRef.dismiss(nowState.id);
+      } catch {}
+    }
+
+    const id = _toastRef.show(message, {
+      type: 'info',
+      duration: visibilityTime ?? 3500,
+      placement: 'bottom',
+      data: { title },
+    });
+
+    nowState.id = id;
+
+    // Reset aggregation window timeout
+    if (nowState.timeout) clearTimeout(nowState.timeout);
+    nowState.timeout = setTimeout(() => {
+      // clear aggregation after window
+      try {
+        if (nowState.id && _toastRef) {
+          if (typeof _toastRef.hide === 'function') _toastRef.hide(nowState.id);
+          else if (typeof _toastRef.dismiss === 'function') _toastRef.dismiss(nowState.id);
+        }
+      } catch {}
+      delete aggregation[key];
+    }, AGGREGATION_WINDOW_MS) as ReturnType<typeof setTimeout>;
+
+    aggregation[key] = nowState;
+    return id;
+  } catch (err) {
+    // fallback to non-aggregated
+    return showToast({ type: 'info', text1, text2, visibilityTime, placement: 'bottom' });
+  }
+}
 
 /**
  * Show a confirmation-style toast with action buttons. Designed to replace native
