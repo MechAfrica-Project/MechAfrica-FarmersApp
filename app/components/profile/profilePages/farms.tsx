@@ -184,7 +184,7 @@ const Farms = () => {
                               removeFarm(farm.id).catch(() => {});
                               // show actionable toast with Undo
                               const { default: showToast } = await import('@/lib/toast');
-                              const { restoreFarm } = await import('@/stores/farmerStore');
+                              const restoreFarm = useFarmerStore.getState().restoreFarm;
                               showToast({
                                 type: 'info',
                                 text1: 'Farm deleted',

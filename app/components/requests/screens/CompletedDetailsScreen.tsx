@@ -36,7 +36,7 @@ const CompletedDetailsScreen: React.FC = () => {
         const snapshot = parsedRequest!;
         deleteRequest(snapshot.id).catch(() => {});
         const { default: showToast } = await import('@/lib/toast');
-        const { restoreRequest } = await import('@/stores/requestsStore');
+        const restoreRequest = useRequestsStore.getState().restoreRequest;
         showToast({
           type: 'info',
           text1: 'Request deleted',

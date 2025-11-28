@@ -15,6 +15,8 @@ type RequestsState = {
   deleteRequest: (id: string) => Promise<void>;
   deleteCancelled: () => void;
   deleteCompleted: () => void;
+  // Restore a request for undo flows
+  restoreRequest: (req: Request) => void;
   addRequest: (req: Omit<Request, "id" | "status">) => Promise<void>;
   fetchRequests: () => Promise<void>;
 };
