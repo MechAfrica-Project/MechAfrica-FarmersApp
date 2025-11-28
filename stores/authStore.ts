@@ -1,7 +1,9 @@
 // stores/authStore.ts
 import { PhoneValue } from "@/app/(auth)/login/components/PhoneInput";
 import { apiFetch, setAuthToken } from "@/lib/api";
-import useDebugStore from "@/stores/debugStore";
+import { API_ENDPOINTS } from "@/lib/apiEndpoints";
+import { toastError } from '@/lib/toast';
+import { useDebugStore } from "@/stores/debugStore";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
@@ -47,7 +49,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     set({ loading: true, error: null });
     try {
-      await apiFetch<{ ok: boolean }>("/auth/send-otp", {
+      await apiFetch<{ ok: boolean }>(API_ENDPOINTS.AUTH_SEND_OTP, {
         method: "POST",
         body: JSON.stringify({ phone: phone?.raw, country: phone?.country }),
       });
@@ -56,7 +58,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ loading: false });
       router.push("/(auth)/login/verifyPhone");
     } catch (err: any) {
-      set({ loading: false, error: err?.message ?? "Failed to send code" });
+      const msg = err?.message ?? "Failed to send code";
+      toastError('Send failed', msg);
+      set({ loading: false, error: msg });
     }
   },
 
@@ -68,7 +72,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Call backend to verify OTP and receive token + user
       const data = await apiFetch<{ token: string; user?: User }>(
-        "/auth/verify-otp",
+        API_ENDPOINTS.AUTH_VERIFY_OTP,
         {
           method: "POST",
           body: JSON.stringify({ phone: phone.raw, code }),
@@ -88,10 +92,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await onboardingStore.loadFromStorage();
 
       set({ user: data.user ?? null, token: data.token, loading: false });
+
+      // After successful verification, kick off background synces (non-blocking)
+      try {
+        const rs = (await import("@/stores/requestsStore")).useRequestsStore.getState();
+        const fs = (await import("@/stores/farmerStore")).useFarmerStore.getState();
+        const ns = (await import("@/stores/notificationStore")).useNotificationStore.getState();
+        Promise.allSettled([
+          rs.fetchRequests ? rs.fetchRequests() : Promise.resolve(),
+          fs.fetchProfile ? fs.fetchProfile() : Promise.resolve(),
+          ns.fetchNotifications ? ns.fetchNotifications() : Promise.resolve(),
+        ]).catch(() => {});
+      } catch {}
+
       router.replace("/(tabs)");
       return true;
     } catch (err: any) {
-      set({ error: err?.message ?? "Verification failed", loading: false });
+      const msg = err?.message ?? "Verification failed";
+      toastError('Verification failed', msg);
+      set({ error: msg, loading: false });
       return false;
     }
   },

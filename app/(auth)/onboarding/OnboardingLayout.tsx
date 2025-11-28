@@ -1,26 +1,27 @@
+import { toastError, toastSuccess } from '@/lib/toast';
+import { useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import React from "react";
 import {
-  View,
-  Alert,
   Keyboard,
   KeyboardAvoidingView,
-  TouchableWithoutFeedback,
   Platform,
   ScrollView,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
-import * as SecureStore from "expo-secure-store";
-import { useRouter } from "expo-router";
 
-import { useOnboardingStore } from "@/stores/onboardingStore";
 import FooterNote from "@/app/components/general/FooterNote";
+import FooterActions from "@/app/components/onboarding/FooterActions";
 import OnboardingHeader from "@/app/components/onboarding/OnboardingHeader";
 import ProgressHeader from "@/app/components/onboarding/ProgressHeader";
-import FooterActions from "@/app/components/onboarding/FooterActions";
 import {
   onboardingSteps,
-  PROGRESS_STEPS,
   optionalSteps,
+  PROGRESS_STEPS,
 } from "@/constants/onboardingSteps";
+import { useOnboardingStore } from "@/stores/onboardingStore";
+// note: toasts are shown via lib/toast helper
 
 export default function OnboardingLayout() {
   const {
@@ -41,10 +42,7 @@ export default function OnboardingLayout() {
   const onNextPress = () => {
     const res = validateStep(currentStep);
     if (!res.valid) {
-      Alert.alert(
-        "Missing information",
-        res.message ?? "Please complete this step."
-      );
+      toastError('Missing information', res.message ?? 'Please complete this step.');
       return;
     }
     nextStep();
@@ -53,21 +51,18 @@ export default function OnboardingLayout() {
   const handleFinish = async () => {
     const res = validateStep(currentStep);
     if (!res.valid) {
-      Alert.alert(
-        "Missing information",
-        res.message ?? "Please complete this step."
-      );
+      toastError('Missing information', res.message ?? 'Please complete this step.');
       return;
     }
 
     try {
       await SecureStore.setItemAsync("onboardingData", JSON.stringify(data));
       await SecureStore.setItemAsync("onboardingCompleted", "true");
-      Alert.alert("Success", "Onboarding completed successfully!");
+      toastSuccess('Onboarding completed', 'Onboarding completed successfully!');
       reset();
       router.replace("/(tabs)");
     } catch (err) {
-      Alert.alert("Error", "Failed to save onboarding data.");
+      toastError('Save failed', 'Failed to save onboarding data.');
       console.error(err);
     }
   };

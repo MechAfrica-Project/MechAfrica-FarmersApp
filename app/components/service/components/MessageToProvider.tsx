@@ -1,8 +1,9 @@
+import { toastError, toastSuccess } from '@/lib/toast';
 import { useServiceFlowStore } from "@/stores/serviceFlowStore";
 import { useVoiceStore } from "@/stores/voiceStore";
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder, useAudioRecorderState } from "expo-audio";
 import React, { useEffect } from "react";
-import { Alert, Text, TextInput, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
 import VoiceRecorderButton from "../../general/VoiceRecorderButton";
 
 const MessageToProvider = () => {
@@ -30,7 +31,7 @@ const MessageToProvider = () => {
         useVoiceStore.getState().addRecording(uri);
         useServiceFlowStore.getState().addAttachment(uri);
       }
-      Alert.alert("Recording saved", uri ?? "No URI found");
+      toastSuccess('Recording saved', uri ?? 'No URI found');
     } catch (err) {
       console.error("Error stopping recording:", err);
     }
@@ -44,7 +45,7 @@ const MessageToProvider = () => {
   useEffect(() => {
     (async () => {
       const status = await AudioModule.requestRecordingPermissionsAsync();
-      if (!status.granted) Alert.alert("Permission to access microphone was denied");
+      if (!status.granted) toastError('Permission denied', 'Permission to access microphone was denied');
 
       await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: true });
     })();

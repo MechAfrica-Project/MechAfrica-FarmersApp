@@ -1,4 +1,6 @@
 import { apiFetch } from "@/lib/api";
+import { API_ENDPOINTS } from "@/lib/apiEndpoints";
+import { toastError } from "@/lib/toast";
 import { create } from "zustand";
 import { OnboardingData, useOnboardingStore } from "./onboardingStore";
 
@@ -23,8 +25,10 @@ interface FarmerState {
   setSelectedCrop: (crop?: string | null) => void;
 
   fetchProfile: () => Promise<void>;
-  addFarm: (farm: Omit<Farm, "id">) => void;
-  removeFarm: (id: string) => void;
+  addFarm: (farm: Omit<Farm, "id">) => Promise<void>;
+  removeFarm: (id: string) => Promise<void>;
+  // Restore a farm (used for Undo flows)
+  restoreFarm: (farm: Farm) => void;
 }
 
 export const useFarmerStore = create<FarmerState>((set, get) => {
@@ -58,7 +62,7 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
       set({ loading: true, error: null });
       try {
         const data = await apiFetch<{ profile: OnboardingData; farms: Farm[] }>(
-          "/farmer/profile"
+          API_ENDPOINTS.FARMER_PROFILE
         );
 
         // Convert onboarding farm from backend profile
@@ -108,25 +112,53 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
 
     addFarm: async (farm) => {
       try {
-        const savedFarm = await apiFetch<Farm>("/farmer/farms", {
-          method: "POST",
-          body: JSON.stringify(farm),
-        });
-        set((s) => ({ farms: [...s.farms, savedFarm] }));
+        const savedFarm = await apiFetch<Farm | { queued: true; queuedId: string }>(
+          API_ENDPOINTS.FARMER_FARMS,
+          {
+            method: "POST",
+            body: JSON.stringify(farm),
+          }
+        );
+
+        if ((savedFarm as any)?.queued) {
+          // create a local placeholder farm marked as queued
+          const id = `local-farm-${Date.now()}`;
+          const local: any = { id, ...farm, _queued: true, _queuedId: (savedFarm as any).queuedId };
+          set((s) => ({ farms: [...s.farms, local] }));
+          const { toastQueued } = await import('@/lib/toast');
+          toastQueued("Saved offline", "Farm queued for upload");
+          return;
+        }
+
+        set((s) => ({ farms: [...s.farms, savedFarm as Farm] }));
       } catch (err: any) {
         console.error("Failed to add farm", err);
-        alert("Failed to save farm. Try again.");
+        toastError('Save failed', 'Failed to save farm. Try again.');
       }
     },
 
     removeFarm: async (id) => {
       try {
-        await apiFetch(`/farmer/farms/${id}`, { method: "DELETE" });
+        const res = await apiFetch(API_ENDPOINTS.FARMER_FARMS + `/${id}`, { method: "DELETE" });
+        // if queued, optimistically remove locally and notify
+        if ((res as any)?.queued) {
+          set((s) => ({ farms: s.farms.filter((f) => f.id !== id) }));
+          const { toastQueued } = await import('@/lib/toast');
+          toastQueued("Queued delete", "Farm deletion queued for upload");
+          return;
+        }
+
         set((s) => ({ farms: s.farms.filter((f) => f.id !== id) }));
       } catch (err: any) {
         console.error("Failed to remove farm", err);
-        alert("Failed to delete farm. Try again.");
+        toastError('Delete failed', 'Failed to delete farm. Try again.');
       }
     },
+    // Restore a farm (used for Undo actions in the UI)
+    restoreFarm: (farm: Farm) =>
+      set((s) => {
+        if (s.farms.find((f) => f.id === farm.id)) return { farms: s.farms };
+        return { farms: [...s.farms, farm] };
+      }),
   };
 });

@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView } from "react-native";
-import { useAuthStore } from "@/stores/authStore";
-import AuthLayout from "./components/AuthLayout";
 import PrimaryButton from "@/app/components/general/PrimaryButton";
 import ShakeableView, { ShakeableViewRef } from "@/app/components/general/ShakeableView";
+import { useAuthStore } from "@/stores/authStore";
+import React, { useEffect, useRef, useState } from "react";
+import { KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { OtpInput } from "react-native-otp-entry";
+import AuthLayout from "./components/AuthLayout";
 
 export default function VerifyPhone() {
   const phone = useAuthStore((s) => s.phone?.formatted || s.phone?.raw || "");
@@ -77,6 +77,7 @@ export default function VerifyPhone() {
               title={loading ? "Verifying..." : "Log in"}
               onPress={handleVerify}
               textClassName="text-white"
+              loading={loading}
             />
 
             <View className="flex flex-row justify-center mt-4">

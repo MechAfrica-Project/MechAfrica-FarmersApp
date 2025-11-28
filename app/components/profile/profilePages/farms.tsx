@@ -34,6 +34,7 @@ const Farms = () => {
   const { farms, fetchProfile, loading, removeFarm } = useFarmerStore();
   const modalVisible = useUIStore((s) => s.addFarmModalVisible);
   const setModalVisible = useUIStore((s) => s.setAddFarmModalVisible);
+  const [busyIds, setBusyIds] = useState<Record<string, boolean>>({});
   const [expandedDistricts, setExpandedDistricts] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -138,9 +139,16 @@ const Farms = () => {
                     <View className="absolute top-0 left-0 w-full h-32 bg-black/5 rounded-t-xl" />
                     <View className="p-4 flex-row justify-between items-start">
                       <View className="flex-1">
-                        <Text className="text-lg font-bold text-gray-900">
-                          {farm.farmName}
-                        </Text>
+                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                          <Text className="text-lg font-bold text-gray-900">
+                            {farm.farmName}
+                          </Text>
+                          {(farm as any)?._queued && (
+                            <View className="ml-2 bg-yellow-500 px-2 py-1 rounded-full">
+                              <Text className="text-white text-xs">Queued</Text>
+                            </View>
+                          )}
+                        </View>
                         <Text className="text-gray-600 mt-1">
                           {farm.farmSize} acres
                         </Text>
@@ -167,10 +175,49 @@ const Farms = () => {
                       {/* Delete Farm */}
                       {farm.id !== "onboarding-farm" && (
                         <Pressable
-                          onPress={() => removeFarm(farm.id)}
+                          onPress={async () => {
+                            setBusyIds((s) => ({ ...s, [farm.id]: true }));
+                            try {
+                              // capture farm snapshot for undo
+                              const snapshot = { ...farm } as any;
+                              // call delete (fire-and-forget)
+                              removeFarm(farm.id).catch(() => {});
+                              // show actionable toast with Undo
+                              const { default: showToast } = await import('@/lib/toast');
+                              const restoreFarm = useFarmerStore.getState().restoreFarm;
+                              showToast({
+                                type: 'info',
+                                text1: 'Farm deleted',
+                                text2: undefined,
+                                visibilityTime: 5000,
+                                placement: 'top',
+                                actions: [
+                                  {
+                                    label: 'Undo',
+                                    onPress: () => {
+                                      try {
+                                        restoreFarm(snapshot);
+                                      } catch {}
+                                    },
+                                    style: 'primary',
+                                  },
+                                ],
+                              });
+                            } catch {}
+                            setBusyIds((s) => {
+                              const c = { ...s };
+                              delete c[farm.id];
+                              return c;
+                            });
+                          }}
                           className="p-2 rounded-full bg-red-50 ml-2 self-start"
+                          disabled={!!busyIds[farm.id]}
                         >
-                          <Trash2 size={20} color="#DC2626" />
+                          {busyIds[farm.id] ? (
+                            <ActivityIndicator size="small" color="#DC2626" />
+                          ) : (
+                            <Trash2 size={20} color="#DC2626" />
+                          )}
                         </Pressable>
                       )}
                     </View>

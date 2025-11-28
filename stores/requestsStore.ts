@@ -1,5 +1,5 @@
-import { requestsData } from "@/dummy-data/dummy_data";
 import { apiFetch } from "@/lib/api";
+import { API_ENDPOINTS } from "@/lib/apiEndpoints";
 import { Request, RequestStatus } from "@/types/request";
 import { create } from "zustand";
 
@@ -12,16 +12,16 @@ type RequestsState = {
   getActiveRequest: () => Request | null;
   cancelRequest: (id: string) => void;
   completeRequest: (id: string) => void;
-  deleteRequest: (id: string) => void;
+  deleteRequest: (id: string) => Promise<void>;
   deleteCancelled: () => void;
   deleteCompleted: () => void;
+  // Restore a request for undo flows
+  restoreRequest: (req: Request) => void;
+  addRequest: (req: Omit<Request, "id" | "status">) => Promise<void>;
+  fetchRequests: () => Promise<void>;
 };
 
-const indexById = (list: Request[]): Record<string, Request> => {
-  const out: Record<string, Request> = {};
-  for (const r of list) out[r.id] = r;
-  return out;
-};
+// helper removed (unused): indexById
 
 const computeListsByStatus = (
   byId: Record<string, Request>
@@ -33,7 +33,7 @@ const computeListsByStatus = (
 });
 
 export const useRequestsStore = create<RequestsState>((set, get) => {
-  const initialById = indexById(requestsData);
+  const initialById: Record<string, Request> = {};
   return {
     byId: initialById,
     listsByStatus: computeListsByStatus(initialById),
@@ -77,24 +77,31 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
         return { byId, listsByStatus: computeListsByStatus(byId) };
       }),
 
-    deleteRequest: (id) =>
-      async (id: string) => {
-        try {
-          await apiFetch(`/requests/${id}`, { method: "DELETE" });
-          set((s) => {
-            const byId = { ...s.byId };
-            delete byId[id];
-            return { byId, listsByStatus: computeListsByStatus(byId) };
-          });
-        } catch (err) {
-          // Fallback to local delete if API fails
-          set((s) => {
-            const byId = { ...s.byId };
-            delete byId[id];
-            return { byId, listsByStatus: computeListsByStatus(byId) };
-          });
-        }
-      },
+    deleteRequest: async (id: string) => {
+      try {
+        await apiFetch(`${API_ENDPOINTS.REQUESTS}/${id}`, { method: "DELETE" });
+        set((s) => {
+          const byId = { ...s.byId };
+          delete byId[id];
+          return { byId, listsByStatus: computeListsByStatus(byId) };
+        });
+      } catch {
+        // Fallback to local delete if API fails
+        set((s) => {
+          const byId = { ...s.byId };
+          delete byId[id];
+          return { byId, listsByStatus: computeListsByStatus(byId) };
+        });
+      }
+    },
+
+      // Restore a request (used for Undo actions in the UI)
+      restoreRequest: (req: Request) =>
+        set((s) => {
+          if (s.byId[req.id]) return { byId: s.byId, listsByStatus: s.listsByStatus };
+          const byId = { ...s.byId, [req.id]: req };
+          return { byId, listsByStatus: computeListsByStatus(byId) };
+        }, false),
 
     deleteCancelled: () =>
       set((s) => {
@@ -117,12 +124,25 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
     // Add a new request to the store (tries backend, falls back locally)
     addRequest: async (req: Omit<Request, "id" | "status">) => {
       try {
-        const saved = await apiFetch<Request>("/requests", {
+        const saved = await apiFetch<Request | { queued: true; queuedId: string }>(API_ENDPOINTS.REQUESTS, {
           method: "POST",
           body: JSON.stringify(req),
         });
-        set((s) => ({ byId: { ...s.byId, [saved.id]: saved }, listsByStatus: computeListsByStatus({ ...s.byId, [saved.id]: saved }) }));
-      } catch (err) {
+
+        // If the API wrapper enqueued the request while offline it returns { queued: true, queuedId }
+        if ((saved as any)?.queued) {
+          const id = Date.now().toString();
+          const newReq: any = { id, ...(req as any), status: "pending", _queued: true, _queuedId: (saved as any).queuedId };
+          set((s) => ({ byId: { ...s.byId, [id]: newReq }, listsByStatus: computeListsByStatus({ ...s.byId, [id]: newReq }) }));
+          const { toastQueued } = await import('@/lib/toast');
+          toastQueued("Saved offline", "Request queued for upload");
+          return;
+        }
+
+        // Normal server-saved response
+        const serverReq = saved as Request;
+        set((s) => ({ byId: { ...s.byId, [serverReq.id]: serverReq }, listsByStatus: computeListsByStatus({ ...s.byId, [serverReq.id]: serverReq }) }));
+      } catch {
         // Fallback: create local request id
         set((s) => {
           const id = Date.now().toString();
@@ -136,14 +156,14 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
     // Fetch requests from backend (merge into store); call this on app start or when needed
     fetchRequests: async () => {
       try {
-        const data = await apiFetch<{ requests: Request[] }>("/requests");
+        const data = await apiFetch<{ requests: Request[] }>(API_ENDPOINTS.REQUESTS);
         const byId: Record<string, Request> = {};
         for (const r of data.requests || []) byId[r.id] = r;
         // Merge with existing local items (local items keep priority if ids clash)
         set((s) => ({ byId: { ...byId, ...s.byId }, listsByStatus: computeListsByStatus({ ...byId, ...s.byId }) }));
       } catch (err) {
-        // keep local dummy data on failure
-        console.warn("fetchRequests failed, using local data", err);
+        // no dummy data: just log the failure and keep current store
+        console.warn("fetchRequests failed", err);
       }
     },
   };

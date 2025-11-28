@@ -1,4 +1,6 @@
 import { uploadFile } from "@/lib/api";
+import { API_ENDPOINTS } from "@/lib/apiEndpoints";
+import { toastError } from '@/lib/toast';
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -14,7 +16,7 @@ export default function ProfilePictureStep() {
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
-      alert("Camera permission is required to take photos.");
+      toastError('Permission denied', 'Camera permission is required to take photos.');
       return;
     }
 
@@ -32,7 +34,7 @@ export default function ProfilePictureStep() {
       (async () => {
         try {
           setUploading(true);
-          const resp: any = await uploadFile("/uploads", { uri });
+          const resp: any = await uploadFile(API_ENDPOINTS.UPLOADS, { uri });
           // Expect response like { url: 'https://...' }
           if (resp && (resp.url || resp.location)) {
             updateData({ profilePicture: resp.url ?? resp.location });
