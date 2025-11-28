@@ -29,11 +29,7 @@ export default function ToastProviderWrapper(props: ToastProviderWrapperProps) {
     animationDuration,
     swipeEnabled,
     renderToast,
-    successColor,
-    errorColor,
-    warningColor,
-    infoColor,
-    normalColor,
+    // color props intentionally available in props interface but not used here
   } = props;
 
   return (

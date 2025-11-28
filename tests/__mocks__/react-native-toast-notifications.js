@@ -1,3 +1,5 @@
+/* eslint-env jest */
+/* global jest */
 // Minimal mock for react-native-toast-notifications used in Jest
 const ToastProvider = ({ children }) => children || null;
 let _ref = null;

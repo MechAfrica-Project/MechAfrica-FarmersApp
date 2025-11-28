@@ -7,11 +7,11 @@ interface CustomToastProps {
 	type?: 'success' | 'error' | 'info' | 'warning' | 'normal';
 	title?: string;
 	onDismiss?: () => void;
-	actions?: Array<{
+	actions?: {
 		label: string;
 		onPress?: () => void;
 		style?: 'default' | 'destructive' | 'primary';
-	}>;
+	}[];
 }
 
 const getToastConfig = (type: CustomToastProps['type']) => {

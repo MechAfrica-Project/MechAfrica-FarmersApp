@@ -68,12 +68,12 @@ export type ToastOpts = {
   visibilityTime?: number;
   placement?: 'top' | 'bottom';
   // Optional actions rendered inside the toast. Handlers are invoked when action pressed.
-  actions?: Array<{
+  actions?: {
     label: string;
     onPress?: () => void;
     // styling hint consumers may use (e.g., 'destructive')
     style?: 'default' | 'destructive' | 'primary';
-  }>;
+  }[];
 };
 
 export function showToast(opts: ToastOpts) {
@@ -270,7 +270,7 @@ function showQueuedAggregated(text1: string, text2?: string, visibilityTime?: nu
 
     aggregation[key] = nowState;
     return id;
-  } catch (err) {
+  } catch {
     // fallback to non-aggregated
     return showToast({ type: 'info', text1, text2, visibilityTime, placement: 'bottom' });
   }
@@ -284,11 +284,7 @@ function showQueuedAggregated(text1: string, text2?: string, visibilityTime?: nu
 export const toastConfirm = (
   title: string,
   message?: string,
-  buttons?: Array<{
-    text: string;
-    onPress?: () => void;
-    style?: 'default' | 'cancel' | 'destructive';
-  }>,
+  buttons?: { text: string; onPress?: () => void; style?: 'default' | 'cancel' | 'destructive' }[],
   placement: 'top' | 'bottom' = 'top'
 ) => {
   const actions: ToastOpts['actions'] = (buttons || [{ text: 'OK' }]).map((b) => ({

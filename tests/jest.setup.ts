@@ -35,9 +35,10 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 }));
 
 // Load a local .env file into process.env for integration/local tests (simple parser)
+import * as fs from 'fs';
+import * as path from 'path';
+
 try {
-  const fs = require('fs');
-  const path = require('path');
   const envPath = path.resolve(__dirname, '..', '.env');
   if (fs.existsSync(envPath)) {
     const raw = fs.readFileSync(envPath, 'utf8');

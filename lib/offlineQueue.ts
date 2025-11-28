@@ -1,5 +1,5 @@
-import * as SecureStore from 'expo-secure-store';
 import { getAuthToken } from '@/lib/api';
+import * as SecureStore from 'expo-secure-store';
 import { API_ENDPOINTS } from './apiEndpoints';
 
 // Import stores to map server responses back to local placeholders
@@ -31,10 +31,10 @@ function computeListsByStatusLocal(byId: Record<string, any>) {
 
 async function readQueue(): Promise<QueuedRequest[]> {
   try {
-    // require AsyncStorage lazily so tests can mock the module before use
+    // import AsyncStorage dynamically so tests can mock the module before use
     // (jest setup mocks are applied in setupFilesAfterEnv)
-     
-    const AsyncStorage = require('@react-native-async-storage/async-storage');
+    const mod = await import('@react-native-async-storage/async-storage');
+    const AsyncStorage = (mod as any).default ?? mod;
     const raw = await AsyncStorage.getItem(QUEUE_KEY);
     if (!raw) return [];
     return JSON.parse(raw) as QueuedRequest[];
@@ -45,9 +45,8 @@ async function readQueue(): Promise<QueuedRequest[]> {
 
 async function writeQueue(queue: QueuedRequest[]) {
   try {
-    // require AsyncStorage lazily so tests can mock the module before use
-     
-    const AsyncStorage = require('@react-native-async-storage/async-storage');
+    const mod = await import('@react-native-async-storage/async-storage');
+    const AsyncStorage = (mod as any).default ?? mod;
     await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
   } catch {
     // ignore
