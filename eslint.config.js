@@ -7,4 +7,22 @@ module.exports = defineConfig([
   {
     ignores: ['dist/*'],
   },
+  // Enforce no native alert/confirm usage across the codebase — prefer our toast APIs
+  {
+    rules: {
+      'no-restricted-globals': ['error', 'alert', 'confirm'],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'react-native',
+              importNames: ['Alert'],
+              message: "Use the toast helpers from '@/lib/toast' (e.g. toastConfirm) instead of Alert.alert",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ]);

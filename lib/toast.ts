@@ -7,7 +7,7 @@ let _toastRef: ToastRef | null = null;
 
 // Debounce mechanism to prevent toast spam
 let lastToastTime = 0;
-const TOAST_DEBOUNCE_MS = 500; // Allow toasts with reasonable spacing to prevent spam
+const TOAST_DEBOUNCE_MS = 200;
 
 // In-memory queue for toasts fired before provider mounts
 const queuedToasts: ToastOpts[] = [];
@@ -71,14 +71,11 @@ export function showToast(opts: ToastOpts) {
       return;
     }
 
-    // Prevent toast spam by debouncing - allow one toast per second max
+    // Prevent toast spam by debouncing
     const now = Date.now();
     if (now - lastToastTime < TOAST_DEBOUNCE_MS) {
-      // Only debounce non-error toasts to ensure errors always show
-      if (opts.type !== 'error') {
-        console.debug('Toast debounced to prevent spam');
-        return;
-      }
+      console.debug('Toast debounced to prevent spam');
+      return;
     }
     lastToastTime = now;
 

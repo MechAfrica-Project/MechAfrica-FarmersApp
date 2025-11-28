@@ -2,220 +2,115 @@ import React, { useCallback, useMemo } from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-interface ToastAction {
-	label: string;
-	onPress?: () => void;
-	style?: 'default' | 'destructive' | 'primary';
-}
-
 interface CustomToastProps {
 	message: string;
 	type?: 'success' | 'error' | 'info' | 'warning' | 'normal';
 	title?: string;
 	onDismiss?: () => void;
-	actions?: ToastAction[];
+	actions?: Array<{
+		label: string;
+		onPress?: () => void;
+		style?: 'default' | 'destructive' | 'primary';
+	}>;
 }
 
-interface ToastConfig {
-	icon: keyof typeof Ionicons.glyphMap;
-	containerClasses: string;
-	textClass: string;
-	iconColor: string;
-}
-
-const getToastConfig = (type: CustomToastProps['type']): ToastConfig => {
+const getToastConfig = (type: CustomToastProps['type']) => {
 	switch (type) {
 		case 'success':
 			return {
-				icon: 'checkmark-circle',
-				containerClasses: 'bg-green-50 border-green-200',
-				textClass: 'text-green-800',
-				iconColor: '#166534',
+				icon: 'checkmark-circle' as const,
+				containerClasses: 'bg-emerald-50 border-emerald-200',
+				textClass: 'text-emerald-700',
+				iconColor: '#059669',
 			};
 		case 'error':
 			return {
-				icon: 'close-circle',
+				icon: 'close-circle' as const,
 				containerClasses: 'bg-red-50 border-red-200',
-				textClass: 'text-red-800',
+				textClass: 'text-red-700',
 				iconColor: '#DC2626',
 			};
 		case 'warning':
 			return {
-				icon: 'warning',
+				icon: 'warning' as const,
 				containerClasses: 'bg-yellow-50 border-yellow-200',
-				textClass: 'text-yellow-800',
+				textClass: 'text-amber-800',
 				iconColor: '#D97706',
 			};
 		case 'info':
 			return {
-				icon: 'information-circle',
+				icon: 'information-circle' as const,
 				containerClasses: 'bg-blue-50 border-blue-200',
-				textClass: 'text-blue-800',
-				iconColor: '#1E40AF',
+				textClass: 'text-blue-700',
+				iconColor: '#2563EB',
 			};
 		default:
 			return {
-				icon: 'information-circle-outline',
+				icon: 'information-circle-outline' as const,
 				containerClasses: 'bg-gray-50 border-gray-200',
-				textClass: 'text-gray-800',
-				iconColor: '#1F2937',
+				textClass: 'text-gray-700',
+				iconColor: '#4B5563',
 			};
 	}
 };
 
-const CustomToastInner: React.FC<CustomToastProps> = ({
-	message,
-	type = 'normal',
-	title,
-	onDismiss,
-	actions
-}) => {
+const CustomToastInner: React.FC<CustomToastProps> = ({ message, type = 'normal', title, onDismiss, actions }) => {
 	const config = useMemo(() => getToastConfig(type), [type]);
 	const widthClass = Platform.OS === 'web' ? 'max-w-[60%]' : 'max-w-[90%]';
 
-	const handleDismiss = useCallback(() => {
-		onDismiss?.();
+	const handlePress = useCallback(() => {
+		try {
+			onDismiss && onDismiss();
+		} catch {}
 	}, [onDismiss]);
 
-	const handleActionPress = useCallback((action: ToastAction) => {
-		action.onPress?.();
-		onDismiss?.();
-	}, [onDismiss]);
-
-	const renderAction = useCallback((action: ToastAction, index: number) => {
-		const buttonStyle = {
-			paddingVertical: 8,
-			paddingHorizontal: 12,
-			borderRadius: 6,
-			borderWidth: 1,
-			marginRight: 8,
-			backgroundColor: action.style === 'destructive' ? '#FEF2F2' :
-			               action.style === 'primary' ? '#059669' : '#F3F4F6',
-			borderColor: action.style === 'destructive' ? '#FECACA' :
-			            action.style === 'primary' ? '#059669' : '#D1D5DB',
-		};
-		const textStyle = {
-			fontWeight: '600',
-			fontSize: 14,
-			color: action.style === 'destructive' ? '#B91C1C' :
-			      action.style === 'primary' ? '#FFFFFF' : '#374151',
-		};
-
-		return (
-			<Pressable
-				key={`${action.label}-${index}`}
-				onPress={() => handleActionPress(action)}
-				style={buttonStyle}
-				accessibilityRole="button"
-				accessibilityLabel={action.label}
-			>
-				<Text style={textStyle}>{action.label}</Text>
-			</Pressable>
-		);
-	}, [handleActionPress]);
-
-	const accessibilityLabel = title ? `${title}: ${message}` : message;
+	const renderActions = useMemo(() => {
+		if (!actions || actions.length === 0) return null;
+		return actions.map((a, i) => {
+			const btnClasses = `py-1 px-3 rounded-md ${a.style === 'destructive' ? 'bg-red-50' : ''} ${a.style === 'primary' ? 'bg-emerald-800' : ''}`;
+			const labelClasses = `${a.style === 'destructive' ? 'text-red-600' : a.style === 'primary' ? 'text-white' : config.textClass} font-MulishSemiBold text-sm`;
+			const onPress = () => {
+				try { a.onPress && a.onPress(); } catch {}
+				try { onDismiss && onDismiss(); } catch {}
+			};
+			return (
+				<Pressable key={i} onPress={onPress} className={btnClasses}>
+					<Text className={labelClasses}>{a.label}</Text>
+				</Pressable>
+			);
+		});
+	}, [actions, config.textClass, onDismiss]);
 
 	return (
 		<Pressable
-			onPress={handleDismiss}
-			accessibilityRole="alert"
-			accessibilityLabel={accessibilityLabel}
-			accessibilityHint="Tap to dismiss"
-			style={{
-				flexDirection: 'row',
-				alignItems: 'flex-start',
-				padding: 16,
-				borderRadius: 8,
-				borderWidth: 1,
-				marginHorizontal: 16,
-				marginVertical: 4,
-				minHeight: 56,
-				maxWidth: Platform.OS === 'web' ? '60%' : '90%',
-				backgroundColor: config.containerClasses.includes('emerald') ? '#ECFDF5' :
-				                config.containerClasses.includes('red') ? '#FEF2F2' :
-				                config.containerClasses.includes('yellow') ? '#FFFBEB' :
-				                config.containerClasses.includes('blue') ? '#EFF6FF' : '#F9FAFB',
-				borderColor: config.containerClasses.includes('emerald') ? '#D1FAE5' :
-				            config.containerClasses.includes('red') ? '#FECACA' :
-				            config.containerClasses.includes('yellow') ? '#FDE68A' :
-				            config.containerClasses.includes('blue') ? '#DBEAFE' : '#F3F4F6',
-				shadowColor: '#000',
-				shadowOffset: { width: 0, height: 2 },
-				shadowOpacity: 0.1,
-				shadowRadius: 4,
-				elevation: 3,
-			}}
+			onPress={handlePress}
+			accessibilityRole="button"
+			accessibilityLabel={title ? `${title}: ${message}` : message}
+			accessibilityLiveRegion="polite"
+			className={`flex-row items-start px-4 py-3 rounded-lg border mx-4 my-1 shadow-md min-h-[56px] ${widthClass} ${config.containerClasses}`}
 		>
-			<View style={{ marginRight: 12, marginTop: 2 }} pointerEvents="none">
-				<Ionicons
-					name={config.icon}
-					size={20}
-					color={config.iconColor}
-					accessibilityElementsHidden
-					importantForAccessibility="no"
-				/>
+			<View className="mr-3 pt-0.5" pointerEvents="none">
+				<Ionicons name={config.icon} size={24} color={config.iconColor} />
 			</View>
 
-			<View style={{ flex: 1, paddingRight: 8 }} pointerEvents="box-none">
-				{title && (
-					<Text
-						style={{
-							fontWeight: '600',
-							fontSize: 14,
-							marginBottom: 4,
-							color: config.textClass.includes('emerald') ? '#065F46' :
-							      config.textClass.includes('red') ? '#DC2626' :
-							      config.textClass.includes('amber') ? '#D97706' :
-							      config.textClass.includes('blue') ? '#2563EB' : '#374151',
-						}}
-						accessibilityRole="header"
-					>
-						{title}
-					</Text>
-				)}
-				<Text
-					style={{
-						fontSize: 14,
-						lineHeight: 20,
-						color: config.textClass.includes('emerald') ? '#065F46' :
-						      config.textClass.includes('red') ? '#DC2626' :
-						      config.textClass.includes('amber') ? '#D97706' :
-						      config.textClass.includes('blue') ? '#2563EB' : '#374151',
-					}}
-					numberOfLines={4}
-					ellipsizeMode="tail"
-				>
-					{message}
-				</Text>
+			<View className="flex-1 pr-2" pointerEvents="box-none">
+				{title && <Text className={`font-MulishSemiBold text-sm mb-0.5 ${config.textClass}`}>{title}</Text>}
+				<Text className={`font-MulishRegular text-sm leading-5 ${config.textClass}`} numberOfLines={4} ellipsizeMode="tail">{message}</Text>
 
 				{actions && actions.length > 0 && (
-					<View style={{ flexDirection: 'row', marginTop: 12 }}>
-						{actions.map(renderAction)}
-					</View>
+					<View className="mt-2 flex-row items-center space-x-2">{renderActions}</View>
 				)}
 			</View>
 
 			{onDismiss && (
-				<Pressable
-					onPress={handleDismiss}
-					style={{ padding: 4, marginRight: -4 }}
-					accessibilityRole="button"
-					accessibilityLabel="Dismiss notification"
-					hitSlop={8}
-				>
-					<Ionicons
-						name="close"
-						size={18}
-						color={config.iconColor}
-					/>
-				</Pressable>
+				<View className="pt-0.5" accessible accessibilityRole="button" accessibilityLabel="Dismiss notification">
+					<Ionicons name="close" size={20} color={config.iconColor} />
+				</View>
 			)}
 		</Pressable>
 	);
 };
 
 const CustomToast = React.memo(CustomToastInner);
-CustomToast.displayName = 'CustomToast';
 
 export default CustomToast;
