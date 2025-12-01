@@ -4,7 +4,7 @@ const URL = resolveApiUrlRaw();
 const PING_PATH = getIntegrationPingPath();
 
 if (!URL) {
-  test.skip('integration ping skipped: EXPO_PUBLIC_API_URL not set', () => {});
+  test.skip('integration ping skipped: API_URL not set', () => {});
 } else if (!runIntegrationTestsFlag()) {
   // If RUN_INTEGRATION isn't enabled, skip the network-dependent assertion but still exercise fetch logic
   test('integration ping skipped by RUN_INTEGRATION flag (no network check)', () => {
@@ -22,7 +22,7 @@ if (!URL) {
     } catch (err) {
       // If network is unreachable or request aborted, log and gracefully pass the test.
       // Integration tests are optional in many dev environments; avoid failing CI by default.
-      // eslint-disable-next-line no-console
+       
       console.warn('Integration ping skipped due to network error or timeout:', err && (err as Error).message);
       expect(true).toBeTruthy();
     }
