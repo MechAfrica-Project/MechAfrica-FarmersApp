@@ -3,6 +3,7 @@ import FarmLocationStep from "@/app/(auth)/onboarding/components/FarmLocationSte
 import LanguageStep from "@/app/(auth)/onboarding/components/LanguageStep";
 import LocationStep from "@/app/(auth)/onboarding/components/LocationStep";
 import MoreInfoStep from "@/app/(auth)/onboarding/components/MoreInfoStep";
+import PhoneVerificationStep from "@/app/(auth)/onboarding/components/PhoneVerificationStep";
 import PersonalInfoStep from "@/app/(auth)/onboarding/components/PersonalInfoStep";
 import ProfilePictureStep from "@/app/(auth)/onboarding/components/ProfilePictureStep";
 
@@ -20,6 +21,12 @@ export const onboardingSteps = [
     subtitle: "",
     description: " Please provide your full name \nand contact number",
     Component: PersonalInfoStep,
+  },
+  {
+    title: "Verify your",
+    subtitle: " phone number",
+    description: "Enter the OTP code we sent to your phone.",
+    Component: PhoneVerificationStep,
   },
   {
     title: "More information",

@@ -1,4 +1,5 @@
 import InputField from "@/app/components/onboarding/InputField";
+import { useAuthStore } from "@/stores/authStore";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import React, { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
@@ -7,6 +8,7 @@ import PhoneInput from "../../login/components/PhoneInput";
 
 export default function PersonalInfoStep() {
   const { data, updateData } = useOnboardingStore();
+  const setAuthPhone = useAuthStore((s) => s.setPhone);
   const [focused, setFocused] = useState<string | null>(null);
 
   return (
@@ -53,14 +55,16 @@ export default function PersonalInfoStep() {
             {/* Telephone Number */}
             <PhoneInput
               label="Telephone number"
-              onChange={(val) =>
+              onChange={(val) => {
                 updateData({
                   personalInfo: {
                     ...data.personalInfo,
                     phone: val,
+                    otpVerified: false,
                   },
-                })
-              }
+                });
+                setAuthPhone(val);
+              }}
             />
           </View>
         </ScrollView>

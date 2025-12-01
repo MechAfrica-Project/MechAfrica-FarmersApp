@@ -11,10 +11,15 @@ export default function VerifyPhone() {
   const verifyOtp = useAuthStore((s) => s.verifyOtp);
   const error = useAuthStore((s) => s.error);
   const loading = useAuthStore((s) => s.loading);
+  const sendPhone = useAuthStore((s) => s.sendPhone);
+  const otpCooldownUntil = useAuthStore((s) => s.otpCooldownUntil);
 
   const [code, setCode] = useState("");
-  const [timeLeft, setTimeLeft] = useState(30);
+  const [timeLeft, setTimeLeft] = useState(0);
   const wrapperRef = useRef<ShakeableViewRef>(null);
+  const cooldownRemaining = otpCooldownUntil ? Math.max(0, Math.ceil((otpCooldownUntil - Date.now()) / 1000)) : 0;
+  const showRateLimitHint = cooldownRemaining > 60 || (!!error && /Try again in/i.test(error));
+  const cooldownMinutes = Math.ceil(cooldownRemaining / 60);
 
   // Countdown timer
   useEffect(() => {
@@ -22,6 +27,13 @@ export default function VerifyPhone() {
     const t = setInterval(() => setTimeLeft((v) => v - 1), 1000);
     return () => clearInterval(t);
   }, [timeLeft]);
+
+  // sync with store cooldown
+  useEffect(() => {
+    if (!otpCooldownUntil) return setTimeLeft(0);
+    const remaining = Math.max(0, Math.ceil((otpCooldownUntil - Date.now()) / 1000));
+    setTimeLeft(remaining);
+  }, [otpCooldownUntil]);
 
   const handleVerify = async () => {
     const success = await verifyOtp(code);
@@ -34,7 +46,7 @@ export default function VerifyPhone() {
       title="Verify Phone number"
       subtitle={
         <Text className="font-mulish text-center text-gray-400 font-medium">
-          Please enter the 5-digit OTP code sent to{" "}
+          Please enter the 6-digit OTP code sent to{" "}
           <Text className="font-medium">{phone}</Text>
         </Text>
       }
@@ -51,7 +63,7 @@ export default function VerifyPhone() {
           <View className="px-6 flex-1">
             <ShakeableView ref={wrapperRef} className="mb-6">
               <OtpInput
-                numberOfDigits={5}
+                numberOfDigits={6}
                 type="numeric"
                 focusColor="#10B981" // Tailwind green-500
                 hideStick={true}
@@ -73,6 +85,12 @@ export default function VerifyPhone() {
               </Text>
             )}
 
+            {showRateLimitHint && (
+              <Text className="text-yellow-600 mb-3 text-center font-mulish">
+                Too many requests — try again in {cooldownMinutes} minute{cooldownMinutes > 1 ? 's' : ''}.
+              </Text>
+            )}
+
             <PrimaryButton
               title={loading ? "Verifying..." : "Log in"}
               onPress={handleVerify}
@@ -86,7 +104,15 @@ export default function VerifyPhone() {
                   Resend in {timeLeft}s
                 </Text>
               ) : (
-                <TouchableOpacity onPress={() => setTimeLeft(30)}>
+                <TouchableOpacity
+                  onPress={async () => {
+                    try {
+                      await sendPhone({ skipNavigation: true });
+                    } catch (err) {
+                      // error is surfaced via store.error
+                    }
+                  }}
+                >
                   <Text className="text-primary-green font-mulish font-medium">
                     Send code again
                   </Text>

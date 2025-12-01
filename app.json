@@ -2,7 +2,7 @@
 // Do NOT place secrets (API keys) directly in this file; use `.env` or your CI/EAS secrets.
 {
   "expo": {
-    "name": "MechAfrica Farmers App",
+    "name": "Farmers App",
     "slug": "mechafrica-farmers-app",
     "version": "1.0.0",
     "orientation": "portrait",

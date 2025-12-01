@@ -1,5 +1,6 @@
 // stores/authStore.ts
 import { PhoneValue } from "@/app/(auth)/login/components/PhoneInput";
+import { COUNTRIES } from "@/constants/countries";
 import { apiFetch, setAuthToken, setTokens } from "@/lib/api";
 import { API_ENDPOINTS } from "@/lib/apiEndpoints";
 import { toastError } from '@/lib/toast';
@@ -23,10 +24,14 @@ interface AuthState {
   phone: PhoneValue | null;
   loading: boolean;
   error: string | null;
+  // Timestamp (ms) until which sending an OTP should be disabled because of server rate limits
+  otpCooldownUntil: number | null;
+
+  setOtpCooldown: (until: number | null) => void;
 
   setPhone: (val: PhoneValue) => void;
-  sendPhone: () => Promise<void>;
-  verifyOtp: (code: string) => Promise<boolean>;
+  sendPhone: (options?: { skipNavigation?: boolean }) => Promise<void>;
+  verifyOtp: (code: string, options?: { skipNavigation?: boolean }) => Promise<boolean>;
   logout: (mode?: "dev" | "prod") => Promise<void>;
   restoreSession: () => Promise<void>;
 }
@@ -37,47 +42,123 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   phone: null,
   loading: false,
   error: null,
+  otpCooldownUntil: null,
 
   setPhone: (val) => set({ phone: val, error: null }),
 
-  sendPhone: async () => {
+  sendPhone: async (options) => {
     const { phone } = get();
     if (!phone?.valid) {
       set({ error: "Enter a valid phone number" });
       return;
     }
 
+    // Ensure phone is in E.164 format for backend compatibility.
+    const getNormalized = (p: PhoneValue) => {
+      if (!p) return "";
+      let raw = p.raw ?? "";
+      if (raw.startsWith("+")) return raw;
+      // If number starts with leading 0 (local format), strip it
+      if (raw.startsWith("0")) raw = raw.replace(/^0+/, "");
+      // find country dial code
+      const c = COUNTRIES.find((x) => x.code === p.country);
+      if (c && c.dialCode) return `${c.dialCode}${raw}`;
+      // fallback: prefix plus
+      return `+${raw}`;
+    };
+    const normalizedPhone = getNormalized(phone);
+
     set({ loading: true, error: null });
     try {
-      await apiFetch<{ ok: boolean }>(API_ENDPOINTS.AUTH_SEND_OTP, {
+      // Align with backend contract: expects `Phone` (capitalized)
+      const payload = { Phone: normalizedPhone, phone_number: normalizedPhone };
+      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+        try { console.debug('[auth] sendPhone payload:', payload); } catch {}
+      }
+      await apiFetch<any>(API_ENDPOINTS.AUTH_SEND_OTP, {
         method: "POST",
-        body: JSON.stringify({ phone: phone?.raw, country: phone?.country }),
+        body: JSON.stringify(payload),
       });
 
-      // If API succeeded, navigate to verify screen
+      // On success, set a short local cooldown to avoid immediate resend spam
+      const now = Date.now();
+      const shortCooldownMs = 30 * 1000; // 30s frontend cooldown
+      set({ otpCooldownUntil: now + shortCooldownMs });
+
+      // If API succeeded, navigate to verify screen unless suppressed
       set({ loading: false });
-      router.push("/(auth)/login/verifyPhone");
+      if (!options?.skipNavigation) {
+        router.push("/(auth)/login/verifyPhone");
+      }
     } catch (err: any) {
-      const msg = err?.message ?? "Failed to send code";
+      // Try to extract a useful message from the thrown error and detect rate-limits
+      let msg = err?.message ?? "Failed to send code";
+      try {
+        if (err?.body) {
+          const bodyObj = typeof err.body === 'string' ? JSON.parse(err.body || '{}') : err.body;
+          const bodyStr = typeof err.body === 'string' ? err.body : JSON.stringify(err.body);
+          msg = `${msg} — ${bodyStr}`;
+
+          // detect OTP rate limit
+          const code = bodyObj?.code ?? bodyObj?.errorCode ?? null;
+          const debug = bodyObj?.debug ?? '';
+          let retrySecs: number | null = null;
+          if (bodyObj?.retry_after) retrySecs = Number(bodyObj.retry_after);
+          if (!retrySecs && bodyObj?.retryAfter) retrySecs = Number(bodyObj.retryAfter);
+
+          if (code === 'OTP_SEND_FAILED' || /too many otp requests|too many requests/i.test(debug || '')) {
+            // Force a client-side 60 second retry regardless of server-provided retry_after.
+            // This intentionally ignores server retry_after to reduce user friction.
+            retrySecs = 60;
+            const until = Date.now() + (retrySecs * 1000);
+            set({ otpCooldownUntil: until });
+            msg = `${bodyObj?.message ?? 'Failed to send OTP. Please try again.'} Try again in ${Math.ceil(retrySecs/60)} minute(s).`;
+          }
+        }
+      } catch {}
       toastError('Send failed', msg);
       set({ loading: false, error: msg });
+      // rethrow so callers who `await sendPhone()` can react if needed
+      throw err;
     }
   },
 
-  verifyOtp: async (code) => {
+  setOtpCooldown: (until) => set({ otpCooldownUntil: until }),
+
+  verifyOtp: async (code, options) => {
     set({ loading: true, error: null });
     try {
       const { phone } = get();
       if (!phone?.valid) throw new Error("No valid phone set");
 
       // Call backend to verify OTP and receive token + user
-      const data = await apiFetch<any>(
+      const getNormalized = (p: PhoneValue) => {
+        if (!p) return "";
+        let raw = p.raw ?? "";
+        if (raw.startsWith("+")) return raw;
+        if (raw.startsWith("0")) raw = raw.replace(/^0+/, "");
+        const c = COUNTRIES.find((x) => x.code === p.country);
+        if (c && c.dialCode) return `${c.dialCode}${raw}`;
+        return `+${raw}`;
+      };
+      const normalizedPhone = getNormalized(phone);
+
+      const raw = await apiFetch<any>(
         API_ENDPOINTS.AUTH_VERIFY_OTP,
         {
           method: "POST",
-          body: JSON.stringify({ phone: phone.raw, code }),
+          body: JSON.stringify({
+            // Send both key variants for compatibility
+            Phone: normalizedPhone,
+            phone_number: normalizedPhone,
+            OTP: code,
+            otp: code,
+            role: "farmer",
+          }),
         }
       );
+      // Some backends nest data under `data`
+      const data = (raw && typeof raw === 'object' && 'data' in raw ? (raw as any).data : raw) ?? raw;
 
       // Temporary debug: log the shape of the verification response (sanitized)
       try {
@@ -102,9 +183,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
       } catch {}
 
-      // Accept multiple possible token property names returned by different backends
-      const newToken: string | null = data?.token ?? data?.accessToken ?? data?.access_token ?? null;
-      const newRefresh: string | null = (data as any)?.refreshToken ?? (data as any)?.refresh_token ?? null;
+      // Accept multiple possible token property names / nesting returned by different backends
+      const newToken: string | null =
+        data?.token ??
+        data?.accessToken ??
+        data?.access_token ??
+        (data as any)?.data?.token ??
+        null;
+      const newRefresh: string | null =
+        (data as any)?.refreshToken ??
+        (data as any)?.refresh_token ??
+        (data as any)?.data?.refresh_token ??
+        null;
 
       if (!newToken) {
         // Provide more context in the error while still masking sensitive fields
@@ -142,7 +232,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         ]).catch(() => {});
       } catch {}
 
-      router.replace("/(tabs)");
+      if (!options?.skipNavigation) {
+        router.replace("/(tabs)");
+      }
       return true;
     } catch (err: any) {
       const msg = err?.message ?? "Verification failed";
