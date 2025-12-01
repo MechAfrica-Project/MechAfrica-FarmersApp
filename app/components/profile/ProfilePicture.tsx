@@ -1,3 +1,4 @@
+import { useFarmerStore } from "@/stores/farmerStore";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -14,7 +15,9 @@ import {
 const { width } = Dimensions.get("window");
 
 const ProfilePicture = () => {
+  const { profile } = useFarmerStore();
   const { data, loadFromStorage, updateData } = useOnboardingStore();
+  const profileAny = profile as any;
 
   useEffect(() => {
     loadFromStorage();
@@ -26,7 +29,13 @@ const ProfilePicture = () => {
       quality: 0.7,
     });
     if (!result.canceled && result.assets?.length) {
-      updateData({ profilePicture: result.assets[0].uri });
+      const uri = result.assets[0].uri;
+      updateData({ profilePicture: uri });
+      useFarmerStore.setState((state) => ({
+        profile: state.profile
+          ? { ...state.profile, profilePicture: uri }
+          : state.profile,
+      }));
     }
   };
 
@@ -34,11 +43,32 @@ const ProfilePicture = () => {
   const imageSize = width * 0.35; // 35% of screen width
   const marginTop = width * 0.1; // dynamic top spacing
 
+  const profilePictureUri =
+    profile?.profilePicture ||
+    profileAny?.profilePictureUrl ||
+    data.profilePicture;
+  const displayName =
+    profile?.personalInfo?.name ??
+    data.personalInfo?.name ??
+    "Farmer";
+  const otherNames =
+    profile?.personalInfo?.otherNames ?? data.personalInfo?.otherNames ?? "";
+  const phoneLabel =
+    profile?.personalInfo?.phone?.raw ??
+    profileAny?.personalInfo?.phoneNumber ??
+    profileAny?.personalInfo?.phone ??
+    profileAny?.phone ??
+    data.personalInfo?.phone?.raw ??
+    "N/A";
+  const imageSource = profilePictureUri
+    ? { uri: profilePictureUri }
+    : { uri: "https://placehold.co/300x300?text=Farmer" };
+
   return (
     <View style={{ alignItems: "center", marginTop }}>
       <View style={{ position: "relative" }}>
         <Image
-          source={{ uri: data.profilePicture }}
+          source={imageSource}
           className="mt-12"
           style={{
             width: imageSize,
@@ -65,10 +95,10 @@ const ProfilePicture = () => {
       </View>
 
       <Text className="mt-3 text-base md:text-lg font-mulish font-bold text-center">
-        {data.personalInfo.name} {data.personalInfo.otherNames || ""}
+        {displayName} {otherNames}
       </Text>
       <Text className="text-gray-500 font-mulish text-xs md:text-sm text-center">
-        ID: {data.personalInfo.phone?.raw || "N/A"}
+        ID: {phoneLabel}
       </Text>
     </View>
   );

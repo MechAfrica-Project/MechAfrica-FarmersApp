@@ -9,7 +9,12 @@ import * as SecureStore from "expo-secure-store";
 
 export type OnboardingData = {
   language?: string;
-  personalInfo: { name?: string; otherNames?: string; phone?: PhoneValue };
+  personalInfo: {
+    name?: string;
+    otherNames?: string;
+    phone?: PhoneValue;
+    otpVerified?: boolean;
+  };
   moreInfo: {
     gender?: "Male" | "Female";
     age?: number;
@@ -74,8 +79,8 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
     return out;
   };
 
-  // match the actual number of steps you validate (0–6)
-  const TOTAL = 7;
+  // match the actual number of steps you validate (0–7)
+  const TOTAL = 8;
 
   const validate = (stepIndex: number): ValidateResult => {
     const data = get().data;
@@ -97,24 +102,33 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
           };
         return { valid: true };
 
-      case 2: // More Info
+      case 2: // Phone Verification
+        if (!data.personalInfo?.otpVerified) {
+          return {
+            valid: false,
+            message: "Please verify your phone number before continuing.",
+          };
+        }
+        return { valid: true };
+
+      case 3: // More Info
         if (!data.moreInfo?.gender || data.moreInfo.gender.trim() === "")
           return { valid: false, message: "Please specify your gender." };
         return { valid: true };
 
-      case 3: // Location
+      case 4: // Location
         if (!data.location?.region || data.location.region.trim() === "")
           return { valid: false, message: "Please enter your region." };
         if (!data.location?.district || data.location.district.trim() === "")
           return { valid: false, message: "Please enter your district." };
         return { valid: true };
 
-      case 4: // Profile picture
+      case 5: // Profile picture
         if (!data.profilePicture)
           return { valid: false, message: "Please upload a profile picture." };
         return { valid: true };
 
-      case 5: // Farm Location
+      case 6: // Farm Location
         if (
           !data.farmLocation ||
           data.farmLocation.latitude == null ||
@@ -126,7 +140,7 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
           };
         return { valid: true };
 
-      case 6: // Farm Info
+      case 7: // Farm Info
         if (!data.farmInfo?.farmName?.trim())
           return { valid: false, message: "Please enter your business name." };
 

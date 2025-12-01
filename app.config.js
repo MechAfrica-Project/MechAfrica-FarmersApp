@@ -18,7 +18,7 @@ if (!androidMapsKey && process.env.NODE_ENV !== 'test') {
 
 module.exports = {
   expo: {
-    name: "MechAfrica Farmers App",
+    name: "Farmers App",
     slug: "mechafrica-farmers-app",
     version: "1.0.0",
     orientation: "portrait",
@@ -36,6 +36,16 @@ module.exports = {
       infoPlist: {
         NSLocationWhenInUseUsageDescription: "We need your location to show your farm location on the map."
       }
+      ,
+      splash: {
+        image: "./assets/images/mechafrica.png",
+        resizeMode: "contain",
+        backgroundColor: "#FCFF3B",
+        dark: {
+          image: "./assets/images/mechafrica.png",
+          backgroundColor: "#000000"
+        }
+      }
     },
     android: {
       package: "com.mechafrica.farmer",
@@ -52,6 +62,16 @@ module.exports = {
         googleMaps: {
           // Google Maps API key from EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY environment variable
           apiKey: androidMapsKey
+        }
+      }
+      ,
+      splash: {
+        image: "./assets/images/mechafrica.png",
+        resizeMode: "contain",
+        backgroundColor: "#FCFF3B",
+        dark: {
+          image: "./assets/images/mechafrica.png",
+          backgroundColor: "#000000"
         }
       }
     },

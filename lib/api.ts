@@ -64,7 +64,10 @@ export const getAuthToken = () => authToken;
 const getBaseUrl = () => {
   const url = resolveApiUrlRaw();
   if (!url || url === API_URL_PLACEHOLDER) {
-    if (__DEV__) {
+    const isDev =
+      (typeof __DEV__ !== 'undefined' && __DEV__) ||
+      process.env.NODE_ENV !== 'production';
+    if (isDev) {
       console.warn(
         "⚠️ API_URL (or EXPO_PUBLIC_API_BASE_URL / EXPO_PUBLIC_API_URL) not set! Using placeholder. Set this in your .env file."
       );
@@ -212,11 +215,13 @@ export type MinimalUser = { id: string; name?: string; phone?: string; email?: s
 export const auth = {
   sendOtp: (phone: string, country?: string) => apiFetch<{ ok: boolean }>(API_ENDPOINTS.AUTH_SEND_OTP, {
     method: "POST",
-    body: JSON.stringify({ phone, country }),
+    // Send both variants to be compatible with different backend contracts
+    body: JSON.stringify({ Phone: phone, phone_number: phone, Country: country }),
   }),
   verifyOtp: (phone: string, code: string) => apiFetch<{ token: string; user?: MinimalUser }>(API_ENDPOINTS.AUTH_VERIFY_OTP, {
     method: "POST",
-    body: JSON.stringify({ phone, code }),
+    // Send both OTP and otp plus phone variants to maximize compatibility
+    body: JSON.stringify({ Phone: phone, phone_number: phone, OTP: code, otp: code }),
   }),
 };
 
@@ -228,6 +233,11 @@ export const requests = {
 
 export const farmer = {
   profile: () => apiFetch<{ profile: any; farms: any[] }>(API_ENDPOINTS.FARMER_PROFILE),
+  saveProfile: (payload: any) =>
+    apiFetch<any>(API_ENDPOINTS.FARMER_PROFILE, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
   addFarm: (payload: any) => apiFetch<any>(API_ENDPOINTS.FARMER_FARMS, { method: "POST", body: JSON.stringify(payload) }),
   deleteFarm: (id: string) => apiFetch<void>(`${API_ENDPOINTS.FARMER_FARMS}/${id}`, { method: "DELETE" }),
 };

@@ -10,6 +10,7 @@ interface FooterActionsProps {
   onNext: () => void;
   onFinish: () => void;
   onSkip: () => void;
+  finishLoading?: boolean;
 }
 
 export default function FooterActions({
@@ -20,6 +21,7 @@ export default function FooterActions({
   onNext,
   onFinish,
   onSkip,
+  finishLoading = false,
 }: FooterActionsProps) {
   const isLastStep = currentStep === totalSteps - 1;
   const isOptional = optionalSteps.includes(currentStep);
@@ -47,7 +49,9 @@ export default function FooterActions({
           <PrimaryButton
             title={isLastStep ? "Finish" : "Next"}
             onPress={isLastStep ? onFinish : onNext}
+            disabled={!isCurrentValid || (isLastStep && finishLoading)}
             textClassName="text-white"
+            loading={isLastStep && finishLoading}
           />
         </View>
       </View>

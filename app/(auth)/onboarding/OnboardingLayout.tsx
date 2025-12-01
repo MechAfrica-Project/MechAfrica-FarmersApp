@@ -15,11 +15,14 @@ import FooterNote from "@/app/components/general/FooterNote";
 import FooterActions from "@/app/components/onboarding/FooterActions";
 import OnboardingHeader from "@/app/components/onboarding/OnboardingHeader";
 import ProgressHeader from "@/app/components/onboarding/ProgressHeader";
+import { farmer, uploadFile } from "@/lib/api";
+import { API_ENDPOINTS } from "@/lib/apiEndpoints";
 import {
   onboardingSteps,
   optionalSteps,
   PROGRESS_STEPS,
 } from "@/constants/onboardingSteps";
+import { useFarmerStore } from "@/stores/farmerStore";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 // note: toasts are shown via lib/toast helper
 
@@ -33,6 +36,8 @@ export default function OnboardingLayout() {
     validateStep,
     reset,
   } = useOnboardingStore();
+  const fetchProfile = useFarmerStore((state) => state.fetchProfile);
+  const [submitting, setSubmitting] = React.useState(false);
 
   const router = useRouter();
 
@@ -48,22 +53,67 @@ export default function OnboardingLayout() {
     nextStep();
   };
 
+  const uploadProfilePictureIfNeeded = async () => {
+    const uri = data.profilePicture;
+    if (!uri || /^https?:/i.test(uri)) {
+      return data;
+    }
+
+    try {
+      const result = await uploadFile(`${API_ENDPOINTS.UPLOADS}/profile-picture`, {
+        uri,
+        name: `profile-${Date.now()}.jpg`,
+        type: "image/jpeg",
+      });
+      const uploadedUrl = result?.url ?? result?.location;
+      if (uploadedUrl) {
+        return { ...data, profilePicture: uploadedUrl };
+      }
+    } catch (err) {
+      console.warn("Profile picture upload failed", err);
+    }
+    return data;
+  };
+
   const handleFinish = async () => {
+    if (submitting) return;
+
     const res = validateStep(currentStep);
     if (!res.valid) {
       toastError('Missing information', res.message ?? 'Please complete this step.');
       return;
     }
 
+    setSubmitting(true);
     try {
-      await SecureStore.setItemAsync("onboardingData", JSON.stringify(data));
+      const payload = await uploadProfilePictureIfNeeded();
+      await SecureStore.setItemAsync("onboardingData", JSON.stringify(payload));
+
+      const remoteResult = await farmer.saveProfile(payload);
+      const queued = Boolean(remoteResult && (remoteResult as any).queued);
+
       await SecureStore.setItemAsync("onboardingCompleted", "true");
-      toastSuccess('Onboarding completed', 'Onboarding completed successfully!');
+
+      if (queued) {
+        toastSuccess('Profile queued', "You're offline—profile will sync once online.");
+      } else {
+        toastSuccess('Onboarding completed', 'Onboarding completed successfully!');
+        if (typeof fetchProfile === "function") {
+          try {
+            await fetchProfile();
+          } catch (err) {
+            console.warn("Failed to refresh profile after onboarding", err);
+          }
+        }
+      }
+
       reset();
       router.replace("/(tabs)");
     } catch (err) {
-      toastError('Save failed', 'Failed to save onboarding data.');
+      toastError('Save failed', 'Failed to sync onboarding data.');
       console.error(err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -114,6 +164,7 @@ export default function OnboardingLayout() {
           onNext={onNextPress}
           onFinish={handleFinish}
           onSkip={nextStep}
+          finishLoading={submitting}
         />
 
         {/* Footer background */}
