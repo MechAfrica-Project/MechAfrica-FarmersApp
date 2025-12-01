@@ -4,6 +4,7 @@ import { toastError } from '@/lib/toast';
 import { useUIStore } from "@/stores/uiStore";
 import { API_ENDPOINTS } from "./apiEndpoints";
 import { UploadResult } from './types';
+import { resolveApiUrlRaw, API_URL_PLACEHOLDER, getApiUrlOrPlaceholder } from './env';
 
 // offline enqueue helper: enqueue write requests when offline
 async function enqueueIfOffline(method: string, endpoint: string, body?: any) {
@@ -60,7 +61,23 @@ export async function clearTokens() {
 
 export const getAuthToken = () => authToken;
 
-const getBaseUrl = () => process.env.EXPO_PUBLIC_API_URL ?? "https://your-api.com";
+const getBaseUrl = () => {
+  const url = resolveApiUrlRaw();
+  if (!url || url === API_URL_PLACEHOLDER) {
+    if (__DEV__) {
+      console.warn(
+        "⚠️ EXPO_PUBLIC_API_BASE_URL (or EXPO_PUBLIC_API_URL) not set! Using placeholder. Set this in your .env file."
+      );
+      console.warn("   See .env.example for reference.");
+      return API_URL_PLACEHOLDER;
+    } else {
+      throw new Error(
+        "API URL not configured. Please set EXPO_PUBLIC_API_BASE_URL (or EXPO_PUBLIC_API_URL) in your .env file."
+      );
+    }
+  }
+  return url.replace(/\/$/, "");
+};
 
 export class ApiError extends Error {
   status?: number;

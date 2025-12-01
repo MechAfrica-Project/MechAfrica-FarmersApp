@@ -1,3 +1,5 @@
+// NOTE: Dynamic configuration is provided by `app.config.js` which loads values from `.env`.
+// Do NOT place secrets (API keys) directly in this file; use `.env` or your CI/EAS secrets.
 {
   "expo": {
     "name": "MechAfrica Farmers App",
@@ -12,7 +14,8 @@
       "bundleIdentifier": "com.mechafrica.farmer",
       "supportsTablet": true,
       "config": {
-        "googleMapsApiKey": "AIzaSyC0XNPsV-0CfizOtaYSFNyVl5A2LWRIA3o"
+        // Google Maps key injected at build-time via `app.config.js` (reads from .env)
+        "googleMapsApiKey": ""
       },
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "We need your location to show your farm location on the map."
@@ -31,7 +34,8 @@
       ],
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyBrTOU6CRCf6cThoPxoWYtgeksDAy9TiUo"
+          // Android key injected at build-time via `app.config.js` (reads from .env)
+          "apiKey": ""
         }
       }
     },
@@ -70,6 +74,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    }
+    ,
+    "extra": {
+      "note": "Values (apiUrl, google maps keys) are loaded from app.config.js which reads .env; do not store secrets here.",
+      "apiUrl": "EXPO_PUBLIC_API_BASE_URL (loaded via app.config.js)",
+      "apiBaseUrl": "EXPO_PUBLIC_API_BASE_URL (loaded via app.config.js)"
     }
   }
 }

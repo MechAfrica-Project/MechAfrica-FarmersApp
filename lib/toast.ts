@@ -61,6 +61,8 @@ export function setToastRef(ref: ToastRef | null) {
   } catch {}
 }
 
+import { getNodeEnv } from './env';
+
 export type ToastOpts = {
   type?: 'success' | 'error' | 'info' | 'warning' | 'normal';
   text1: string;
@@ -81,7 +83,7 @@ export function showToast(opts: ToastOpts) {
     if (!_toastRef) {
       // When provider isn't mounted yet, queue the toast for later flushing.
       // Avoid noisy warnings during tests.
-      if (process.env.NODE_ENV !== 'test') {
+      if (getNodeEnv() !== 'test') {
         console.warn('Toast provider not mounted yet — queuing toast');
       }
       try {
@@ -162,7 +164,7 @@ export function showToast(opts: ToastOpts) {
 
     return id;
   } catch (err) {
-    if (process.env.NODE_ENV !== 'test') console.warn('Toast failed to show:', err);
+    if (getNodeEnv() !== 'test') console.warn('Toast failed to show:', err);
     // Swallow - toast failure shouldn't crash the app
   }
 }
