@@ -2,23 +2,23 @@ import { images } from "@/constants/images";
 import { useFarmerStore } from "@/stores/farmerStore";
 import { useUIStore } from "@/stores/uiStore";
 import {
-  ChevronDown,
-  ChevronRight,
-  MapPin,
-  PlusCircle,
-  Trash2,
+    ChevronDown,
+    ChevronRight,
+    MapPin,
+    PlusCircle,
+    Trash2,
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Image,
-  LayoutAnimation,
-  Platform,
-  Pressable,
-  SectionList,
-  Text,
-  UIManager,
-  View,
+    ActivityIndicator,
+    Image,
+    LayoutAnimation,
+    Platform,
+    Pressable,
+    SectionList,
+    Text,
+    UIManager,
+    View,
 } from "react-native";
 import AddFarmModal from "../modals/AddFarmModal";
 
@@ -38,7 +38,24 @@ const Farms = () => {
   const [expandedDistricts, setExpandedDistricts] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    fetchProfile();
+    // Only fetch profile from backend if user is authenticated.
+    // This avoids unnecessary protected requests when unauthenticated
+    // and prevents noisy authorization warnings in logs.
+    (async () => {
+      try {
+        const { getAuthToken } = await import('@/lib/api');
+        const token = typeof getAuthToken === 'function' ? getAuthToken() : null;
+        if (token) {
+          fetchProfile();
+        } else {
+          // No token: keep local onboarding farm only
+          console.debug('Farms screen: skipping fetchProfile - no auth token');
+        }
+      } catch (e) {
+        // fallback: attempt fetch (defensive)
+        try { fetchProfile(); } catch {}
+      }
+    })();
   }, [fetchProfile]);
 
   useEffect(() => {

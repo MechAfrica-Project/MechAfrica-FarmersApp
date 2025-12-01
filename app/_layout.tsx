@@ -2,6 +2,7 @@ import CustomToast from "@/app/components/general/CustomToast";
 import OfflineQueueIndicator from "@/app/components/general/OfflineQueueIndicator";
 import RouterStateOverlay from "@/app/components/general/RouterStateOverlay";
 import ToastProviderWrapper from '@/app/components/ui/ToastProviderWrapper';
+import { loadTokensFromStorage } from '@/lib/api';
 import { startNetworkMonitoring } from "@/lib/network";
 import { setToastRef } from '@/lib/toast';
 import { useAuthStore } from "@/stores/authStore";
@@ -30,6 +31,9 @@ export default function RootLayout() {
   useEffect(() => {
     // Restore session then perform initial data sync if authenticated
     (async () => {
+      // Load persisted tokens into api client memory (AsyncStorage)
+      try { await loadTokensFromStorage(); } catch {}
+
       await restoreSession();
 
       // If restoreSession set a token, sync core data in background

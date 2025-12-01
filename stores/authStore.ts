@@ -1,6 +1,6 @@
 // stores/authStore.ts
 import { PhoneValue } from "@/app/(auth)/login/components/PhoneInput";
-import { apiFetch, setAuthToken } from "@/lib/api";
+import { apiFetch, setAuthToken, setTokens } from "@/lib/api";
 import { API_ENDPOINTS } from "@/lib/apiEndpoints";
 import { toastError } from '@/lib/toast';
 import { useDebugStore } from "@/stores/debugStore";
@@ -71,7 +71,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (!phone?.valid) throw new Error("No valid phone set");
 
       // Call backend to verify OTP and receive token + user
-      const data = await apiFetch<{ token: string; user?: User }>(
+      const data = await apiFetch<any>(
         API_ENDPOINTS.AUTH_VERIFY_OTP,
         {
           method: "POST",
@@ -79,13 +79,50 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
       );
 
-      if (!data || !data.token) {
-        throw new Error("Invalid verification response");
+      // Temporary debug: log the shape of the verification response (sanitized)
+      try {
+        const sanitize = (obj: any) => {
+          if (!obj || typeof obj !== 'object') return obj;
+          const copy: any = Array.isArray(obj) ? [] : {};
+          for (const k of Object.keys(obj)) {
+            const v = (obj as any)[k];
+            if (/token|access|refresh/i.test(k) && typeof v === 'string') {
+              // mask tokens to avoid leaking secrets in logs
+              copy[k] = v.length > 8 ? `${v.slice(0,4)}...${v.slice(-4)}` : '***';
+            } else if (typeof v === 'object') {
+              copy[k] = sanitize(v);
+            } else {
+              copy[k] = v;
+            }
+          }
+          return copy;
+        };
+        if (__DEV__) {
+          console.debug('[auth] verifyOtp response (sanitized):', sanitize(data));
+        }
+      } catch {}
+
+      // Accept multiple possible token property names returned by different backends
+      const newToken: string | null = data?.token ?? data?.accessToken ?? data?.access_token ?? null;
+      const newRefresh: string | null = (data as any)?.refreshToken ?? (data as any)?.refresh_token ?? null;
+
+      if (!newToken) {
+        // Provide more context in the error while still masking sensitive fields
+        const respSummary = (() => {
+          try {
+            const keys = data && typeof data === 'object' ? Object.keys(data).join(',') : String(data);
+            return `response keys: ${keys}`;
+          } catch { return 'response unavailable'; }
+        })();
+        throw new Error(`Invalid verification response: missing token (${respSummary})`);
       }
 
-      // Persist token and update fetch wrapper
-      await SecureStore.setItemAsync("token", data.token);
-      setAuthToken(data.token);
+      // Persist token to both SecureStore (legacy) and unified token storage
+      try { await SecureStore.setItemAsync("token", newToken); } catch {}
+      // Persist using new setTokens (will save to AsyncStorage and in-memory)
+      try { await setTokens(newToken, newRefresh ?? null); } catch {}
+      // Keep backwards-compatible in-memory token setter
+      setAuthToken(newToken);
 
       // Ensure onboarding store is loaded (some flows rely on it)
       const onboardingStore = useOnboardingStore.getState();
@@ -145,7 +182,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const state = typeof maybeGetState === "function" ? maybeGetState() : undefined;
         useDebugStore.getState().setLastRouterState(state ?? { note: "router.getState() unavailable" });
          
-        console.debug("logout(dev): captured router state", state);
+        if (__DEV__) {
+          console.debug("logout(dev): captured router state", state);
+        }
       } catch {}
     } else {
       // Prod: conservative navigation to sign-in and index as previous route
@@ -163,7 +202,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   restoreSession: async () => {
     set({ loading: true });
     try {
-      const token = await SecureStore.getItemAsync("token");
+      // Prefer the token already loaded into api client memory, fall back to SecureStore
+      const { getAuthToken } = await import('@/lib/api');
+      let token = getAuthToken();
+      if (!token) token = await SecureStore.getItemAsync("token");
       if (token) {
         setAuthToken(token);
 

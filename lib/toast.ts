@@ -61,6 +61,8 @@ export function setToastRef(ref: ToastRef | null) {
   } catch {}
 }
 
+import { getNodeEnv } from './env';
+
 export type ToastOpts = {
   type?: 'success' | 'error' | 'info' | 'warning' | 'normal';
   text1: string;
@@ -68,12 +70,12 @@ export type ToastOpts = {
   visibilityTime?: number;
   placement?: 'top' | 'bottom';
   // Optional actions rendered inside the toast. Handlers are invoked when action pressed.
-  actions?: Array<{
+  actions?: {
     label: string;
     onPress?: () => void;
     // styling hint consumers may use (e.g., 'destructive')
     style?: 'default' | 'destructive' | 'primary';
-  }>;
+  }[];
 };
 
 export function showToast(opts: ToastOpts) {
@@ -81,7 +83,7 @@ export function showToast(opts: ToastOpts) {
     if (!_toastRef) {
       // When provider isn't mounted yet, queue the toast for later flushing.
       // Avoid noisy warnings during tests.
-      if (process.env.NODE_ENV !== 'test') {
+      if (getNodeEnv() !== 'test') {
         console.warn('Toast provider not mounted yet — queuing toast');
       }
       try {
@@ -162,7 +164,7 @@ export function showToast(opts: ToastOpts) {
 
     return id;
   } catch (err) {
-    if (process.env.NODE_ENV !== 'test') console.warn('Toast failed to show:', err);
+    if (getNodeEnv() !== 'test') console.warn('Toast failed to show:', err);
     // Swallow - toast failure shouldn't crash the app
   }
 }
@@ -270,7 +272,7 @@ function showQueuedAggregated(text1: string, text2?: string, visibilityTime?: nu
 
     aggregation[key] = nowState;
     return id;
-  } catch (err) {
+  } catch {
     // fallback to non-aggregated
     return showToast({ type: 'info', text1, text2, visibilityTime, placement: 'bottom' });
   }
@@ -284,11 +286,7 @@ function showQueuedAggregated(text1: string, text2?: string, visibilityTime?: nu
 export const toastConfirm = (
   title: string,
   message?: string,
-  buttons?: Array<{
-    text: string;
-    onPress?: () => void;
-    style?: 'default' | 'cancel' | 'destructive';
-  }>,
+  buttons?: { text: string; onPress?: () => void; style?: 'default' | 'cancel' | 'destructive' }[],
   placement: 'top' | 'bottom' = 'top'
 ) => {
   const actions: ToastOpts['actions'] = (buttons || [{ text: 'OK' }]).map((b) => ({

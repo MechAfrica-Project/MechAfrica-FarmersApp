@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api";
+import { apiFetch, getAuthToken } from "@/lib/api";
 import { API_ENDPOINTS } from "@/lib/apiEndpoints";
 import { toastError } from "@/lib/toast";
 import { create } from "zustand";
@@ -61,6 +61,17 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
     fetchProfile: async () => {
       set({ loading: true, error: null });
       try {
+        // If there's no auth token available, skip calling protected endpoint.
+        // This prevents noisy console warnings when unauthenticated users visit
+        // profile screens (the UI already falls back to local onboarding data).
+        const token = getAuthToken && typeof getAuthToken === 'function' ? getAuthToken() : null;
+        if (!token) {
+          set({ loading: false });
+          if (__DEV__) {
+            console.debug('fetchProfile skipped: no auth token');
+          }
+          return;
+        }
         const data = await apiFetch<{ profile: OnboardingData; farms: Farm[] }>(
           API_ENDPOINTS.FARMER_PROFILE
         );

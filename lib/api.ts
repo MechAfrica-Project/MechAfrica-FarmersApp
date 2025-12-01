@@ -3,6 +3,8 @@
 import { toastError } from '@/lib/toast';
 import { useUIStore } from "@/stores/uiStore";
 import { API_ENDPOINTS } from "./apiEndpoints";
+import { API_URL_PLACEHOLDER, resolveApiUrlRaw } from './env';
+import { UploadResult } from './types';
 
 // offline enqueue helper: enqueue write requests when offline
 async function enqueueIfOffline(method: string, endpoint: string, body?: any) {
@@ -19,12 +21,63 @@ async function enqueueIfOffline(method: string, endpoint: string, body?: any) {
 }
 
 let authToken: string | null = null;
+let refreshTokenInMemory: string | null = null;
 
 export const setAuthToken = (token: string | null) => {
   authToken = token;
 };
 
-const getBaseUrl = () => process.env.EXPO_PUBLIC_API_URL ?? "https://your-api.com";
+const STORAGE_KEY = '@mechafrica:auth';
+
+export async function loadTokensFromStorage(): Promise<void> {
+  try {
+    const mod = await import('@react-native-async-storage/async-storage');
+    const AsyncStorage = (mod as any).default ?? mod;
+    const raw = await AsyncStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    authToken = parsed?.accessToken ?? null;
+    refreshTokenInMemory = parsed?.refreshToken ?? null;
+  } catch {
+    // ignore
+  }
+}
+
+export async function setTokens(accessToken: string | null, refreshToken?: string | null) {
+  authToken = accessToken ?? null;
+  if (typeof refreshToken !== 'undefined') refreshTokenInMemory = refreshToken ?? null;
+  try {
+    const mod = await import('@react-native-async-storage/async-storage');
+    const AsyncStorage = (mod as any).default ?? mod;
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ accessToken: authToken, refreshToken: refreshTokenInMemory }));
+  } catch {}
+}
+
+export async function clearTokens() {
+  authToken = null;
+  refreshTokenInMemory = null;
+  try { const mod = await import('@react-native-async-storage/async-storage'); const AsyncStorage = (mod as any).default ?? mod; await AsyncStorage.removeItem(STORAGE_KEY); } catch {}
+}
+
+export const getAuthToken = () => authToken;
+
+const getBaseUrl = () => {
+  const url = resolveApiUrlRaw();
+  if (!url || url === API_URL_PLACEHOLDER) {
+    if (__DEV__) {
+      console.warn(
+        "⚠️ API_URL (or EXPO_PUBLIC_API_BASE_URL / EXPO_PUBLIC_API_URL) not set! Using placeholder. Set this in your .env file."
+      );
+      console.warn("   See .env.example for reference.");
+      return API_URL_PLACEHOLDER;
+    } else {
+      throw new Error(
+        "API URL not configured. Please set API_URL (or EXPO_PUBLIC_API_BASE_URL / EXPO_PUBLIC_API_URL) in your .env file."
+      );
+    }
+  }
+  return url.replace(/\/$/, "");
+};
 
 export class ApiError extends Error {
   status?: number;
@@ -42,6 +95,45 @@ export class ApiError extends Error {
  * - Adds Authorization header if token exists
  * - Parses JSON safely
  */
+let isRefreshing = false;
+let refreshWaiters: (() => void)[] = [];
+
+async function doRefresh(): Promise<boolean> {
+  if (isRefreshing) {
+    // wait for current refresh
+    await new Promise<void>((res) => refreshWaiters.push(res));
+    return !!authToken;
+  }
+  isRefreshing = true;
+  try {
+    const baseUrl = getBaseUrl();
+    const token = refreshTokenInMemory;
+    if (!token) return false;
+    const res = await fetch(`${baseUrl}${API_ENDPOINTS.AUTH_REFRESH ?? '/auth/refresh'}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: token }),
+    });
+    if (!res.ok) return false;
+    const parsed = await res.json();
+    const newAccess = parsed?.accessToken ?? parsed?.token ?? null;
+    const newRefresh = parsed?.refreshToken ?? token;
+    if (newAccess) {
+      await setTokens(newAccess, newRefresh);
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  } finally {
+    isRefreshing = false;
+    // notify waiters
+    const waiters = refreshWaiters.slice();
+    refreshWaiters = [];
+    waiters.forEach((w) => w());
+  }
+}
+
 export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const baseUrl = getBaseUrl();
 
@@ -65,7 +157,19 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
     // if enqueue failed silently, proceed to try remote fetch (will fail)
   }
   try {
-    const res = await fetch(`${baseUrl}${endpoint}`, { ...options, headers });
+    const makeRequest = async () => await fetch(`${baseUrl}${endpoint}`, { ...options, headers });
+
+    let res = await makeRequest();
+
+    // if unauthorized, try refresh once then retry
+    if (res.status === 401) {
+      const refreshed = await doRefresh();
+      if (refreshed) {
+        // attach new auth header and retry
+        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+        res = await fetch(`${baseUrl}${endpoint}`, { ...options, headers });
+      }
+    }
 
     if (!res.ok) {
       const text = await res.text();
@@ -132,7 +236,7 @@ export const farmer = {
  * Upload helper: performs multipart/form-data upload and returns parsed JSON.
  * Note: in React Native (Expo) FormData usage varies; pass `file` as { uri, name, type }.
  */
-export async function uploadFile(endpoint: string, file: { uri: string; name?: string; type?: string }, fieldName = "file") {
+export async function uploadFile(endpoint: string, file: { uri: string; name?: string; type?: string }, fieldName = "file"): Promise<UploadResult | any> {
   const baseUrl = getBaseUrl();
   const form = new FormData();
   // @ts-ignore - React Native expects an object with uri/name/type
@@ -153,7 +257,7 @@ export async function uploadFile(endpoint: string, file: { uri: string; name?: s
   }
 
   try {
-    return await res.json();
+    return (await res.json()) as UploadResult;
   } catch {
     return await res.text();
   }

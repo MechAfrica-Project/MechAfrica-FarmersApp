@@ -1,0 +1,59 @@
+# ============================================
+# MechAfrica Farmers App - Environment Variables
+# ============================================
+# Copy this content to your .env file and fill in your actual values
+# Never commit .env to version control!
+
+# ============================================
+# API Configuration (REQUIRED)
+# ============================================
+# Your production API base URL (without trailing slash)
+# Example: https://api.mechafrica.com
+# For local development: http://localhost:8080
+EXPO_PUBLIC_API_BASE_URL=https://api.mechafrica.com
+
+# Backward compatibility: Old variable name (optional, use EXPO_PUBLIC_API_BASE_URL instead)
+# EXPO_PUBLIC_API_URL=https://api.mechafrica.com
+
+# ============================================
+# Google Maps API Keys (REQUIRED)
+# ============================================
+# Get your API keys from: https://console.cloud.google.com/google/maps-apis
+# 
+# iOS Google Maps API Key
+# Required for iOS builds - Maps SDK for iOS must be enabled in Google Cloud Console
+# Example: AIzaSyC0XNPsV-0CfizOtaYSFNyVl5A2LWRIA3o
+EXPO_PUBLIC_GOOGLE_MAPS_IOS_API_KEY=your-ios-maps-api-key-here
+
+# Android Google Maps API Key
+# Required for Android builds - Maps SDK for Android must be enabled in Google Cloud Console
+# Example: AIzaSyBrTOU6CRCf6cThoPxoWYtgeksDAy9TiUo
+EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY=your-android-maps-api-key-here
+
+# Backward compatibility: Old variable names (optional, use new names above instead)
+# EXPO_PUBLIC_GOOGLE_MAPS_IOS_KEY=your-ios-maps-api-key-here
+# EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_KEY=your-android-maps-api-key-here
+
+# ============================================
+# Optional: Development Settings
+# ============================================
+# Enable debug logging (set to 'true' for development, 'false' for production)
+# Default: false (disabled in production builds)
+# EXPO_PUBLIC_DEBUG_MODE=false
+
+# API request timeout in milliseconds
+# Default: 30000 (30 seconds)
+# EXPO_PUBLIC_API_TIMEOUT=30000
+
+# ============================================
+# Notes:
+# ============================================
+# - All variables starting with EXPO_PUBLIC_ are exposed to the client
+# - Never commit this file with real API keys
+# - Use different keys for development and production
+# - Restrict Google Maps API keys to your app's bundle IDs:
+#   - iOS: com.mechafrica.farmer
+#   - Android: com.mechafrica.farmer
+# - See ENV_SETUP.md for detailed setup instructions
+# - See ENVIRONMENT_VARIABLES.md for complete reference
+

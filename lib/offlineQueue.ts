@@ -1,5 +1,7 @@
+import { getAuthToken } from '@/lib/api';
 import * as SecureStore from 'expo-secure-store';
 import { API_ENDPOINTS } from './apiEndpoints';
+import { API_URL_PLACEHOLDER, getNodeEnv, resolveApiUrlRaw } from './env';
 
 // Import stores to map server responses back to local placeholders
 import { useFarmerStore } from '@/stores/farmerStore';
@@ -30,10 +32,10 @@ function computeListsByStatusLocal(byId: Record<string, any>) {
 
 async function readQueue(): Promise<QueuedRequest[]> {
   try {
-    // require AsyncStorage lazily so tests can mock the module before use
+    // import AsyncStorage dynamically so tests can mock the module before use
     // (jest setup mocks are applied in setupFilesAfterEnv)
-     
-    const AsyncStorage = require('@react-native-async-storage/async-storage');
+    const mod = await import('@react-native-async-storage/async-storage');
+    const AsyncStorage = (mod as any).default ?? mod;
     const raw = await AsyncStorage.getItem(QUEUE_KEY);
     if (!raw) return [];
     return JSON.parse(raw) as QueuedRequest[];
@@ -44,9 +46,8 @@ async function readQueue(): Promise<QueuedRequest[]> {
 
 async function writeQueue(queue: QueuedRequest[]) {
   try {
-    // require AsyncStorage lazily so tests can mock the module before use
-     
-    const AsyncStorage = require('@react-native-async-storage/async-storage');
+    const mod = await import('@react-native-async-storage/async-storage');
+    const AsyncStorage = (mod as any).default ?? mod;
     await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
   } catch {
     // ignore
@@ -70,7 +71,7 @@ export async function enqueueRequest(method: string, endpoint: string, body?: an
 
 async function delay(ms: number) {
   // During unit tests we want retries to be fast and deterministic.
-  if (process.env.NODE_ENV === 'test' || typeof process.env.JEST_WORKER_ID !== 'undefined') {
+  if (getNodeEnv() === 'test' || typeof process.env.JEST_WORKER_ID !== 'undefined') {
     return Promise.resolve();
   }
   return new Promise((r) => setTimeout(r, ms));
@@ -115,10 +116,28 @@ export async function processQueue() {
     const queue = await readQueue();
     if (!queue || queue.length === 0) return;
 
-    const baseUrl = process.env.EXPO_PUBLIC_API_URL ?? 'https://your-api.com';
+    const baseUrl = (() => {
+      const url = resolveApiUrlRaw();
+      if (!url || url === API_URL_PLACEHOLDER) {
+        if (getNodeEnv() !== 'production') {
+            console.warn('⚠️ EXPO_PUBLIC_API_BASE_URL (or EXPO_PUBLIC_API_URL) not set! Offline queue will use placeholder URL.');
+            console.warn('   Set this in your .env file. See .env.example for reference.');
+            return API_URL_PLACEHOLDER;
+          }
+        return null;
+      }
+      return url.replace(/\/$/, '');
+    })();
+    
+    if (!baseUrl) {
+      processing = false;
+      return;
+    }
     let token: string | null = null;
     try {
-      token = await SecureStore.getItemAsync('token');
+      // prefer in-memory/AsyncStorage-backed token from api client
+      token = getAuthToken() ?? null;
+      if (!token) token = await SecureStore.getItemAsync('token');
     } catch {}
 
     const remaining: QueuedRequest[] = [];
@@ -233,10 +252,27 @@ export async function retryQueueItem(id: string) {
   const remaining = queue.filter((i) => i.id !== id);
   await writeQueue(remaining);
 
-  const baseUrl = process.env.EXPO_PUBLIC_API_URL ?? 'https://your-api.com';
+  const baseUrl = (() => {
+      const url = resolveApiUrlRaw();
+      if (!url || url === API_URL_PLACEHOLDER) {
+        if (getNodeEnv() !== 'production') {
+          console.warn('⚠️ EXPO_PUBLIC_API_BASE_URL (or EXPO_PUBLIC_API_URL) not set! Retry will use placeholder URL.');
+          console.warn('   Set this in your .env file. See .env.example for reference.');
+          return API_URL_PLACEHOLDER;
+        }
+        return null;
+      }
+      return url.replace(/\/$/, '');
+    })();
+  
+  if (!baseUrl) {
+    return { ok: false, error: 'api_url_not_configured' };
+  }
+  
   let token: string | null = null;
   try {
-    token = await SecureStore.getItemAsync('token');
+    token = getAuthToken() ?? null;
+    if (!token) token = await SecureStore.getItemAsync('token');
   } catch {}
 
   try {
@@ -267,10 +303,14 @@ export async function retryQueueItem(id: string) {
     const newQueue = [item, ...remaining];
     // debug logs for test troubleshooting
      
-    console.debug('[offlineQueue] retryQueueItem - requeuing item', item.id, 'queueBeforeWriteLength=', (await readQueue()).length);
+    if (getNodeEnv() !== 'production') {
+      console.debug('[offlineQueue] retryQueueItem - requeuing item', item.id, 'queueBeforeWriteLength=', (await readQueue()).length);
+    }
     await writeQueue(newQueue);
      
-    console.debug('[offlineQueue] retryQueueItem - requeued item, queueAfterWriteLength=', (await readQueue()).length);
+    if (getNodeEnv() !== 'production') {
+      console.debug('[offlineQueue] retryQueueItem - requeued item, queueAfterWriteLength=', (await readQueue()).length);
+    }
     await delay(backoff);
     return { ok: false, error: 'retry_scheduled' };
   }
