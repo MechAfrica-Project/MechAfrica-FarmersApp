@@ -28,15 +28,15 @@
 ## ⚠️ ACTION REQUIRED Before Production
 
 ### 1. Set Environment Variables
-Create a `.env` file in the project root (copy from `.env.example`):
+Create a `.env` file in the project root (copy from `.env.example`) and set the canonical variables:
 
 ```env
-EXPO_PUBLIC_API_BASE_URL=https://your-production-api-url.com
-EXPO_PUBLIC_GOOGLE_MAPS_IOS_API_KEY=your-ios-key
-EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY=your-android-key
+API_URL=https://your-production-api-url.com
+GOOGLE_MAPS_IOS_API_KEY=your-ios-key
+GOOGLE_MAPS_ANDROID_API_KEY=your-android-key
 ```
 
-**Note:** The code supports both old variable names (`EXPO_PUBLIC_API_URL`, etc.) and new names (`EXPO_PUBLIC_API_BASE_URL`, etc.) for backward compatibility, but the new names are recommended.
+**Note:** The code supports the older `EXPO_PUBLIC_*` names for backward compatibility, but prefer the canonical names (`API_URL`, `GOOGLE_MAPS_*`).
 
 **Important:** 
 - ✅ All API keys are now read from `.env` file only - no hardcoded keys
@@ -77,10 +77,10 @@ Run these checks before deploying:
 
 1. **Environment Variables:**
    ```bash
-   # Verify environment variables are set (use new names)
-   echo $EXPO_PUBLIC_API_BASE_URL
-   echo $EXPO_PUBLIC_GOOGLE_MAPS_IOS_API_KEY
-   echo $EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY
+   # Verify environment variables are set (use canonical names)
+   echo $API_URL
+   echo $GOOGLE_MAPS_IOS_API_KEY
+   echo $GOOGLE_MAPS_ANDROID_API_KEY
    ```
 
 2. **Build Test:**

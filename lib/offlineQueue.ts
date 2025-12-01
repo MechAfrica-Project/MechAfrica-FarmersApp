@@ -1,7 +1,7 @@
 import { getAuthToken } from '@/lib/api';
 import * as SecureStore from 'expo-secure-store';
 import { API_ENDPOINTS } from './apiEndpoints';
-import { resolveApiUrlRaw, API_URL_PLACEHOLDER, getNodeEnv } from './env';
+import { API_URL_PLACEHOLDER, getNodeEnv, resolveApiUrlRaw } from './env';
 
 // Import stores to map server responses back to local placeholders
 import { useFarmerStore } from '@/stores/farmerStore';
@@ -119,11 +119,11 @@ export async function processQueue() {
     const baseUrl = (() => {
       const url = resolveApiUrlRaw();
       if (!url || url === API_URL_PLACEHOLDER) {
-        if (__DEV__) {
-          console.warn('⚠️ EXPO_PUBLIC_API_BASE_URL (or EXPO_PUBLIC_API_URL) not set! Offline queue will use placeholder URL.');
-          console.warn('   Set this in your .env file. See .env.example for reference.');
-          return API_URL_PLACEHOLDER;
-        }
+        if (getNodeEnv() !== 'production') {
+            console.warn('⚠️ EXPO_PUBLIC_API_BASE_URL (or EXPO_PUBLIC_API_URL) not set! Offline queue will use placeholder URL.');
+            console.warn('   Set this in your .env file. See .env.example for reference.');
+            return API_URL_PLACEHOLDER;
+          }
         return null;
       }
       return url.replace(/\/$/, '');
@@ -255,7 +255,7 @@ export async function retryQueueItem(id: string) {
   const baseUrl = (() => {
       const url = resolveApiUrlRaw();
       if (!url || url === API_URL_PLACEHOLDER) {
-        if (__DEV__) {
+        if (getNodeEnv() !== 'production') {
           console.warn('⚠️ EXPO_PUBLIC_API_BASE_URL (or EXPO_PUBLIC_API_URL) not set! Retry will use placeholder URL.');
           console.warn('   Set this in your .env file. See .env.example for reference.');
           return API_URL_PLACEHOLDER;
@@ -303,12 +303,12 @@ export async function retryQueueItem(id: string) {
     const newQueue = [item, ...remaining];
     // debug logs for test troubleshooting
      
-    if (__DEV__) {
+    if (getNodeEnv() !== 'production') {
       console.debug('[offlineQueue] retryQueueItem - requeuing item', item.id, 'queueBeforeWriteLength=', (await readQueue()).length);
     }
     await writeQueue(newQueue);
      
-    if (__DEV__) {
+    if (getNodeEnv() !== 'production') {
       console.debug('[offlineQueue] retryQueueItem - requeued item, queueAfterWriteLength=', (await readQueue()).length);
     }
     await delay(backoff);

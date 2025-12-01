@@ -1,33 +1,9 @@
-// app.config.js - Dynamic configuration using environment variables
-// This file replaces static app.json for production-ready configuration
-// All API keys must be set via environment variables in .env file
-// See .env.example for required variables
 
-// Validate and load required environment variables
-// Load a local .env file into process.env (simple parser, avoids adding dotenv dependency)
-const fs = require('fs');
-const path = require('path');
-try {
-  const envPath = path.resolve(__dirname, '.env');
-  if (fs.existsSync(envPath)) {
-    const raw = fs.readFileSync(envPath, 'utf8');
-    raw.split(/\r?\n/).forEach((line) => {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith('#')) return;
-      const idx = trimmed.indexOf('=');
-      if (idx === -1) return;
-      const key = trimmed.slice(0, idx).trim();
-      let val = trimmed.slice(idx + 1).trim();
-      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
-        val = val.slice(1, -1);
-      }
-      if (process.env[key] === undefined) process.env[key] = val;
-    });
-  }
-} catch {}
+const env = require('./lib/env.cjs');
+env.loadDotenvSync();
 
-const iosMapsKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_IOS_API_KEY || '';
-const androidMapsKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY || '';
+const iosMapsKey = env.getGoogleMapsIosKey() || '';
+const androidMapsKey = env.getGoogleMapsAndroidKey() || '';
 
 // Warn if keys are missing (except in test environment)
 if (!iosMapsKey && process.env.NODE_ENV !== 'test') {
@@ -117,8 +93,8 @@ module.exports = {
     },
     extra: {
       // Expose API URL to the app (supports both old and new variable names for backward compatibility)
-      apiUrl: process.env.EXPO_PUBLIC_API_BASE_URL || process.env.EXPO_PUBLIC_API_URL,
-      apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL || process.env.EXPO_PUBLIC_API_URL
+      apiUrl: env.resolveApiUrlRaw() || null,
+      apiBaseUrl: env.resolveApiUrlRaw() || null
     }
   }
 };

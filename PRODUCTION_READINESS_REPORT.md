@@ -9,7 +9,7 @@
 ## 🔴 CRITICAL ISSUES (Must Fix Before Production)
 
 ### 1. API URL Configuration Missing
-**Issue:** The app defaults to `"https://your-api.com"` when `EXPO_PUBLIC_API_URL` is not set.
+**Issue:** The app defaults to `"https://your-api.com"` when `API_URL` (or legacy `EXPO_PUBLIC_API_URL`) is not set.
 
 **Location:**
 - `lib/api.ts:63`
@@ -18,8 +18,8 @@
 **Impact:** All API calls will fail in production if environment variable is not set.
 
 **Fix Required:**
-- Set `EXPO_PUBLIC_API_URL` environment variable to your production API URL
-- Create `.env.example` file for documentation
+- Set `API_URL` (or the legacy `EXPO_PUBLIC_API_URL`) environment variable to your production API URL
+- Create/update `.env.example` file for documentation
 - Consider adding runtime validation to fail fast if URL is not configured
 
 ---
@@ -109,8 +109,8 @@
 ## 📋 PRE-PRODUCTION CHECKLIST
 
 ### Environment Setup
-- [ ] Set `EXPO_PUBLIC_API_URL` to production API URL
-- [ ] Configure Google Maps API keys via environment variables
+- [ ] Set `API_URL` to production API URL
+- [ ] Configure Google Maps API keys via environment variables (`GOOGLE_MAPS_IOS_API_KEY`, `GOOGLE_MAPS_ANDROID_API_KEY`)
 - [ ] Create `.env.example` file
 - [ ] Document all required environment variables
 
@@ -147,8 +147,8 @@
 
 ## 🚀 RECOMMENDED ACTIONS
 
-1. **IMMEDIATE:** Set `EXPO_PUBLIC_API_URL` environment variable
-2. **IMMEDIATE:** Move Google Maps API keys to environment variables
+1. **IMMEDIATE:** Set `API_URL` environment variable (or `EXPO_PUBLIC_API_URL` for legacy setups)
+2. **IMMEDIATE:** Move Google Maps API keys to environment variables (`GOOGLE_MAPS_IOS_API_KEY`, `GOOGLE_MAPS_ANDROID_API_KEY`)
 3. **HIGH PRIORITY:** Create `.env.example` file
 4. **MEDIUM PRIORITY:** Wrap debug statements in `__DEV__` checks
 5. **BEFORE DEPLOYMENT:** Test full production build
