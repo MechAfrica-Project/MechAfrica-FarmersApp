@@ -216,12 +216,20 @@ export const auth = {
   sendOtp: (phone: string, country?: string) => apiFetch<{ ok: boolean }>(API_ENDPOINTS.AUTH_SEND_OTP, {
     method: "POST",
     // Send both variants to be compatible with different backend contracts
-    body: JSON.stringify({ Phone: phone, phone_number: phone, Country: country }),
+    body: JSON.stringify({ Phone: phone, phone_number: phone, phone: phone, Country: country }),
   }),
   verifyOtp: (phone: string, code: string) => apiFetch<{ token: string; user?: MinimalUser }>(API_ENDPOINTS.AUTH_VERIFY_OTP, {
     method: "POST",
     // Send both OTP and otp plus phone variants to maximize compatibility
-    body: JSON.stringify({ Phone: phone, phone_number: phone, OTP: code, otp: code }),
+    body: JSON.stringify({
+      Phone: phone,
+      phone_number: phone,
+      phone: phone,
+      OTP: code,
+      otp: code,
+      code: code,
+      verification_code: code,
+    }),
   }),
 };
 

@@ -71,7 +71,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       // Align with backend contract: expects `Phone` (capitalized)
-      const payload = { Phone: normalizedPhone, phone_number: normalizedPhone };
+      // Include several common key variants to maximize backend compatibility
+      const payload = {
+        Phone: normalizedPhone,
+        phone_number: normalizedPhone,
+        phone: normalizedPhone,
+      };
       if (typeof __DEV__ !== 'undefined' && __DEV__) {
         try { console.debug('[auth] sendPhone payload:', payload); } catch {}
       }
@@ -148,11 +153,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         {
           method: "POST",
           body: JSON.stringify({
-            // Send both key variants for compatibility
+            // Send several common key variants for compatibility with different backends
             Phone: normalizedPhone,
             phone_number: normalizedPhone,
+            phone: normalizedPhone,
             OTP: code,
             otp: code,
+            code: code,
+            verification_code: code,
             role: "farmer",
           }),
         }
