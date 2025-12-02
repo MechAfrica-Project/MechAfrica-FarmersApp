@@ -108,7 +108,7 @@ export default function VerifyPhone() {
                   onPress={async () => {
                     try {
                       await sendPhone({ skipNavigation: true });
-                    } catch (err) {
+                    } catch {
                       // error is surfaced via store.error
                     }
                   }}
