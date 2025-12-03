@@ -19,6 +19,10 @@ export const API_ENDPOINTS = {
 
   // Notifications
   NOTIFICATIONS: "/notifications",
+
+  // Tips
+  FARMER_TIPS: "/farmer/tips",
+  FARMER_TIPS_REFRESH: "/farmer/tips/refresh",
 } as const;
 
 export type ApiEndpoints = typeof API_ENDPOINTS;
@@ -30,6 +34,13 @@ export const endpoints = {
   requestById: (id: string) => `${API_ENDPOINTS.REQUESTS}/${id}`,
   farmerFarmById: (id: string) => `${API_ENDPOINTS.FARMER_FARMS}/${id}`,
   uploadFile: (filename?: string) => (filename ? `${API_ENDPOINTS.UPLOADS}/${filename}` : API_ENDPOINTS.UPLOADS),
+  // Tips endpoints
+  tipsByCategory: (category: string) => `${API_ENDPOINTS.FARMER_TIPS}/category/${category}`,
+  tipView: (tipId: string) => `${API_ENDPOINTS.FARMER_TIPS}/${tipId}/view`,
+  tipAction: (tipId: string) => `${API_ENDPOINTS.FARMER_TIPS}/${tipId}/action`,
+  tipFeedback: (tipId: string) => `${API_ENDPOINTS.FARMER_TIPS}/${tipId}/feedback`,
+  tipRate: (tipId: string) => `${API_ENDPOINTS.FARMER_TIPS}/${tipId}/rate`,
+  tipShare: (tipId: string) => `${API_ENDPOINTS.FARMER_TIPS}/${tipId}/share`,
 };
 
 export type Endpoints = typeof endpoints;

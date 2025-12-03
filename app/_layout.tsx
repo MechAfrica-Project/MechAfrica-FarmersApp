@@ -32,7 +32,7 @@ export default function RootLayout() {
     // Restore session then perform initial data sync if authenticated
     (async () => {
       // Load persisted tokens into api client memory (AsyncStorage)
-      try { await loadTokensFromStorage(); } catch {}
+      try { await loadTokensFromStorage(); } catch { }
 
       await restoreSession();
 
@@ -47,7 +47,7 @@ export default function RootLayout() {
           rs.fetchRequests ? rs.fetchRequests() : Promise.resolve(),
           fs.fetchProfile ? fs.fetchProfile() : Promise.resolve(),
           ns.fetchNotifications ? ns.fetchNotifications() : Promise.resolve(),
-        ]).catch(() => {});
+        ]).catch(() => { });
       }
     })();
   }, [restoreSession]);
@@ -57,13 +57,13 @@ export default function RootLayout() {
     (async () => {
       try {
         stop = await startNetworkMonitoring();
-      } catch {}
+      } catch { }
     })();
 
     return () => {
       try {
         if (stop) stop();
-      } catch {}
+      } catch { }
     };
   }, []);
 
