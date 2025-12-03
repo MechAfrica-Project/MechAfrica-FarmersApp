@@ -2,7 +2,7 @@ import { images } from "@/constants/images";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import { useTipsStore } from "@/stores/tipsStore";
 import { Lightbulb, RefreshCw, X } from "lucide-react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
@@ -26,22 +26,46 @@ const WelcomeAndUpdates = () => {
 
   // Animation for refresh button
   const spinValue = useRef(new Animated.Value(0)).current;
+  const spinAnimation = useRef<Animated.CompositeAnimation | null>(null);
 
   const startSpinAnimation = () => {
+    // Stop any existing animation
+    if (spinAnimation.current) {
+      spinAnimation.current.stop();
+    }
     spinValue.setValue(0);
-    Animated.timing(spinValue, {
-      toValue: 1,
-      duration: 800,
-      easing: Easing.linear,
-      useNativeDriver: true,
-    }).start();
+
+    // Create a looping animation
+    spinAnimation.current = Animated.loop(
+      Animated.timing(spinValue, {
+        toValue: 1,
+        duration: 800,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+    spinAnimation.current.start();
   };
 
-  const spin = spinValue.interpolate({
+  const stopSpinAnimation = useCallback(() => {
+    if (spinAnimation.current) {
+      spinAnimation.current.stop();
+      spinAnimation.current = null;
+    }
+    spinValue.setValue(0);
+  }, [spinValue]);
 
+  const spin = spinValue.interpolate({
     inputRange: [0, 1],
     outputRange: ["0deg", "360deg"],
   });
+
+  // Stop animation when loading completes
+  useEffect(() => {
+    if (!loading) {
+      stopSpinAnimation();
+    }
+  }, [loading, stopSpinAnimation]);
 
   // Fetch tips on mount
   useEffect(() => {
@@ -85,8 +109,7 @@ const WelcomeAndUpdates = () => {
       return currentTip.content;
     }
 
-    if (tips.length >
-      0) {
+    if (tips.length > 0) {
       return tips[0].content;
     }
 
