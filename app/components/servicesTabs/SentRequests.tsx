@@ -1,7 +1,7 @@
 import { useRequestsStore } from "@/stores/requestsStore";
 import { Request } from "@/types/request";
 import React from "react";
-import { ScrollView, View, Text } from "react-native";
+import { View, Text } from "react-native";
 import ServiceTicket from "./ServiceTicket";
 
 const SentRequests = () => {
@@ -19,10 +19,7 @@ const SentRequests = () => {
   }
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingVertical: 10 }}
-    >
+    <View style={{ paddingVertical: 10 }}>
       {sentRequests.map((request) => (
         <ServiceTicket
           key={request.id}
@@ -31,7 +28,7 @@ const SentRequests = () => {
           onCancel={() => cancelRequest(request.id)}
         />
       ))}
-    </ScrollView>
+    </View>
   );
 };
 

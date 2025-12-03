@@ -1,11 +1,20 @@
 import { useFarmerStore } from "@/stores/farmerStore";
 import { useServiceFlowStore } from "@/stores/serviceFlowStore";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { ChevronDown, ChevronUp } from "lucide-react-native";
+import { ChevronDown } from "lucide-react-native";
 import React, { useEffect, useReducer, useState } from "react";
-import { Dimensions, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  Dimensions,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-const { height } = Dimensions.get("window");
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 type State = {
   selectedFarm: any | null;
@@ -43,81 +52,155 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-type DropdownProps = {
+// Dropdown Modal Component - uses Modal to avoid z-index issues
+type DropdownModalProps = {
+  visible: boolean;
+  title: string;
+  data: any[];
+  onSelect: (item: any) => void;
+  onClose: () => void;
+  renderItem: (item: any) => string;
+  emptyMessage: string;
+};
+
+const DropdownModal = ({
+  visible,
+  title,
+  data,
+  onSelect,
+  onClose,
+  renderItem,
+  emptyMessage,
+}: DropdownModalProps) => (
+  <Modal visible={visible} transparent animationType="fade">
+    <Pressable
+      style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.3)" }}
+      onPress={onClose}
+    >
+      <View style={{ flex: 1, justifyContent: "center", paddingHorizontal: 20 }}>
+        <Pressable
+          style={{
+            backgroundColor: "white",
+            borderRadius: 12,
+            maxHeight: SCREEN_HEIGHT * 0.5,
+            overflow: "hidden",
+          }}
+          onPress={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <View
+            style={{
+              padding: 16,
+              borderBottomWidth: 1,
+              borderBottomColor: "#E5E7EB",
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: "600", color: "#111827" }}>
+              {title}
+            </Text>
+          </View>
+
+          {/* Options */}
+          {data.length > 0 ? (
+            <ScrollView style={{ maxHeight: SCREEN_HEIGHT * 0.4 }}>
+              {data.map((item: any, index: number) => (
+                <TouchableOpacity
+                  key={(item.id || item) + index.toString()}
+                  style={{
+                    padding: 16,
+                    borderBottomWidth: 1,
+                    borderBottomColor: "#F3F4F6",
+                  }}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    onSelect(item);
+                    onClose();
+                  }}
+                >
+                  <Text style={{ fontSize: 16, color: "#374151" }}>
+                    {renderItem(item)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          ) : (
+            <View style={{ padding: 20, alignItems: "center" }}>
+              <Text style={{ color: "#9CA3AF", fontSize: 14 }}>{emptyMessage}</Text>
+            </View>
+          )}
+
+          {/* Cancel Button */}
+          <TouchableOpacity
+            style={{
+              padding: 16,
+              borderTopWidth: 1,
+              borderTopColor: "#E5E7EB",
+              alignItems: "center",
+            }}
+            onPress={onClose}
+          >
+            <Text style={{ fontSize: 16, color: "#059669", fontWeight: "600" }}>
+              Cancel
+            </Text>
+          </TouchableOpacity>
+        </Pressable>
+      </View>
+    </Pressable>
+  </Modal>
+);
+
+// Dropdown Trigger Button
+type DropdownButtonProps = {
   label: string;
   value: string | undefined;
   placeholder: string;
-  data: any[];
-  visible: boolean;
-  onToggle: () => void;
-  onSelect: (item: any) => void;
+  onPress: () => void;
   disabled?: boolean;
-  zIndex?: number;
 };
 
-const Dropdown = ({
+const DropdownButton = ({
   label,
   value,
   placeholder,
-  data,
-  visible,
-  onToggle,
-  onSelect,
+  onPress,
   disabled = false,
-  zIndex = 10,
-}: DropdownProps) => (
-  <View className="py-3 relative" style={{ zIndex }}>
-    <Text className="text-gray-700 font-medium mb-1">{label}:</Text>
-    <Pressable
-      onPress={onToggle}
+}: DropdownButtonProps) => (
+  <View style={{ paddingVertical: 12 }}>
+    <Text style={{ color: "#374151", fontWeight: "500", marginBottom: 4 }}>
+      {label}:
+    </Text>
+    <TouchableOpacity
+      onPress={onPress}
       disabled={disabled}
-      className={`flex-row justify-between items-center border border-gray-300 rounded-lg px-3 py-3 ${disabled ? "bg-gray-100 opacity-70" : "bg-white"
-        }`}
+      activeOpacity={0.7}
+      style={{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "#D1D5DB",
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 12,
+        backgroundColor: disabled ? "#F3F4F6" : "#FFFFFF",
+        opacity: disabled ? 0.7 : 1,
+      }}
     >
-      <Text className={`${value ? "text-gray-900 font-semibold" : "text-gray-400"}`}>
+      <Text
+        style={{
+          color: value ? "#111827" : "#9CA3AF",
+          fontWeight: value ? "600" : "400",
+          fontSize: 15,
+        }}
+      >
         {value || placeholder}
       </Text>
-      {visible ? (
-        <ChevronUp size={20} color={disabled ? "#9CA3AF" : "#4B5563"} />
-      ) : (
-        <ChevronDown size={20} color={disabled ? "#9CA3AF" : "#4B5563"} />
-      )}
-    </Pressable>
-
-    {visible && data.length > 0 && (
-      <View
-        className="absolute left-0 right-0 border border-gray-300 rounded-lg bg-white shadow-xl"
-        style={{ top: 72, maxHeight: height * 0.3, zIndex: zIndex + 1 }}
-      >
-        <ScrollView contentContainerStyle={{ paddingVertical: 0 }} nestedScrollEnabled>
-          {data.map((item: any, index: number) => (
-            <Pressable
-              key={(item.id || item) + index.toString()}
-              className="p-3 border-b border-gray-100 active:bg-green-50"
-              onPress={() => onSelect(item)}
-            >
-              <Text className="text-gray-800 font-medium">
-                {label === "Farm" ? item.farmName : item}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-      </View>
-    )}
-
-    {visible && data.length === 0 && (
-      <View
-        className="absolute left-0 right-0 border border-gray-300 rounded-lg bg-white shadow-xl p-4"
-        style={{ top: 72, zIndex: zIndex + 1 }}
-      >
-        <Text className="text-gray-500 text-center">
-          {label === "Farm" ? "No farms available" : "No crops available"}
-        </Text>
-      </View>
-    )}
+      <ChevronDown size={20} color={disabled ? "#9CA3AF" : "#4B5563"} />
+    </TouchableOpacity>
   </View>
 );
 
+// Date/Time Row Component
 type DateTimeRowProps = {
   label: string;
   value: Date;
@@ -126,19 +209,28 @@ type DateTimeRowProps = {
 };
 
 const DateTimeRow = ({ label, value, type, onPress }: DateTimeRowProps) => (
-  <Pressable
+  <TouchableOpacity
     onPress={() => onPress(type)}
-    className="flex-row justify-between items-center border-b border-gray-100 py-3"
+    activeOpacity={0.7}
+    style={{
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      borderBottomWidth: 1,
+      borderBottomColor: "#F3F4F6",
+      paddingVertical: 12,
+    }}
   >
-    <Text className="text-gray-600 font-medium">{label}:</Text>
-    <Text className="text-lg text-gray-800 font-semibold">
+    <Text style={{ color: "#4B5563", fontWeight: "500" }}>{label}:</Text>
+    <Text style={{ fontSize: 16, color: "#111827", fontWeight: "600" }}>
       {type.includes("Date")
         ? value.toDateString()
         : value.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
     </Text>
-  </Pressable>
+  </TouchableOpacity>
 );
 
+// Main Component
 type FarmerDetailsProps = {
   service: any;
   startDate?: string;
@@ -158,8 +250,9 @@ const FarmerDetails = ({
   const setDraftFarm = useServiceFlowStore((s) => s.setFarmId);
   const setDraftCrop = useServiceFlowStore((s) => s.setCrop);
 
-  // Track which dropdown is currently open
-  const [openDropdown, setOpenDropdown] = useState<"farm" | "crop" | null>(null);
+  // Modal visibility states
+  const [showFarmModal, setShowFarmModal] = useState(false);
+  const [showCropModal, setShowCropModal] = useState(false);
 
   const parseSafeDate = (s?: string) => {
     if (!s) return new Date();
@@ -195,27 +288,15 @@ const FarmerDetails = ({
     }
   }, [state.selectedCrop, setDraftCrop]);
 
-  const handleFarmToggle = () => {
-    setOpenDropdown(openDropdown === "farm" ? null : "farm");
-  };
-
-  const handleCropToggle = () => {
-    if (!state.selectedFarm) return;
-    setOpenDropdown(openDropdown === "crop" ? null : "crop");
-  };
-
   const handleFarmSelect = (farm: any) => {
     dispatch({ type: "SET_FARM", payload: farm });
-    setOpenDropdown(null);
   };
 
   const handleCropSelect = (crop: string) => {
     dispatch({ type: "SET_CROP", payload: crop });
-    setOpenDropdown(null);
   };
 
   const onChange = (event: any, selectedDate?: Date) => {
-    // On iOS `event.type` may be undefined — rely on `selectedDate` when provided.
     if (event?.type === "dismissed") {
       setShowPicker({ type: null });
       return;
@@ -224,17 +305,6 @@ const FarmerDetails = ({
     if (selectedDate && showPicker.type) {
       const actionType = `SET_${showPicker.type.toUpperCase()}` as Action["type"];
       dispatch({ type: actionType, payload: selectedDate } as Action);
-    }
-
-    // Debug iOS picker events to help diagnose 'stuck' behaviour
-    if (__DEV__ && Platform.OS === "ios") {
-      try {
-        console.debug("FarmerDetails:DateTimePicker:onChange", {
-          event,
-          selectedDate,
-          showPicker,
-        });
-      } catch { }
     }
 
     if (Platform.OS === "android") {
@@ -249,74 +319,83 @@ const FarmerDetails = ({
     { label: "End Time", type: "endTime" as const },
   ];
 
-  // Close dropdowns when tapping outside
-  const handleContainerPress = () => {
-    if (openDropdown) {
-      setOpenDropdown(null);
-    }
-  };
-
   return (
-    <Pressable onPress={handleContainerPress} className="flex-1">
-      <ScrollView className="flex-1 px-4 bg-white" nestedScrollEnabled>
-        <Text className="text-green-700 font-extrabold text-3xl mt-6">
-          {service?.title || "Service Details"}
-        </Text>
-        <Text className="text-gray-500 text-base mb-6">
-          {service?.subtitle || "Please select your farm and crop below."}
-        </Text>
+    <View style={{ flex: 1, paddingHorizontal: 16, backgroundColor: "#FFFFFF" }}>
+      {/* Service Title */}
+      <Text
+        style={{
+          color: "#047857",
+          fontWeight: "800",
+          fontSize: 28,
+          marginTop: 24,
+        }}
+      >
+        {service?.title || "Service Details"}
+      </Text>
+      <Text style={{ color: "#6B7280", fontSize: 14, marginBottom: 24 }}>
+        {service?.subtitle || "Please select your farm and crop below."}
+      </Text>
 
-        {dateTimeFields.map((field) => (
-          <DateTimeRow
-            key={field.type}
-            label={field.label}
-            type={field.type}
-            value={state[field.type]}
-            onPress={(type: any) => {
-              setOpenDropdown(null); // Close dropdowns when opening date picker
-              setShowPicker({ type });
-            }}
-          />
-        ))}
-
-        {/* Farm Dropdown - higher z-index so it appears above crop dropdown */}
-        <Dropdown
-          label="Farm"
-          value={state.selectedFarm?.farmName}
-          placeholder="Select Farm"
-          data={farms}
-          visible={openDropdown === "farm"}
-          onToggle={handleFarmToggle}
-          onSelect={handleFarmSelect}
-          zIndex={20}
+      {/* Date/Time Fields */}
+      {dateTimeFields.map((field) => (
+        <DateTimeRow
+          key={field.type}
+          label={field.label}
+          type={field.type}
+          value={state[field.type]}
+          onPress={(type: any) => setShowPicker({ type })}
         />
+      ))}
 
-        {/* Crop Dropdown */}
-        <Dropdown
-          label="Crop"
-          value={state.selectedCrop ?? undefined}
-          placeholder="Select Crop"
-          data={state.selectedFarm?.cropTypes ?? []}
-          visible={openDropdown === "crop"}
-          onToggle={handleCropToggle}
-          onSelect={handleCropSelect}
-          disabled={!state.selectedFarm}
-          zIndex={10}
+      {/* Farm Dropdown */}
+      <DropdownButton
+        label="Farm"
+        value={state.selectedFarm?.farmName}
+        placeholder="Select Farm"
+        onPress={() => setShowFarmModal(true)}
+      />
+
+      {/* Crop Dropdown */}
+      <DropdownButton
+        label="Crop"
+        value={state.selectedCrop ?? undefined}
+        placeholder="Select Crop"
+        onPress={() => setShowCropModal(true)}
+        disabled={!state.selectedFarm}
+      />
+
+      {/* Farm Selection Modal */}
+      <DropdownModal
+        visible={showFarmModal}
+        title="Select Farm"
+        data={farms}
+        onSelect={handleFarmSelect}
+        onClose={() => setShowFarmModal(false)}
+        renderItem={(farm) => farm.farmName}
+        emptyMessage="No farms available. Add a farm in your profile."
+      />
+
+      {/* Crop Selection Modal */}
+      <DropdownModal
+        visible={showCropModal}
+        title="Select Crop"
+        data={state.selectedFarm?.cropTypes ?? []}
+        onSelect={handleCropSelect}
+        onClose={() => setShowCropModal(false)}
+        renderItem={(crop) => crop}
+        emptyMessage="No crops available for this farm."
+      />
+
+      {/* Date/Time Picker */}
+      {showPicker.type && (
+        <DateTimePicker
+          mode={showPicker.type.includes("Date") ? "date" : "time"}
+          value={state[showPicker.type]}
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={onChange}
         />
-
-        {showPicker.type && (
-          <DateTimePicker
-            mode={showPicker.type.includes("Date") ? "date" : "time"}
-            value={state[showPicker.type]}
-            display={Platform.OS === "ios" ? "spinner" : "default"}
-            onChange={onChange}
-          />
-        )}
-
-        {/* Extra padding at bottom for scrolling */}
-        <View className="h-20" />
-      </ScrollView>
-    </Pressable>
+      )}
+    </View>
   );
 };
 

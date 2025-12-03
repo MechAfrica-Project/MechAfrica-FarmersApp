@@ -1,7 +1,7 @@
 import { useRequestsStore } from "@/stores/requestsStore";
 import { Request } from "@/types/request";
 import React from "react";
-import { ScrollView, useWindowDimensions, View, Text } from "react-native";
+import { useWindowDimensions, View, Text } from "react-native";
 import ServiceTicket from "./ServiceTicket";
 
 const CancelledRequests: React.FC = () => {
@@ -12,31 +12,32 @@ const CancelledRequests: React.FC = () => {
   const { width: SCREEN_WIDTH } = useWindowDimensions();
   const horizontalPadding = SCREEN_WIDTH < 360 ? 10 : 16;
 
+  if (cancelledRequests.length === 0) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Text className="text-gray-400 text-base font-mulish">
+          No cancelled requests.
+        </Text>
+      </View>
+    );
+  }
+
   return (
-    <ScrollView
-      contentContainerStyle={{
+    <View
+      style={{
         paddingHorizontal: horizontalPadding,
         paddingTop: 10,
         paddingBottom: 20,
       }}
-      showsVerticalScrollIndicator={false}
     >
-      {cancelledRequests.length > 0 ? (
-        cancelledRequests.map((request) => (
-          <ServiceTicket
-            key={request.id}
-            fullRequest={request}
-            status={request.status}
-          />
-        ))
-      ) : (
-        <View className="items-center mt-10">
-          <Text className="text-gray-500 font-mulish text-base">
-            No cancelled requests.
-          </Text>
-        </View>
-      )}
-    </ScrollView>
+      {cancelledRequests.map((request) => (
+        <ServiceTicket
+          key={request.id}
+          fullRequest={request}
+          status={request.status}
+        />
+      ))}
+    </View>
   );
 };
 

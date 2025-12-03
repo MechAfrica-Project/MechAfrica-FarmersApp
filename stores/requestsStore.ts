@@ -6,6 +6,8 @@ import { create } from "zustand";
 type RequestsState = {
   byId: Record<string, Request>;
   listsByStatus: Record<RequestStatus, Request[]>;
+  loading: boolean;
+  error: string | null;
   getByStatus: (status: RequestStatus) => Request[];
   activeRequestId?: string | null;
   setActiveRequest: (id?: string | null) => void;
@@ -37,6 +39,8 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
   return {
     byId: initialById,
     listsByStatus: computeListsByStatus(initialById),
+    loading: false,
+    error: null,
     activeRequestId: null,
 
     getByStatus: (status) => get().listsByStatus[status],
@@ -95,13 +99,13 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
       }
     },
 
-      // Restore a request (used for Undo actions in the UI)
-      restoreRequest: (req: Request) =>
-        set((s) => {
-          if (s.byId[req.id]) return { byId: s.byId, listsByStatus: s.listsByStatus };
-          const byId = { ...s.byId, [req.id]: req };
-          return { byId, listsByStatus: computeListsByStatus(byId) };
-        }, false),
+    // Restore a request (used for Undo actions in the UI)
+    restoreRequest: (req: Request) =>
+      set((s) => {
+        if (s.byId[req.id]) return { byId: s.byId, listsByStatus: s.listsByStatus };
+        const byId = { ...s.byId, [req.id]: req };
+        return { byId, listsByStatus: computeListsByStatus(byId) };
+      }, false),
 
     deleteCancelled: () =>
       set((s) => {
@@ -155,15 +159,20 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
 
     // Fetch requests from backend (merge into store); call this on app start or when needed
     fetchRequests: async () => {
+      set({ loading: true, error: null });
       try {
         const data = await apiFetch<{ requests: Request[] }>(API_ENDPOINTS.REQUESTS);
         const byId: Record<string, Request> = {};
         for (const r of data.requests || []) byId[r.id] = r;
         // Merge with existing local items (local items keep priority if ids clash)
-        set((s) => ({ byId: { ...byId, ...s.byId }, listsByStatus: computeListsByStatus({ ...byId, ...s.byId }) }));
-      } catch (err) {
-        // no dummy data: just log the failure and keep current store
+        set((s) => ({
+          byId: { ...byId, ...s.byId },
+          listsByStatus: computeListsByStatus({ ...byId, ...s.byId }),
+          loading: false,
+        }));
+      } catch (err: any) {
         console.warn("fetchRequests failed", err);
+        set({ loading: false, error: err?.message || "Failed to fetch requests" });
       }
     },
   };

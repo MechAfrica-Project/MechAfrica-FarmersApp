@@ -78,7 +78,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         phone: normalizedPhone,
       };
       if (typeof __DEV__ !== 'undefined' && __DEV__) {
-        try { console.debug('[auth] sendPhone payload:', payload); } catch {}
+        try { console.debug('[auth] sendPhone payload:', payload); } catch { }
       }
       await apiFetch<any>(API_ENDPOINTS.AUTH_SEND_OTP, {
         method: "POST",
@@ -117,10 +117,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             retrySecs = 60;
             const until = Date.now() + (retrySecs * 1000);
             set({ otpCooldownUntil: until });
-            msg = `${bodyObj?.message ?? 'Failed to send OTP. Please try again.'} Try again in ${Math.ceil(retrySecs/60)} minute(s).`;
+            msg = `${bodyObj?.message ?? 'Failed to send OTP. Please try again.'} Try again in ${Math.ceil(retrySecs / 60)} minute(s).`;
           }
         }
-      } catch {}
+      } catch { }
       toastError('Send failed', msg);
       set({ loading: false, error: msg });
       // rethrow so callers who `await sendPhone()` can react if needed
@@ -131,6 +131,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setOtpCooldown: (until) => set({ otpCooldownUntil: until }),
 
   verifyOtp: async (code, options) => {
+    // Debug: log the OTP code length being sent
+    if (__DEV__) {
+      console.debug('[auth] verifyOtp called with code length:', code?.length, 'code:', code);
+    }
+
+    // Validate OTP code length before sending to backend
+    if (!code || code.length < 6) {
+      const msg = `Invalid OTP code length: ${code?.length || 0}. Please enter all 6 digits.`;
+      if (__DEV__) {
+        console.warn('[auth] verifyOtp rejected:', msg);
+      }
+      set({ error: msg, loading: false });
+      return false;
+    }
+
     set({ loading: true, error: null });
     try {
       const { phone } = get();
@@ -148,21 +163,33 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       };
       const normalizedPhone = getNormalized(phone);
 
+      // Ensure code is exactly 6 digits (trim any whitespace)
+      const cleanCode = code.trim();
+      if (cleanCode.length !== 6) {
+        throw new Error(`OTP must be exactly 6 digits, got ${cleanCode.length}`);
+      }
+
+      const payload = {
+        // Send several common key variants for compatibility with different backends
+        Phone: normalizedPhone,
+        phone_number: normalizedPhone,
+        phone: normalizedPhone,
+        OTP: cleanCode,
+        otp: cleanCode,
+        code: cleanCode,
+        verification_code: cleanCode,
+        role: "farmer",
+      };
+
+      if (__DEV__) {
+        console.debug('[auth] verifyOtp sending payload:', { ...payload, OTP: '******' });
+      }
+
       const raw = await apiFetch<any>(
         API_ENDPOINTS.AUTH_VERIFY_OTP,
         {
           method: "POST",
-          body: JSON.stringify({
-            // Send several common key variants for compatibility with different backends
-            Phone: normalizedPhone,
-            phone_number: normalizedPhone,
-            phone: normalizedPhone,
-            OTP: code,
-            otp: code,
-            code: code,
-            verification_code: code,
-            role: "farmer",
-          }),
+          body: JSON.stringify(payload),
         }
       );
       // Some backends nest data under `data`
@@ -177,7 +204,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             const v = (obj as any)[k];
             if (/token|access|refresh/i.test(k) && typeof v === 'string') {
               // mask tokens to avoid leaking secrets in logs
-              copy[k] = v.length > 8 ? `${v.slice(0,4)}...${v.slice(-4)}` : '***';
+              copy[k] = v.length > 8 ? `${v.slice(0, 4)}...${v.slice(-4)}` : '***';
             } else if (typeof v === 'object') {
               copy[k] = sanitize(v);
             } else {
@@ -189,7 +216,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         if (__DEV__) {
           console.debug('[auth] verifyOtp response (sanitized):', sanitize(data));
         }
-      } catch {}
+      } catch { }
 
       // Accept multiple possible token property names / nesting returned by different backends
       const newToken: string | null =
@@ -216,9 +243,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       // Persist token to both SecureStore (legacy) and unified token storage
-      try { await SecureStore.setItemAsync("token", newToken); } catch {}
+      try { await SecureStore.setItemAsync("token", newToken); } catch { }
       // Persist using new setTokens (will save to AsyncStorage and in-memory)
-      try { await setTokens(newToken, newRefresh ?? null); } catch {}
+      try { await setTokens(newToken, newRefresh ?? null); } catch { }
       // Keep backwards-compatible in-memory token setter
       setAuthToken(newToken);
 
@@ -237,8 +264,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           rs.fetchRequests ? rs.fetchRequests() : Promise.resolve(),
           fs.fetchProfile ? fs.fetchProfile() : Promise.resolve(),
           ns.fetchNotifications ? ns.fetchNotifications() : Promise.resolve(),
-        ]).catch(() => {});
-      } catch {}
+        ]).catch(() => { });
+      } catch { }
 
       if (!options?.skipNavigation) {
         router.replace("/(tabs)");
@@ -256,7 +283,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     // Remove persisted token first
     try {
       await SecureStore.deleteItemAsync("token");
-    } catch {}
+    } catch { }
     setAuthToken(null);
     set({ user: null, token: null });
 
@@ -271,21 +298,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         } catch {
           try {
             router.replace("/(auth)/login/signIn");
-          } catch {}
+          } catch { }
         }
       }
 
       try {
-         
+
         const anyRouter: any = router as any;
         const maybeGetState = anyRouter.getState || anyRouter.getRootState || anyRouter.getInitialState;
         const state = typeof maybeGetState === "function" ? maybeGetState() : undefined;
         useDebugStore.getState().setLastRouterState(state ?? { note: "router.getState() unavailable" });
-         
+
         if (__DEV__) {
           console.debug("logout(dev): captured router state", state);
         }
-      } catch {}
+      } catch { }
     } else {
       // Prod: conservative navigation to sign-in and index as previous route
       try {
@@ -294,7 +321,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       } catch {
         try {
           router.replace("/(auth)/login/signIn");
-        } catch {}
+        } catch { }
       }
     }
   },
