@@ -145,7 +145,7 @@ export default function PhoneVerificationStep() {
 
       <PrimaryButton
         title={otpVerified ? "Verified" : "Verify code"}
-        onPress={handleVerify}
+        onPress={() => handleVerify()}
         disabled={loading || otpVerified}
         loading={loading}
         textClassName="text-white"
