@@ -26,6 +26,7 @@ interface FarmerState {
 
   fetchProfile: () => Promise<void>;
   addFarm: (farm: Omit<Farm, "id">) => Promise<void>;
+  updateFarm: (farm: Farm) => Promise<void>;
   removeFarm: (id: string) => Promise<void>;
   // Restore a farm (used for Undo flows)
   restoreFarm: (farm: Farm) => void;
@@ -81,23 +82,6 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
           console.debug("fetchProfile response:", JSON.stringify(data, null, 2));
         }
 
-        // Convert onboarding farm from backend profile
-        const backendOnboardingFarmInfo = data.profile?.farmInfo;
-        const backendOnboardingFarm: Farm[] = backendOnboardingFarmInfo?.farmName
-          ? [
-            {
-              // Always use "onboarding-farm" as ID for profile-embedded farm data
-              id: "onboarding-farm",
-              farmName: backendOnboardingFarmInfo.farmName || "",
-              farmSize: backendOnboardingFarmInfo.farmSize || 0,
-              cropTypes: backendOnboardingFarmInfo.cropTypes || [],
-              region: data.profile?.location?.region || "Unknown Region",
-              district:
-                data.profile?.location?.district || "Unknown District",
-            },
-          ]
-          : [];
-
         // Process backend farms - ensure they have valid IDs
         // Backend farms should have real UUIDs, not farmer IDs
         const backendFarms = (data.farms || []).map((farm: any) => ({
@@ -113,22 +97,46 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
           console.debug("Processed backend farms:", backendFarms);
         }
 
-        // Check if backend farms duplicate the profile-embedded farm (same name)
-        // This handles the case where backend returns both profile.farmInfo AND farms[] with same data
-        const profileFarmName = backendOnboardingFarmInfo?.farmName?.toLowerCase();
-        const filteredBackendFarms = profileFarmName
-          ? backendFarms.filter((f: Farm) => f.farmName.toLowerCase() !== profileFarmName)
-          : backendFarms;
+        // Check if backend has a farm that matches the profile's farmInfo (synced onboarding farm)
+        const profileFarmName = data.profile?.farmInfo?.farmName?.toLowerCase();
+        const syncedOnboardingFarm = profileFarmName
+          ? backendFarms.find((f: Farm) => f.farmName.toLowerCase() === profileFarmName)
+          : null;
 
-        // Merge: local onboarding farm + backend onboarding farm + non-duplicate backend farms
-        const allFarms = [
-          ...(onboardingFarm ? [onboardingFarm] : []),
-          ...backendOnboardingFarm,
-          ...filteredBackendFarms,
-        ];
+        // If the onboarding farm has been synced to backend (has real UUID), use that
+        // Otherwise, create a local placeholder from profile.farmInfo
+        let finalFarms: Farm[] = [];
 
-        // Remove duplicates by ID (keep first occurrence)
-        const uniqueFarms = allFarms.filter(
+        if (syncedOnboardingFarm) {
+          // Backend has the onboarding farm with a real UUID - use backend farms directly
+          // The synced farm already has region/district from backend, so use it as-is
+          if (__DEV__) {
+            console.debug("Onboarding farm synced to backend with ID:", syncedOnboardingFarm.id);
+          }
+          finalFarms = backendFarms;
+        } else {
+          // Onboarding farm not yet synced - create a local placeholder
+          const backendOnboardingFarmInfo = data.profile?.farmInfo;
+          const localOnboardingFarm: Farm | null = backendOnboardingFarmInfo?.farmName
+            ? {
+              id: "onboarding-farm",
+              farmName: backendOnboardingFarmInfo.farmName || "",
+              farmSize: backendOnboardingFarmInfo.farmSize || 0,
+              cropTypes: backendOnboardingFarmInfo.cropTypes || [],
+              region: data.profile?.location?.region || "Unknown Region",
+              district: data.profile?.location?.district || "Unknown District",
+            }
+            : null;
+
+          // Combine local placeholder with backend farms (no duplicates since onboarding not synced)
+          finalFarms = [
+            ...(localOnboardingFarm ? [localOnboardingFarm] : []),
+            ...backendFarms,
+          ];
+        }
+
+        // Remove duplicates by ID (keep first occurrence) - defensive
+        const uniqueFarms = finalFarms.filter(
           (v, i, a) => a.findIndex((f) => f.id === v.id) === i
         );
 
@@ -177,6 +185,139 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
       } catch (err: any) {
         console.error("Failed to add farm", err);
         toastError('Save failed', 'Failed to save farm. Try again.');
+      }
+    },
+
+    updateFarm: async (farm) => {
+      if (__DEV__) {
+        console.debug("updateFarm called with:", farm);
+      }
+
+      // Check if this is the onboarding farm (embedded in profile)
+      const isOnboardingFarm = farm.id === "onboarding-farm";
+      // Check if this is a local-only queued farm
+      const isLocalQueuedFarm = farm.id.startsWith("local-farm-");
+      const isUUID = farm.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+
+      // Handle onboarding farm - update via profile endpoint
+      if (isOnboardingFarm) {
+        if (__DEV__) {
+          console.debug("Updating onboarding farm via profile endpoint:", farm);
+        }
+
+        try {
+          // Get current profile to merge with updated farm data
+          const currentProfile = get().profile;
+
+          // Build updated profile payload with new farm info and location
+          const updatedProfile = {
+            ...currentProfile,
+            farmInfo: {
+              ...currentProfile?.farmInfo,
+              farmName: farm.farmName,
+              farmSize: farm.farmSize,
+              cropTypes: farm.cropTypes,
+            },
+            location: {
+              ...currentProfile?.location,
+              region: farm.region,
+              district: farm.district,
+            },
+          };
+
+          if (__DEV__) {
+            console.debug("Sending profile update:", updatedProfile);
+          }
+
+          // Update profile on backend (POST is used for both create and update)
+          const res = await apiFetch<{ profile: OnboardingData } | { queued: true }>(
+            API_ENDPOINTS.FARMER_PROFILE,
+            {
+              method: "POST",
+              body: JSON.stringify(updatedProfile),
+            }
+          );
+
+          // If queued, update optimistically
+          if ((res as any)?.queued) {
+            set((s) => ({
+              profile: updatedProfile as OnboardingData,
+              farms: s.farms.map((f) =>
+                f.id === farm.id ? { ...farm, _queued: true } as any : f
+              ),
+            }));
+            const { toastQueued } = await import("@/lib/toast");
+            toastQueued("Queued update", "Farm update queued for upload");
+            return;
+          }
+
+          // Update local state temporarily
+          set((s) => ({
+            profile: updatedProfile as OnboardingData,
+            farms: s.farms.map((f) => (f.id === farm.id ? farm : f)),
+          }));
+
+          if (__DEV__) {
+            console.debug("Onboarding farm updated successfully, refetching to get real UUID");
+          }
+
+          // Refetch profile to get the real farm UUID from backend
+          // The backend creates/updates the farm in the database and returns it with a real ID
+          await get().fetchProfile();
+          return;
+        } catch (err: any) {
+          console.error("Failed to update onboarding farm via profile", err);
+          toastError("Update failed", "Failed to update farm. Try again.");
+          throw err;
+        }
+      }
+
+      // Handle local queued farms - just update locally
+      if (isLocalQueuedFarm || !isUUID) {
+        if (__DEV__) {
+          console.debug("Updating local/queued farm without API call:", farm.id);
+        }
+        set((s) => ({
+          farms: s.farms.map((f) => (f.id === farm.id ? farm : f)),
+        }));
+        return;
+      }
+
+      try {
+        const res = await apiFetch<Farm | { queued: true }>(
+          API_ENDPOINTS.FARMER_FARMS + `/${farm.id}`,
+          {
+            method: "PUT",
+            body: JSON.stringify({
+              farmName: farm.farmName,
+              farmSize: farm.farmSize,
+              region: farm.region,
+              district: farm.district,
+              cropTypes: farm.cropTypes,
+            }),
+          }
+        );
+
+        // If queued, update optimistically
+        if ((res as any)?.queued) {
+          set((s) => ({
+            farms: s.farms.map((f) =>
+              f.id === farm.id ? { ...farm, _queued: true } as any : f
+            ),
+          }));
+          const { toastQueued } = await import("@/lib/toast");
+          toastQueued("Queued update", "Farm update queued for upload");
+          return;
+        }
+
+        // Update local state with response
+        set((s) => ({
+          farms: s.farms.map((f) => (f.id === farm.id ? (res as Farm) : f)),
+        }));
+      } catch (err: any) {
+        console.error("Failed to update farm", err);
+        toastError("Update failed", "Failed to update farm. Try again.");
+        throw err;
       }
     },
 

@@ -46,5 +46,3 @@ export const useServiceFlowStore = create<ServiceFlowState>((set, get) => ({
 
   clearDraft: () => set({ draft: { attachments: [] } }),
 }));
-
-export default useServiceFlowStore;

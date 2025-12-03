@@ -247,8 +247,11 @@ const FarmerDetails = ({
   initialCrop,
 }: FarmerDetailsProps) => {
   const { farms } = useFarmerStore();
-  const setDraftFarm = useServiceFlowStore((s) => s.setFarmId);
-  const setDraftCrop = useServiceFlowStore((s) => s.setCrop);
+
+  // Get store functions safely - they might be undefined if store hasn't initialized
+  const serviceFlowStore = useServiceFlowStore();
+  const setDraftFarm = serviceFlowStore?.setFarmId;
+  const setDraftCrop = serviceFlowStore?.setCrop;
 
   // Modal visibility states
   const [showFarmModal, setShowFarmModal] = useState(false);
@@ -277,13 +280,13 @@ const FarmerDetails = ({
 
   // Sync selected farm/crop to service flow store
   useEffect(() => {
-    if (state.selectedFarm?.id) {
+    if (state.selectedFarm?.id && typeof setDraftFarm === 'function') {
       setDraftFarm(state.selectedFarm.id);
     }
   }, [state.selectedFarm, setDraftFarm]);
 
   useEffect(() => {
-    if (state.selectedCrop) {
+    if (state.selectedCrop && typeof setDraftCrop === 'function') {
       setDraftCrop(state.selectedCrop);
     }
   }, [state.selectedCrop, setDraftCrop]);

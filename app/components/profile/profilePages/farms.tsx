@@ -1,26 +1,28 @@
 import { images } from "@/constants/images";
-import { useFarmerStore } from "@/stores/farmerStore";
+import { Farm, useFarmerStore } from "@/stores/farmerStore";
 import { useUIStore } from "@/stores/uiStore";
 import {
-    ChevronDown,
-    ChevronRight,
-    MapPin,
-    PlusCircle,
-    Trash2,
+  ChevronDown,
+  ChevronRight,
+  MapPin,
+  Pencil,
+  PlusCircle,
+  Trash2,
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    LayoutAnimation,
-    Platform,
-    Pressable,
-    SectionList,
-    Text,
-    UIManager,
-    View,
+  ActivityIndicator,
+  Image,
+  LayoutAnimation,
+  Platform,
+  Pressable,
+  SectionList,
+  Text,
+  UIManager,
+  View,
 } from "react-native";
 import AddFarmModal from "../modals/AddFarmModal";
+import EditFarmModal from "../modals/EditFarmModal";
 
 // Enable LayoutAnimation on Android
 if (
@@ -36,6 +38,18 @@ const Farms = () => {
   const setModalVisible = useUIStore((s) => s.setAddFarmModalVisible);
   const [busyIds, setBusyIds] = useState<Record<string, boolean>>({});
   const [expandedDistricts, setExpandedDistricts] = useState<Record<string, boolean>>({});
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [farmToEdit, setFarmToEdit] = useState<Farm | null>(null);
+
+  const handleEditFarm = (farm: Farm) => {
+    setFarmToEdit(farm);
+    setEditModalVisible(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditModalVisible(false);
+    setFarmToEdit(null);
+  };
 
   useEffect(() => {
     // Only fetch profile from backend if user is authenticated.
@@ -53,7 +67,7 @@ const Farms = () => {
         }
       } catch (e) {
         // fallback: attempt fetch (defensive)
-        try { fetchProfile(); } catch {}
+        try { fetchProfile(); } catch { }
       }
     })();
   }, [fetchProfile]);
@@ -189,54 +203,65 @@ const Farms = () => {
                         </View>
                       </View>
 
-                      {/* Delete Farm */}
-                      {farm.id !== "onboarding-farm" && (
+                      {/* Action Buttons */}
+                      <View className="flex-col items-center gap-2">
+                        {/* Edit Farm */}
                         <Pressable
-                          onPress={async () => {
-                            setBusyIds((s) => ({ ...s, [farm.id]: true }));
-                            try {
-                              // capture farm snapshot for undo
-                              const snapshot = { ...farm } as any;
-                              // call delete (fire-and-forget)
-                              removeFarm(farm.id).catch(() => {});
-                              // show actionable toast with Undo
-                              const { default: showToast } = await import('@/lib/toast');
-                              const restoreFarm = useFarmerStore.getState().restoreFarm;
-                              showToast({
-                                type: 'info',
-                                text1: 'Farm deleted',
-                                text2: undefined,
-                                visibilityTime: 5000,
-                                placement: 'top',
-                                actions: [
-                                  {
-                                    label: 'Undo',
-                                    onPress: () => {
-                                      try {
-                                        restoreFarm(snapshot);
-                                      } catch {}
-                                    },
-                                    style: 'primary',
-                                  },
-                                ],
-                              });
-                            } catch {}
-                            setBusyIds((s) => {
-                              const c = { ...s };
-                              delete c[farm.id];
-                              return c;
-                            });
-                          }}
-                          className="p-2 rounded-full bg-red-50 ml-2 self-start"
-                          disabled={!!busyIds[farm.id]}
+                          onPress={() => handleEditFarm(farm)}
+                          className="p-2 rounded-full bg-blue-50"
                         >
-                          {busyIds[farm.id] ? (
-                            <ActivityIndicator size="small" color="#DC2626" />
-                          ) : (
-                            <Trash2 size={20} color="#DC2626" />
-                          )}
+                          <Pencil size={20} color="#2563EB" />
                         </Pressable>
-                      )}
+
+                        {/* Delete Farm */}
+                        {farm.id !== "onboarding-farm" && (
+                          <Pressable
+                            onPress={async () => {
+                              setBusyIds((s) => ({ ...s, [farm.id]: true }));
+                              try {
+                                // capture farm snapshot for undo
+                                const snapshot = { ...farm } as any;
+                                // call delete (fire-and-forget)
+                                removeFarm(farm.id).catch(() => { });
+                                // show actionable toast with Undo
+                                const { default: showToast } = await import('@/lib/toast');
+                                const restoreFarm = useFarmerStore.getState().restoreFarm;
+                                showToast({
+                                  type: 'info',
+                                  text1: 'Farm deleted',
+                                  text2: undefined,
+                                  visibilityTime: 5000,
+                                  placement: 'top',
+                                  actions: [
+                                    {
+                                      label: 'Undo',
+                                      onPress: () => {
+                                        try {
+                                          restoreFarm(snapshot);
+                                        } catch { }
+                                      },
+                                      style: 'primary',
+                                    },
+                                  ],
+                                });
+                              } catch { }
+                              setBusyIds((s) => {
+                                const c = { ...s };
+                                delete c[farm.id];
+                                return c;
+                              });
+                            }}
+                            className="p-2 rounded-full bg-red-50"
+                            disabled={!!busyIds[farm.id]}
+                          >
+                            {busyIds[farm.id] ? (
+                              <ActivityIndicator size="small" color="#DC2626" />
+                            ) : (
+                              <Trash2 size={20} color="#DC2626" />
+                            )}
+                          </Pressable>
+                        )}
+                      </View>
                     </View>
                   </View>
                 ))}
@@ -247,6 +272,13 @@ const Farms = () => {
 
       {/* Add Farm Modal */}
       <AddFarmModal visible={modalVisible} onClose={() => setModalVisible(false)} />
+
+      {/* Edit Farm Modal */}
+      <EditFarmModal
+        visible={editModalVisible}
+        onClose={handleCloseEditModal}
+        farm={farmToEdit}
+      />
 
       {/* ✅ Global Fullscreen Loader Overlay */}
       {loading && (
