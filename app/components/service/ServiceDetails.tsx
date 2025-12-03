@@ -67,7 +67,15 @@ const ServiceDetails = () => {
             onPress={() => {
               // assemble request from draft and small defaults
               const farmerName = profile?.personalInfo?.name || "Farmer";
-              const farmLocation = (farms && farms[0] && farms[0].farmName) || "Unknown farm";
+
+              // Use selected farm from draft, fallback to first farm
+              const selectedFarm = draft.farmId
+                ? farms.find(f => f.id === draft.farmId)
+                : farms[0];
+              const farmLocation = selectedFarm?.farmName || "Unknown farm";
+
+              // Use selected crop from draft, fallback to first crop of selected farm
+              const selectedCrop = draft.crop || selectedFarm?.cropTypes?.[0];
 
               const newReq: any = {
                 serviceId: draft.serviceId || "",
@@ -76,12 +84,13 @@ const ServiceDetails = () => {
                 serviceImage: service?.image,
                 farmerName,
                 farmLocation,
+                farmId: draft.farmId || selectedFarm?.id,
                 providerName: "",
                 startDateTime: draft.startDate || new Date().toISOString(),
                 endDateTime: draft.endDate || new Date().toISOString(),
                 progress: 0,
                 daysLeft: undefined,
-                crop: farms?.[0]?.cropTypes?.[0],
+                crop: selectedCrop,
                 messageFromFarmer: draft.message,
                 voiceNoteUrl: draft.attachments?.[0] ?? null,
               };

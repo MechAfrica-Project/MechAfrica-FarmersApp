@@ -4,6 +4,8 @@ export interface ServiceDraft {
   serviceId?: string;
   startDate?: string; // ISO string
   endDate?: string; // ISO string
+  farmId?: string;
+  crop?: string;
   message?: string;
   attachments?: string[];
 }
@@ -13,6 +15,8 @@ interface ServiceFlowState {
   setServiceId: (id?: string) => void;
   setStartDate: (iso?: string) => void;
   setEndDate: (iso?: string) => void;
+  setFarmId: (id?: string) => void;
+  setCrop: (crop?: string) => void;
   setMessage: (text: string) => void;
   addAttachment: (uri: string) => void;
   removeAttachment: (uri: string) => void;
@@ -27,6 +31,10 @@ export const useServiceFlowStore = create<ServiceFlowState>((set, get) => ({
   setStartDate: (iso) => set((s) => ({ draft: { ...s.draft, startDate: iso } })),
 
   setEndDate: (iso) => set((s) => ({ draft: { ...s.draft, endDate: iso } })),
+
+  setFarmId: (id) => set((s) => ({ draft: { ...s.draft, farmId: id } })),
+
+  setCrop: (crop) => set((s) => ({ draft: { ...s.draft, crop: crop } })),
 
   setMessage: (text) => set((s) => ({ draft: { ...s.draft, message: text } })),
 
