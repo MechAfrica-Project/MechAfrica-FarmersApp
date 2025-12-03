@@ -6,7 +6,6 @@ import React, { useState } from "react";
 import {
   Dimensions,
   Image,
-  Platform,
   Text,
   TouchableOpacity,
   View,
@@ -15,15 +14,14 @@ import {
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface ServiceDateTimePickerProps {
-    heading: string;
-    subtext: string;
-    heroImage?: any; // <- New prop for dynamic image
-    onCancel?: () => void;
-    onConfirm: (date: Date, time: Date) => void;
-    initialDate?: Date;
-    initialTime?: Date;
-  }
-  
+  heading: string;
+  subtext: string;
+  heroImage?: any;
+  onCancel?: () => void;
+  onConfirm: (date: Date, time: Date) => void;
+  initialDate?: Date;
+  initialTime?: Date;
+}
 
 const ServiceDateTimePicker: React.FC<ServiceDateTimePickerProps> = ({
   heading,
@@ -41,23 +39,21 @@ const ServiceDateTimePicker: React.FC<ServiceDateTimePickerProps> = ({
   const [showDate, setShowDate] = useState(false);
   const [showTime, setShowTime] = useState(false);
 
-  const handleChange =
-    (setter: React.Dispatch<React.SetStateAction<Date>>, close: () => void) =>
-    (event: DateTimePickerEvent, selected?: Date) => {
-      // On iOS the `event.type` may be undefined but `selected` will be provided.
-      // Accept any provided `selected` value (safe) and only rely on `event.type`
-      // for Android dismissal behaviour.
-      if (selected) setter(selected);
+  // PickerModal now handles all the complexity internally
+  // It only calls onChange when user presses "Done" with a valid value
+  const handleDateChange = (_event: DateTimePickerEvent, selected?: Date) => {
+    if (selected) {
+      setDate(selected);
+    }
+    setShowDate(false);
+  };
 
-      // Debugging: log picker events on iOS so we can inspect stuck behaviour
-      if (__DEV__ && Platform.OS === "ios") {
-        try {
-          console.debug("ServiceDateTimePicker:onChange", { event, selected });
-        } catch {}
-      }
-      // On Android we need to explicitly close the native picker after selection/dismiss
-      if (Platform.OS === "android") close();
-    };
+  const handleTimeChange = (_event: DateTimePickerEvent, selected?: Date) => {
+    if (selected) {
+      setTime(selected);
+    }
+    setShowTime(false);
+  };
 
   const handleNext = () => {
     onConfirm(date, time);
@@ -168,19 +164,21 @@ const ServiceDateTimePicker: React.FC<ServiceDateTimePickerProps> = ({
           </TouchableOpacity>
         </View>
 
-        {/* Modals */}
+        {/* Date Picker Modal */}
         <PickerModal
           visible={showDate}
           mode="date"
           value={date}
-          onChange={handleChange(setDate, () => setShowDate(false))}
+          onChange={handleDateChange}
           onClose={() => setShowDate(false)}
         />
+
+        {/* Time Picker Modal */}
         <PickerModal
           visible={showTime}
           mode="time"
           value={time}
-          onChange={handleChange(setTime, () => setShowTime(false))}
+          onChange={handleTimeChange}
           onClose={() => setShowTime(false)}
         />
       </View>

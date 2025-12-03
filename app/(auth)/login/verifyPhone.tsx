@@ -35,8 +35,14 @@ export default function VerifyPhone() {
     setTimeLeft(remaining);
   }, [otpCooldownUntil]);
 
-  const handleVerify = async () => {
-    const success = await verifyOtp(code);
+  // Accept optional code parameter for direct use from onFilled callback
+  // This avoids race condition where state hasn't updated yet
+  const handleVerify = async (otpCode?: string) => {
+    const codeToVerify = otpCode || code;
+    if (codeToVerify.length < 6) {
+      return; // Don't submit incomplete code
+    }
+    const success = await verifyOtp(codeToVerify);
     if (!success) wrapperRef.current?.shake();
   };
 
@@ -69,7 +75,12 @@ export default function VerifyPhone() {
                 hideStick={true}
                 blurOnFilled={true}
                 onTextChange={setCode}
-                onFilled={handleVerify} // auto-submit when full
+                onFilled={(filledCode) => {
+                  // Use the filled code directly to avoid race condition
+                  // where state hasn't updated yet with the 6th digit
+                  setCode(filledCode);
+                  handleVerify(filledCode);
+                }}
                 textInputProps={{
                   className: "border-gray-300 text-center text-xl font-bold rounded-2xl w-14 h-14 bg-white",
                 }}
@@ -93,9 +104,10 @@ export default function VerifyPhone() {
 
             <PrimaryButton
               title={loading ? "Verifying..." : "Log in"}
-              onPress={handleVerify}
+              onPress={() => handleVerify()}
               textClassName="text-white"
               loading={loading}
+              disabled={code.length < 6}
             />
 
             <View className="flex flex-row justify-center mt-4">
@@ -108,7 +120,7 @@ export default function VerifyPhone() {
                   onPress={async () => {
                     try {
                       await sendPhone({ skipNavigation: true });
-                    } catch (err) {
+                    } catch {
                       // error is surfaced via store.error
                     }
                   }}

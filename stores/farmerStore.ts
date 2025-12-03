@@ -36,13 +36,13 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
   const onboardingData = useOnboardingStore.getState().data;
   const onboardingFarm: Farm | null = onboardingData.farmInfo?.farmName
     ? {
-        id: "onboarding-farm",
-        farmName: onboardingData.farmInfo.farmName,
-        farmSize: onboardingData.farmInfo.farmSize || 0,
-        cropTypes: onboardingData.farmInfo.cropTypes || [],
-        region: onboardingData.location?.region || "Unknown Region",
-        district: onboardingData.location?.district || "Unknown District",
-      }
+      id: "onboarding-farm",
+      farmName: onboardingData.farmInfo.farmName,
+      farmSize: onboardingData.farmInfo.farmSize || 0,
+      cropTypes: onboardingData.farmInfo.cropTypes || [],
+      region: onboardingData.location?.region || "Unknown Region",
+      district: onboardingData.location?.district || "Unknown District",
+    }
     : null;
 
   const initialFarms = onboardingFarm ? [onboardingFarm] : [];
@@ -76,33 +76,65 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
           API_ENDPOINTS.FARMER_PROFILE
         );
 
+        // Debug: Log raw backend response
+        if (__DEV__) {
+          console.debug("fetchProfile response:", JSON.stringify(data, null, 2));
+        }
+
         // Convert onboarding farm from backend profile
         const backendOnboardingFarmInfo = data.profile?.farmInfo;
-        const backendOnboardingFarm: Farm[] = backendOnboardingFarmInfo
+        const backendOnboardingFarm: Farm[] = backendOnboardingFarmInfo?.farmName
           ? [
-              {
-                id: "onboarding-farm",
-                farmName: backendOnboardingFarmInfo.farmName || "",
-                farmSize: backendOnboardingFarmInfo.farmSize || 0,
-                cropTypes: backendOnboardingFarmInfo.cropTypes || [],
-                region: data.profile?.location?.region || "Unknown Region",
-                district:
-                  data.profile?.location?.district || "Unknown District",
-              },
-            ]
+            {
+              // Always use "onboarding-farm" as ID for profile-embedded farm data
+              id: "onboarding-farm",
+              farmName: backendOnboardingFarmInfo.farmName || "",
+              farmSize: backendOnboardingFarmInfo.farmSize || 0,
+              cropTypes: backendOnboardingFarmInfo.cropTypes || [],
+              region: data.profile?.location?.region || "Unknown Region",
+              district:
+                data.profile?.location?.district || "Unknown District",
+            },
+          ]
           : [];
 
-        // Merge backend farms + onboarding farm + local onboarding farm
+        // Process backend farms - ensure they have valid IDs
+        // Backend farms should have real UUIDs, not farmer IDs
+        const backendFarms = (data.farms || []).map((farm: any) => ({
+          id: farm.id,
+          farmName: farm.farmName || farm.farm_name || farm.name || "",
+          farmSize: farm.farmSize || farm.farm_size || farm.size || 0,
+          cropTypes: farm.cropTypes || farm.crop_types || [],
+          region: farm.region || "Unknown Region",
+          district: farm.district || "Unknown District",
+        }));
+
+        if (__DEV__) {
+          console.debug("Processed backend farms:", backendFarms);
+        }
+
+        // Check if backend farms duplicate the profile-embedded farm (same name)
+        // This handles the case where backend returns both profile.farmInfo AND farms[] with same data
+        const profileFarmName = backendOnboardingFarmInfo?.farmName?.toLowerCase();
+        const filteredBackendFarms = profileFarmName
+          ? backendFarms.filter((f: Farm) => f.farmName.toLowerCase() !== profileFarmName)
+          : backendFarms;
+
+        // Merge: local onboarding farm + backend onboarding farm + non-duplicate backend farms
         const allFarms = [
           ...(onboardingFarm ? [onboardingFarm] : []),
           ...backendOnboardingFarm,
-          ...(data.farms || []),
+          ...filteredBackendFarms,
         ];
 
-        // Remove duplicates by ID
+        // Remove duplicates by ID (keep first occurrence)
         const uniqueFarms = allFarms.filter(
           (v, i, a) => a.findIndex((f) => f.id === v.id) === i
         );
+
+        if (__DEV__) {
+          console.debug("Final unique farms:", uniqueFarms.map(f => ({ id: f.id, name: f.farmName })));
+        }
 
         set({
           profile: data.profile || onboardingData || null,
@@ -149,6 +181,27 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
     },
 
     removeFarm: async (id) => {
+      if (__DEV__) {
+        console.debug("removeFarm called with id:", id);
+      }
+
+      // Check if this is a local-only farm (not synced to backend)
+      // Local farms have IDs like "onboarding-farm" or "local-farm-xxx"
+      const isLocalFarm = id === "onboarding-farm" || id.startsWith("local-farm-");
+
+      // Also check if the farm exists in our local state - if not found on backend, treat as local
+      const farmInState = get().farms.find((f) => f.id === id);
+      const isProfileEmbeddedFarm = farmInState && !farmInState.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+
+      if (isLocalFarm || isProfileEmbeddedFarm) {
+        if (__DEV__) {
+          console.debug("Removing local/embedded farm without API call:", id);
+        }
+        // Just remove locally without calling the backend
+        set((s) => ({ farms: s.farms.filter((f) => f.id !== id) }));
+        return;
+      }
+
       try {
         const res = await apiFetch(API_ENDPOINTS.FARMER_FARMS + `/${id}`, { method: "DELETE" });
         // if queued, optimistically remove locally and notify
