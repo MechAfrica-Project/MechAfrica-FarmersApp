@@ -10,7 +10,8 @@ import * as SecureStore from "expo-secure-store";
 export type OnboardingData = {
   language?: string;
   personalInfo: {
-    name?: string;
+    firstName?: string;
+    lastName?: string;
     otherNames?: string;
     phone?: PhoneValue;
     otpVerified?: boolean;
@@ -92,8 +93,10 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
         return { valid: true };
 
       case 1: // Personal Info
-        if (!data.personalInfo?.name || data.personalInfo.name.trim() === "")
-          return { valid: false, message: "Please enter your full name." };
+        if (!data.personalInfo?.firstName || data.personalInfo.firstName.trim() === "")
+          return { valid: false, message: "Please enter your first name." };
+        if (!data.personalInfo?.lastName || data.personalInfo.lastName.trim() === "")
+          return { valid: false, message: "Please enter your last name." };
         // make "otherNames" optional
         if (!data.personalInfo?.phone?.valid)
           return {

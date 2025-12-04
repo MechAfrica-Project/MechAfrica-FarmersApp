@@ -23,24 +23,42 @@ export default function PersonalInfoStep() {
           showsVerticalScrollIndicator={false}
         >
           <View className="flex-1 px-5 pt-[8%] pb-10">
-            {/* Full Name */}
+            {/* First Name */}
             <InputField
-              label="Full name"
-              placeholder="Enter your full name"
+              label="First name"
+              placeholder="Enter your first name"
               icon="user"
-              value={data.personalInfo?.name || ""}
-              onChange={(text) => updateData({ personalInfo: { name: text } })}
+              value={data.personalInfo?.firstName || ""}
+              onChange={(text) =>
+                updateData({ personalInfo: { firstName: text } })
+              }
               required
               focused={focused}
               setFocused={setFocused}
-              fieldKey="name"
-                  error={false}
+              fieldKey="firstName"
+              error={false}
+            />
+
+            {/* Last Name */}
+            <InputField
+              label="Last name"
+              placeholder="Enter your last name"
+              icon="user"
+              value={data.personalInfo?.lastName || ""}
+              onChange={(text) =>
+                updateData({ personalInfo: { lastName: text } })
+              }
+              required
+              focused={focused}
+              setFocused={setFocused}
+              fieldKey="lastName"
+              error={false}
             />
 
             {/* Other Names (Optional) */}
             <InputField
               label="Other names"
-              placeholder="Enter other names"
+              placeholder="Enter other names (optional)"
               icon="user"
               value={data.personalInfo?.otherNames || ""}
               onChange={(text) =>

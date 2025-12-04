@@ -1,7 +1,9 @@
 // components/profile/modals/AccountEditModal.tsx
-import PhoneInput from "@/app/(auth)/login/components/PhoneInput";
 import InputField from "@/app/components/onboarding/InputField";
+import { Ionicons } from "@expo/vector-icons";
+import { useFarmerStore } from "@/stores/farmerStore";
 import { useOnboardingStore } from "@/stores/onboardingStore";
+import { toastSuccess } from "@/lib/toast";
 import DOBPicker from "../../onboarding/DOBSelect";
 import GenderSelect from "../../onboarding/GenderSelector";
 import React, { useState } from "react";
@@ -25,16 +27,26 @@ interface Props {
 
 const AccountEditModal = ({ visible, onClose }: Props) => {
   const { data, updateData } = useOnboardingStore();
+  const updateProfile = useFarmerStore((state) => state.updateProfile);
   const [focused, setFocused] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
     setSaving(true);
-    // TODO: call backend API here if needed
-    setTimeout(() => {
-      setSaving(false);
+    try {
+      // Sync changes to backend and update farmerStore
+      await updateProfile({
+        personalInfo: data.personalInfo,
+        moreInfo: data.moreInfo,
+      });
+      toastSuccess("Profile updated", "Your changes have been saved.");
       onClose();
-    }, 1200);
+    } catch (error) {
+      // Error toast is shown by updateProfile
+      console.error("Failed to save profile:", error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (!visible) return null;
@@ -79,26 +91,42 @@ const AccountEditModal = ({ visible, onClose }: Props) => {
                 contentContainerStyle={{ paddingBottom: 20 }}
                 showsVerticalScrollIndicator={false}
               >
-                {/* Full Name */}
+                {/* First Name */}
                 <InputField
-                  label="Full Name"
-                  placeholder="Enter your full name"
+                  label="First Name"
+                  placeholder="Enter your first name"
                   icon="user"
-                  value={data.personalInfo?.name || ""}
+                  value={data.personalInfo?.firstName || ""}
                   onChange={(text) =>
                     updateData({
-                      personalInfo: { ...data.personalInfo, name: text },
+                      personalInfo: { ...data.personalInfo, firstName: text },
                     })
                   }
                   focused={focused}
                   setFocused={setFocused}
-                  fieldKey="name"
+                  fieldKey="firstName"
+                />
+
+                {/* Last Name */}
+                <InputField
+                  label="Last Name"
+                  placeholder="Enter your last name"
+                  icon="user"
+                  value={data.personalInfo?.lastName || ""}
+                  onChange={(text) =>
+                    updateData({
+                      personalInfo: { ...data.personalInfo, lastName: text },
+                    })
+                  }
+                  focused={focused}
+                  setFocused={setFocused}
+                  fieldKey="lastName"
                 />
 
                 {/* Other Names */}
                 <InputField
                   label="Other Names"
-                  placeholder="Enter other names"
+                  placeholder="Enter other names (optional)"
                   icon="user"
                   value={data.personalInfo?.otherNames || ""}
                   onChange={(text) =>
@@ -111,19 +139,22 @@ const AccountEditModal = ({ visible, onClose }: Props) => {
                   fieldKey="otherNames"
                 />
 
-                {/* Phone Number */}
-                <PhoneInput
-                  label="Telephone number"
-                  value={data.personalInfo?.phone}
-                  onChange={(val) =>
-                    updateData({
-                      personalInfo: {
-                        ...data.personalInfo,
-                        phone: val,
-                      },
-                    })
-                  }
-                />
+                {/* Phone Number - Read Only (tied to authentication) */}
+                <View className="mb-4">
+                  <Text className="mb-2 font-mulish">Telephone number</Text>
+                  <View className="flex-row items-center border border-gray-200 bg-gray-50 rounded-lg px-3 py-3">
+                    <Ionicons name="call-outline" size={18} color="#6B7280" style={{ marginRight: 8 }} />
+                    <Text className="text-base text-gray-600 flex-1">
+                      {data.personalInfo?.phone?.formatted ||
+                        data.personalInfo?.phone?.raw ||
+                        "No phone number"}
+                    </Text>
+                    <Ionicons name="lock-closed-outline" size={14} color="#9CA3AF" />
+                  </View>
+                  <Text className="text-xs text-gray-400 mt-1">
+                    Phone number cannot be changed as it is linked to your account
+                  </Text>
+                </View>
 
                 {/* Gender */}
                 <GenderSelect
@@ -142,9 +173,8 @@ const AccountEditModal = ({ visible, onClose }: Props) => {
                   <TouchableOpacity
                     onPress={handleSave}
                     disabled={saving}
-                    className={`flex-1 py-3 rounded-xl items-center justify-center ${
-                      saving ? "bg-gray-400" : "bg-teal-700"
-                    }`}
+                    className={`flex-1 py-3 rounded-xl items-center justify-center ${saving ? "bg-gray-400" : "bg-teal-700"
+                      }`}
                   >
                     <Text className="text-white font-semibold">
                       {saving ? "Saving..." : "Save"}

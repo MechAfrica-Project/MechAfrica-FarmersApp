@@ -2,6 +2,7 @@ import { apiFetch, getAuthToken } from "@/lib/api";
 import { API_ENDPOINTS } from "@/lib/apiEndpoints";
 import { toastError } from "@/lib/toast";
 import { create } from "zustand";
+import * as SecureStore from "expo-secure-store";
 import { OnboardingData, useOnboardingStore } from "./onboardingStore";
 
 export type Farm = {
@@ -25,6 +26,7 @@ interface FarmerState {
   setSelectedCrop: (crop?: string | null) => void;
 
   fetchProfile: () => Promise<void>;
+  updateProfile: (profileData: Partial<OnboardingData>) => Promise<void>;
   addFarm: (farm: Omit<Farm, "id">) => Promise<void>;
   updateFarm: (farm: Farm) => Promise<void>;
   removeFarm: (id: string) => Promise<void>;
@@ -59,6 +61,92 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
     setSelectedFarm: (id) => set(() => ({ selectedFarmId: id ?? null })),
     setSelectedCrop: (crop) => set(() => ({ selectedCrop: crop ?? null })),
 
+    updateProfile: async (profileData) => {
+      if (__DEV__) {
+        console.debug("updateProfile called with:", profileData);
+      }
+
+      const token = getAuthToken && typeof getAuthToken === "function" ? getAuthToken() : null;
+      if (!token) {
+        if (__DEV__) {
+          console.debug("updateProfile skipped: no auth token");
+        }
+        // Still update locally even without token
+        set((s) => ({
+          profile: { ...s.profile, ...profileData } as OnboardingData,
+        }));
+        // Also update onboardingStore for consistency
+        useOnboardingStore.getState().updateData(profileData);
+        return;
+      }
+
+      try {
+        // Merge with current profile
+        const currentProfile = get().profile;
+        const updatedProfile = {
+          ...currentProfile,
+          ...profileData,
+          personalInfo: {
+            ...currentProfile?.personalInfo,
+            ...profileData.personalInfo,
+          },
+          moreInfo: {
+            ...currentProfile?.moreInfo,
+            ...profileData.moreInfo,
+          },
+          location: {
+            ...currentProfile?.location,
+            ...profileData.location,
+          },
+          farmInfo: {
+            ...currentProfile?.farmInfo,
+            ...profileData.farmInfo,
+          },
+        };
+
+        if (__DEV__) {
+          console.debug("Sending profile update to backend:", updatedProfile);
+        }
+
+        // Send to backend
+        const res = await apiFetch<{ profile: OnboardingData } | { queued: true }>(
+          API_ENDPOINTS.FARMER_PROFILE,
+          {
+            method: "POST",
+            body: JSON.stringify(updatedProfile),
+          }
+        );
+
+        // If queued (offline), update locally
+        if ((res as any)?.queued) {
+          set((s) => ({
+            profile: updatedProfile as OnboardingData,
+          }));
+          // Also update onboardingStore for consistency
+          useOnboardingStore.getState().updateData(profileData);
+          const { toastQueued } = await import("@/lib/toast");
+          toastQueued("Queued update", "Profile update queued for upload");
+          return;
+        }
+
+        // Update local state
+        set({
+          profile: updatedProfile as OnboardingData,
+        });
+
+        // Also update onboardingStore for consistency
+        useOnboardingStore.getState().updateData(profileData);
+
+        if (__DEV__) {
+          console.debug("Profile updated successfully");
+        }
+      } catch (err: any) {
+        console.error("Failed to update profile:", err);
+        toastError("Update failed", "Failed to update profile. Try again.");
+        throw err;
+      }
+    },
+
     fetchProfile: async () => {
       set({ loading: true, error: null });
       try {
@@ -80,6 +168,46 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
         // Debug: Log raw backend response
         if (__DEV__) {
           console.debug("fetchProfile response:", JSON.stringify(data, null, 2));
+        }
+
+        // Handle backward compatibility: backend may return `name` instead of `firstName`/`lastName`
+        // Map the backend response to our expected format
+        const backendProfile = data.profile;
+        if (backendProfile?.personalInfo) {
+          const personalInfo = backendProfile.personalInfo as any;
+
+          // If backend returns `name` but not `firstName`, try to split it
+          if (personalInfo.name && !personalInfo.firstName) {
+            const nameParts = personalInfo.name.trim().split(/\s+/);
+            if (nameParts.length >= 2) {
+              personalInfo.firstName = nameParts[0];
+              personalInfo.lastName = nameParts[nameParts.length - 1];
+              // If there are middle names, add them to otherNames
+              if (nameParts.length > 2) {
+                const middleNames = nameParts.slice(1, -1).join(" ");
+                personalInfo.otherNames = personalInfo.otherNames
+                  ? `${middleNames} ${personalInfo.otherNames}`
+                  : middleNames;
+              }
+            } else {
+              // Single name - use as firstName
+              personalInfo.firstName = personalInfo.name;
+            }
+            if (__DEV__) {
+              console.debug("Mapped name to firstName/lastName:", {
+                original: personalInfo.name,
+                firstName: personalInfo.firstName,
+                lastName: personalInfo.lastName,
+                otherNames: personalInfo.otherNames,
+              });
+            }
+          }
+
+          // Remove the legacy `name` field to prevent it from leaking into update payloads
+          // The backend accepts firstName/lastName/otherNames, not the combined `name` field
+          if (personalInfo.name) {
+            delete personalInfo.name;
+          }
         }
 
         // Process backend farms - ensure they have valid IDs
@@ -145,10 +273,28 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
         }
 
         set({
-          profile: data.profile || onboardingData || null,
+          profile: backendProfile || onboardingData || null,
           farms: uniqueFarms,
           loading: false,
         });
+
+        // Sync backend profile data to onboardingStore for consistency
+        // This ensures components using onboardingStore also have the latest data
+        if (backendProfile) {
+          const onboardingStore = useOnboardingStore.getState();
+          onboardingStore.updateData(backendProfile);
+
+          // Also persist to SecureStore so loadFromStorage doesn't overwrite with stale data
+          try {
+            const updatedData = useOnboardingStore.getState().data;
+            await SecureStore.setItemAsync("onboardingData", JSON.stringify(updatedData));
+            if (__DEV__) {
+              console.debug("Synced backend profile to onboardingStore and persisted to SecureStore");
+            }
+          } catch (persistErr) {
+            console.warn("Failed to persist synced profile to SecureStore:", persistErr);
+          }
+        }
       } catch (err: any) {
         console.warn(
           "Failed to fetch profile; using local onboarding farm",

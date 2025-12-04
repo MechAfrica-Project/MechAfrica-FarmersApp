@@ -66,7 +66,7 @@ const ServiceDetails = () => {
           <TouchableOpacity
             onPress={() => {
               // assemble request from draft and small defaults
-              const farmerName = profile?.personalInfo?.name || "Farmer";
+              const farmerName = profile?.personalInfo?.firstName || "Farmer";
 
               // Use selected farm from draft, fallback to first farm
               const selectedFarm = draft.farmId

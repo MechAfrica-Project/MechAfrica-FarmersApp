@@ -1,4 +1,6 @@
 import { images } from "@/constants/images";
+import { getAuthToken } from "@/lib/api";
+import { useFarmerStore } from "@/stores/farmerStore";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import { useTipsStore } from "@/stores/tipsStore";
 import { Lightbulb, RefreshCw, X } from "lucide-react-native";
@@ -20,9 +22,29 @@ const WORD_LIMIT = 10;
 
 const WelcomeAndUpdates = () => {
   const { data } = useOnboardingStore();
+  const { profile, fetchProfile } = useFarmerStore();
   const { tips, currentTip, loading, fetchTips, refreshTips, markTipAsViewed } =
     useTipsStore();
   const [showFullTip, setShowFullTip] = useState(false);
+
+  // Fetch farmer profile on mount
+  useEffect(() => {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : null;
+    if (token) {
+      fetchProfile();
+    }
+  }, [fetchProfile]);
+
+  // Get the farmer's first name from profile or onboarding data
+  // Also handle legacy 'name' field from backend
+  const farmerFirstName =
+    profile?.personalInfo?.firstName ||
+    data.personalInfo?.firstName ||
+    (profile?.personalInfo as any)?.name?.split?.(" ")?.[0] ||
+    (data.personalInfo as any)?.name?.split?.(" ")?.[0] ||
+    profile?.personalInfo?.lastName ||
+    data.personalInfo?.lastName ||
+    "";
 
   // Animation for refresh button
   const spinValue = useRef(new Animated.Value(0)).current;
@@ -134,11 +156,11 @@ const WelcomeAndUpdates = () => {
             {getGreeting()},
           </Text>
           <Text className="text-white font-mulish text-xl mb-2">
-            Farmer {data.personalInfo.name}
+            Farmer {farmerFirstName}
           </Text>
         </View>
 
-        <View style={{ paddingRight: 150, flex: 1 }}>
+        <View style={{ paddingRight: 195, flex: 1 }}>
           <View
             style={{
               flexDirection: "row",
@@ -156,13 +178,13 @@ const WelcomeAndUpdates = () => {
               activeOpacity={0.6}
               style={{
                 padding: 6,
-                marginLeft: 4,
+                // marginLeft: 4,
                 zIndex: 101,
               }}
-              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+              hitSlop={{ top: 15, bottom: 15, left: -15, right: 15 }}
             >
               <Animated.View style={{ transform: [{ rotate: spin }] }}>
-                <RefreshCw size={16} color="#FCD34D" />
+                <RefreshCw size={12} color="#FCD34D" className="absolute -left-12" />
               </Animated.View>
             </TouchableOpacity>
           </View>
