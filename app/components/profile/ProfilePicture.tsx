@@ -238,7 +238,7 @@ const ProfilePicture = () => {
       </View>
 
       <Text className="mt-3 text-base md:text-lg font-mulish font-bold text-center">
-        {displayName} {lastName} {otherNames}
+        {displayName} {otherNames} {lastName}
       </Text>
       <Text className="text-gray-500 font-mulish text-xs md:text-sm text-center">
         ID: {phoneLabel}
