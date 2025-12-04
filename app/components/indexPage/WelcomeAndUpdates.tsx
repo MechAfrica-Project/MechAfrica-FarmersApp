@@ -26,6 +26,7 @@ const WelcomeAndUpdates = () => {
   const { tips, currentTip, loading, fetchTips, refreshTips, markTipAsViewed } =
     useTipsStore();
   const [showFullTip, setShowFullTip] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Fetch farmer profile on mount
   useEffect(() => {
@@ -82,12 +83,12 @@ const WelcomeAndUpdates = () => {
     outputRange: ["0deg", "360deg"],
   });
 
-  // Stop animation when loading completes
+  // Stop animation when refreshing completes
   useEffect(() => {
-    if (!loading) {
+    if (!refreshing) {
       stopSpinAnimation();
     }
-  }, [loading, stopSpinAnimation]);
+  }, [refreshing, stopSpinAnimation]);
 
   // Fetch tips on mount
   useEffect(() => {
@@ -95,12 +96,23 @@ const WelcomeAndUpdates = () => {
   }, [fetchTips]);
 
   // Handle refresh tips
-  const handleRefreshTips = () => {
+  const handleRefreshTips = async () => {
+    if (refreshing) return; // Prevent double-tap
+
     if (__DEV__) {
       console.debug("Refresh tips button pressed");
     }
+
+    setRefreshing(true);
     startSpinAnimation();
-    refreshTips();
+
+    try {
+      await refreshTips();
+    } catch (err) {
+      console.error("Failed to refresh tips:", err);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   // Mark current tip as viewed when it's displayed
@@ -174,17 +186,17 @@ const WelcomeAndUpdates = () => {
             </Text>
             <TouchableOpacity
               onPress={handleRefreshTips}
-              disabled={loading}
+              disabled={refreshing}
               activeOpacity={0.6}
               style={{
                 padding: 6,
-                // marginLeft: 4,
                 zIndex: 101,
+                opacity: refreshing ? 0.6 : 1,
               }}
-              hitSlop={{ top: 15, bottom: 15, left: -15, right: 15 }}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
             >
               <Animated.View style={{ transform: [{ rotate: spin }] }}>
-                <RefreshCw size={12} color="#FCD34D" className="absolute -left-12" />
+                <RefreshCw size={14} color="#FCD34D" />
               </Animated.View>
             </TouchableOpacity>
           </View>
