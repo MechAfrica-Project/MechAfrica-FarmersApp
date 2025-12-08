@@ -208,9 +208,9 @@ const Farms = () => {
                         {/* Edit Farm */}
                         <Pressable
                           onPress={() => handleEditFarm(farm)}
-                          className="p-2 rounded-full bg-blue-50"
+                          className="p-2 rounded-full bg-green-100"
                         >
-                          <Pencil size={20} color="#2563EB" />
+                          <Pencil size={20} color="#047857" />
                         </Pressable>
 
                         {/* Delete Farm */}
