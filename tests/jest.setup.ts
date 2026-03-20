@@ -1,6 +1,9 @@
 // Basic Jest setup for tests. Use manual mocks under tests/__mocks__.
 jest.setTimeout(10000);
 
+// Global __DEV__ mock for React Native environment checks
+(global as any).__DEV__ = true;
+
 // Clear module registry between tests to avoid state leakage.
 afterEach(() => {
   jest.resetModules();
