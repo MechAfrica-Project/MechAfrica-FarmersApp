@@ -281,4 +281,44 @@ export async function uploadFile(endpoint: string, file: { uri: string; name?: s
   }
 }
 
+export async function apiUpload<T>(endpoint: string, formData: FormData): Promise<T> {
+  const baseUrl = getBaseUrl();
+  const headers: Record<string, string> = {};
+
+  if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
+
+  let res = await fetch(`${baseUrl}${endpoint}`, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+
+  if (res.status === 401) {
+    const refreshed = await doRefresh();
+    if (refreshed && authToken) {
+      headers["Authorization"] = `Bearer ${authToken}`;
+      res = await fetch(`${baseUrl}${endpoint}`, {
+        method: "POST",
+        headers,
+        body: formData,
+      });
+    }
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    let parsed: any = undefined;
+    try { parsed = JSON.parse(text); } catch {}
+    const message = parsed?.message ?? `Upload error: ${res.status}`;
+    toastError('Upload failed', message);
+    throw new ApiError(message, res.status, parsed);
+  }
+
+  const contentType = res.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
+    return (await res.json()) as T;
+  }
+  return (await res.text()) as unknown as T;
+}
+
 export default apiFetch;

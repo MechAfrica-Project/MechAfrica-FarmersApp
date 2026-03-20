@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api";
+import { apiFetch, apiUpload } from "@/lib/api";
 import { API_ENDPOINTS } from "@/lib/apiEndpoints";
 import { Request, RequestStatus } from "@/types/request";
 import { create } from "zustand";
@@ -128,15 +128,39 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
     // Add a new request to the store (tries backend, falls back locally)
     addRequest: async (req: Omit<Request, "id" | "status">) => {
       try {
+        let finalVoiceNoteUrl = req.voiceNoteUrl;
+
+        // If it's a local file URI from expo-audio, upload it first to our unified Supabase storage
+        if (finalVoiceNoteUrl && finalVoiceNoteUrl.startsWith("file://")) {
+          try {
+            const formData = new FormData();
+            formData.append("file", {
+              uri: finalVoiceNoteUrl,
+              name: "voicenote.m4a",
+              type: "audio/m4a",
+            } as any);
+
+            const uploadRes: any = await apiUpload(API_ENDPOINTS.UPLOADS, formData);
+            if (uploadRes && uploadRes.url) {
+              finalVoiceNoteUrl = uploadRes.url;
+            }
+          } catch (uploadErr) {
+            console.error("Audio upload failed:", uploadErr);
+            // Non-fatal: the request can still be submitted, but audio playback will fail remotely
+          }
+        }
+
+        const payload = { ...req, voiceNoteUrl: finalVoiceNoteUrl };
+
         const saved = await apiFetch<Request | { queued: true; queuedId: string }>(API_ENDPOINTS.REQUESTS, {
           method: "POST",
-          body: JSON.stringify(req),
+          body: JSON.stringify(payload),
         });
 
         // If the API wrapper enqueued the request while offline it returns { queued: true, queuedId }
         if ((saved as any)?.queued) {
           const id = Date.now().toString();
-          const newReq: any = { id, ...(req as any), status: "pending", _queued: true, _queuedId: (saved as any).queuedId };
+          const newReq: any = { id, ...(payload as any), status: "pending", _queued: true, _queuedId: (saved as any).queuedId };
           set((s) => ({ byId: { ...s.byId, [id]: newReq }, listsByStatus: computeListsByStatus({ ...s.byId, [id]: newReq }) }));
           const { toastQueued } = await import('@/lib/toast');
           toastQueued("Saved offline", "Request queued for upload");

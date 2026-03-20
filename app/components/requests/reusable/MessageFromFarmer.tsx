@@ -14,7 +14,7 @@ const MessageFromFarmer = ({ request }: MessageFromFarmerProps) => {
   return (
     <View>
       <TextMessage message={request?.messageFromFarmer} />
-      <AudioMessage voiceNoteUrl={request?.voiceNoteUrl} />
+      {!!request?.voiceNoteUrl && <AudioMessage voiceNoteUrl={request.voiceNoteUrl} />}
     </View>
   );
 };
