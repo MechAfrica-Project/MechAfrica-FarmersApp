@@ -35,6 +35,30 @@ const computeListsByStatus = (
   cancelled: Object.values(byId).filter((r) => r.status === "cancelled"),
 });
 
+// Helper to reliably translate backend snake_case nested models to frontend camelCase Request interface
+const mapBackendRequestToFrontend = (raw: any): Request => {
+  if (!raw) return {} as Request;
+  
+  // If already mapped (fallback offline), return it directly
+  if (raw.serviceTitle && raw.farmerName) return raw as Request;
+
+  return {
+    id: raw.request_id || raw.id,
+    serviceId: raw.service_type || "Unknown",
+    serviceTitle: raw.service_type || "Unknown Service",
+    serviceDetails: raw.extra_comment || "",
+    farmerName: raw.farmer ? `${raw.farmer.first_name || ""} ${raw.farmer.last_name || ""}`.trim() : "Unknown Farmer",
+    farmLocation: raw.farm_name || "Unknown Farm",
+    providerName: raw.service_provider?.company_name || "Unassigned",
+    startDateTime: raw.start_date || new Date().toISOString(),
+    endDateTime: raw.end_date || new Date().toISOString(),
+    status: (raw.status as RequestStatus) || "pending",
+    crop: raw.crop_type,
+    messageFromFarmer: raw.extra_comment,
+    voiceNoteUrl: raw.voice_note_url,
+  };
+};
+
 export const useRequestsStore = create<RequestsState>((set, get) => {
   const initialById: Record<string, Request> = {};
   return {
@@ -169,7 +193,7 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
         }
 
         // Normal server-saved response
-        const serverReq = saved as Request;
+        const serverReq = mapBackendRequestToFrontend(saved);
         set((s) => ({ byId: { ...s.byId, [serverReq.id]: serverReq }, listsByStatus: computeListsByStatus({ ...s.byId, [serverReq.id]: serverReq }) }));
       } catch {
         // Fallback: create local request id
@@ -207,7 +231,7 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
         if (finalVoiceNoteUrl !== undefined) payload.voice_note_url = finalVoiceNoteUrl === null ? "" : finalVoiceNoteUrl; // Send empty string for deletion
 
         const mergedResponse = await apiFetch<Request>(
-          `${API_ENDPOINTS.REQUESTS}/${id}/details`,
+          `/farmer/service-requests/${id}/details`,
           {
             method: "PUT",
             body: JSON.stringify(payload),
@@ -215,7 +239,8 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
         );
 
         set((s) => {
-          const updatedReq = { ...s.byId[id], ...mergedResponse };
+          const mappedUpdate = mapBackendRequestToFrontend(mergedResponse);
+          const updatedReq = { ...s.byId[id], ...mappedUpdate };
           const byId = { ...s.byId, [id]: updatedReq };
           return { byId, listsByStatus: computeListsByStatus(byId), loading: false };
         });
@@ -230,9 +255,12 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
     fetchRequests: async () => {
       set({ loading: true, error: null });
       try {
-        const data = await apiFetch<{ requests: Request[] }>(API_ENDPOINTS.REQUESTS);
+        const data = await apiFetch<{ requests: any[] }>(API_ENDPOINTS.REQUESTS);
         const serverById: Record<string, Request> = {};
-        for (const r of data.requests || []) serverById[r.id] = r;
+        for (const raw of data.requests || []) {
+          const r = mapBackendRequestToFrontend(raw);
+          serverById[r.id] = r;
+        }
         // Server data wins; preserve only locally-queued (offline) items
         set((s) => {
           const localQueued: Record<string, Request> = {};

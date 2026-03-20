@@ -21,6 +21,7 @@ interface RequestDetailsCardProps {
   onCancel?: () => void;
   onDelete?: () => void;
   onComplete?: () => void;
+  onEdit?: () => void;
 }
 
 const RequestDetailsCard: React.FC<RequestDetailsCardProps> = ({
@@ -30,6 +31,7 @@ const RequestDetailsCard: React.FC<RequestDetailsCardProps> = ({
   onCancel,
   onDelete,
   onComplete,
+  onEdit,
 }) => {
   const providerPhone = request?.providerPhone; // <-- dynamically fetched when provider accepts
 
@@ -38,14 +40,26 @@ const RequestDetailsCard: React.FC<RequestDetailsCardProps> = ({
 
     if (type === "pending") {
       return (
-        <TouchableOpacity
-          onPress={onCancel}
-          className="bg-[#D32F2F] py-3 my-12 rounded-full items-center"
-        >
-          <Text className="text-white font-semibold text-lg">
-            Cancel Request
-          </Text>
-        </TouchableOpacity>
+        <View className="my-12 space-y-4">
+          {onEdit && (
+            <TouchableOpacity
+              onPress={onEdit}
+              className="bg-[#2196F3] py-3 rounded-full items-center"
+            >
+              <Text className="text-white font-semibold text-lg">
+                Edit Message & Audio
+              </Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            onPress={onCancel}
+            className="bg-[#D32F2F] py-3 rounded-full items-center"
+          >
+            <Text className="text-white font-semibold text-lg">
+              Cancel Request
+            </Text>
+          </TouchableOpacity>
+        </View>
       );
     }
 
