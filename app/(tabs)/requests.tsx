@@ -10,10 +10,10 @@ import {
 } from "react-native";
 import { useRequestsStore } from "@/stores/requestsStore";
 import { getAuthToken } from "@/lib/api";
-import SentRequests from "../components/servicesTabs/SentRequests";
-import OnGoingRequests from "../components/servicesTabs/OnGoingRequests";
-import CompletedRequests from "../components/servicesTabs/CompletedRequests";
-import CancelledRequests from "../components/servicesTabs/CancelledRequests";
+import SentRequests from "@/app/components/servicesTabs/SentRequests";
+import OnGoingRequests from "@/app/components/servicesTabs/OnGoingRequests";
+import CompletedRequests from "@/app/components/servicesTabs/CompletedRequests";
+import CancelledRequests from "@/app/components/servicesTabs/CancelledRequests";
 
 type TabType = "Sent" | "On-going" | "Completed" | "Cancelled";
 

@@ -2,9 +2,9 @@ import { servicesData } from "@/constants/servicesData";
 import { useUIStore } from "@/stores/uiStore";
 import React from "react";
 import { FlatList } from "react-native";
-import MultiToneBackground from "../components/general/MultiToneBackground";
-import SearchService from "../components/service/components/SearchService";
-import ServiceHeader from "../components/service/components/ServiceHeader";
+import MultiToneBackground from "@/app/components/general/MultiToneBackground";
+import SearchService from "@/app/components/service/components/SearchService";
+import ServiceHeader from "@/app/components/service/components/ServiceHeader";
 
 const Services = () => {
   const search = useUIStore((s) => s.serviceSearch);

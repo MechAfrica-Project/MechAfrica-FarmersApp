@@ -21,7 +21,7 @@ export default function SignIn() {
     // with router internals (previous attempts caused navigator errors
     // in development). If needed, gesture disabling is handled in
     // `app/(auth)/_layout.tsx`.
-    return () => {};
+    return () => { };
   }, [navigation]);
 
   // Show toast when authStore reports an error

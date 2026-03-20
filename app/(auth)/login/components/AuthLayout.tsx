@@ -57,7 +57,7 @@ export default function AuthLayout({
         </KeyboardAvoidingView>
 
         {/* Footer*/}
-        <FooterNote showText /> 
+        <FooterNote showText />
       </View>
     </TouchableWithoutFeedback>
   );

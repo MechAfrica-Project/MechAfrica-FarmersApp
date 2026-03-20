@@ -10,7 +10,7 @@ import {
   GestureResponderEvent,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Audio, AVPlaybackStatus } from "expo-av";
+import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 
 interface AudioMessageProps {
   voiceNoteUrl?: string | null;
@@ -21,16 +21,14 @@ const BAR_MARGIN = 2;
 const NUM_BARS = 40;
 
 const AudioMessage = ({ voiceNoteUrl }: AudioMessageProps) => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [position, setPosition] = useState(0);
-  const [duration, setDuration] = useState(1);
   const [waveformWidth, setWaveformWidth] = useState(0);
   const [waveformX, setWaveformX] = useState(0);
   const [dragProgress, setDragProgress] = useState<number | null>(null);
   const [wasPlayingBeforeDrag, setWasPlayingBeforeDrag] = useState(false);
 
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const player = useAudioPlayer(voiceNoteUrl ? { uri: voiceNoteUrl } : null);
+  const status = useAudioPlayerStatus(player);
+
   const progressAnim = useRef(new Animated.Value(0)).current;
   const waveAnim = useRef(new Animated.Value(0)).current;
   const waveformRef = useRef<View | null>(null);
@@ -39,11 +37,10 @@ const AudioMessage = ({ voiceNoteUrl }: AudioMessageProps) => {
     Array.from({ length: NUM_BARS }, () => 8 + Math.random() * 24)
   ).current;
 
-  useEffect(() => {
-    return () => {
-      soundRef.current?.unloadAsync();
-    };
-  }, []);
+  const isPlaying = status.playing;
+  const isLoading = !status.isLoaded;
+  const position = (status.currentTime ?? 0) * 1000; // seconds → ms
+  const duration = (status.duration ?? 0.001) * 1000; // seconds → ms
 
   const formatTime = (millis: number) => {
     const totalSec = Math.floor(millis / 1000);
@@ -52,102 +49,59 @@ const AudioMessage = ({ voiceNoteUrl }: AudioMessageProps) => {
     return `${min < 10 ? "0" + min : min}:${sec < 10 ? "0" + sec : sec}`;
   };
 
-  const startWavePulse = useCallback(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(waveAnim, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: false,
-        }),
-        Animated.timing(waveAnim, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: false,
-        }),
-      ])
-    ).start();
-  }, [waveAnim]);
+  // Animate waveform pulse while playing
+  useEffect(() => {
+    if (isPlaying) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(waveAnim, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: false,
+          }),
+          Animated.timing(waveAnim, {
+            toValue: 0,
+            duration: 600,
+            useNativeDriver: false,
+          }),
+        ])
+      ).start();
+    } else {
+      waveAnim.stopAnimation();
+      waveAnim.setValue(0);
+    }
+  }, [isPlaying, waveAnim]);
 
-  const stopWavePulse = useCallback(() => {
-    waveAnim.stopAnimation();
-    waveAnim.setValue(0);
-  }, [waveAnim]);
+  // Sync progress bar with playback position
+  useEffect(() => {
+    if (dragProgress === null && duration > 0) {
+      progressAnim.setValue(position / duration);
+    }
+  }, [position, duration, dragProgress, progressAnim]);
 
-  const updateProgress = useCallback(
-    (pos: number, dur: number) => {
-      const p = dur > 0 ? pos / dur : 0;
-      progressAnim.setValue(p);
-    },
-    [progressAnim]
-  );
-
-  const playOrPauseAudio = async () => {
-    if (!voiceNoteUrl) return;
-
-    try {
-      if (soundRef.current) {
-        const status = await soundRef.current.getStatusAsync();
-        if (status.isLoaded) {
-          if (status.isPlaying) {
-            await soundRef.current.pauseAsync();
-            setIsPlaying(false);
-            stopWavePulse();
-          } else {
-            await soundRef.current.playAsync();
-            setIsPlaying(true);
-            startWavePulse();
-          }
-        }
-        return;
-      }
-
-      setIsLoading(true);
-      const { sound } = await Audio.Sound.createAsync(
-        { uri: voiceNoteUrl },
-        { shouldPlay: true }
-      );
-      soundRef.current = sound;
-
-      sound.setOnPlaybackStatusUpdate((status: AVPlaybackStatus) => {
-        if (!status.isLoaded) return;
-        setIsLoading(false);
-        setPosition(status.positionMillis);
-        setDuration(status.durationMillis ?? 1);
-
-        if (dragProgress === null) {
-          updateProgress(status.positionMillis, status.durationMillis ?? 1);
-        }
-
-        if (status.didJustFinish) {
-          setIsPlaying(false);
-          setPosition(0);
-          stopWavePulse();
-        }
-      });
-
-      setIsPlaying(true);
-      startWavePulse();
-    } catch (err) {
-      console.error("Audio playback error:", err);
-      setIsLoading(false);
+  const playOrPauseAudio = () => {
+    if (!voiceNoteUrl || !player) return;
+    if (isPlaying) {
+      player.pause();
+    } else {
+      player.play();
     }
   };
 
   const onWaveformLayout = (e: LayoutChangeEvent) => {
     const w = e.nativeEvent.layout.width;
     setWaveformWidth(w);
-    waveformRef.current?.measure((x, y, width, height, pageX) => {
+    waveformRef.current?.measure((_x, _y, _width, _height, pageX) => {
       setWaveformX(pageX);
     });
   };
 
-  const seekTo = async (progress: number) => {
-    if (!soundRef.current || duration === 0) return;
-    const newPosition = Math.max(0, Math.min(progress, 1)) * duration;
-    await soundRef.current.setPositionAsync(newPosition);
-    setPosition(newPosition);
-    updateProgress(newPosition, duration);
+  const seekTo = (progress: number) => {
+    if (!player || duration === 0) return;
+    const clamped = Math.max(0, Math.min(progress, 1));
+    const newPositionSec = (clamped * duration) / 1000; // ms → seconds
+    player.seekTo(newPositionSec);
+    progressAnim.setValue(clamped);
   };
 
   const handleDrag = (e: GestureResponderEvent) => {
@@ -156,30 +110,26 @@ const AudioMessage = ({ voiceNoteUrl }: AudioMessageProps) => {
     const x = Math.max(0, Math.min(pageX - waveformX, waveformWidth));
     const progress = waveformWidth > 0 ? x / waveformWidth : 0;
     setDragProgress(progress);
-    updateProgress(progress * duration, duration);
+    progressAnim.setValue(progress);
   };
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onPanResponderGrant: async (e) => {
+      onPanResponderGrant: (e) => {
         setWasPlayingBeforeDrag(isPlaying);
-        if (soundRef.current && isPlaying) {
-          await soundRef.current.pauseAsync();
-          setIsPlaying(false);
-          stopWavePulse();
+        if (player && isPlaying) {
+          player.pause();
         }
         handleDrag(e);
       },
       onPanResponderMove: (e) => handleDrag(e),
-      onPanResponderRelease: async () => {
+      onPanResponderRelease: () => {
         if (dragProgress !== null) {
-          await seekTo(dragProgress);
+          seekTo(dragProgress);
           setDragProgress(null);
-          if (wasPlayingBeforeDrag && soundRef.current) {
-            await soundRef.current.playAsync();
-            setIsPlaying(true);
-            startWavePulse();
+          if (wasPlayingBeforeDrag && player) {
+            player.play();
           }
         }
       },

@@ -23,11 +23,10 @@ export default function ProgressHeader({
         {Array.from({ length: totalSteps }).map((_, index) => (
           <View
             key={index}
-            className={`mx-1 rounded-full  ${
-              index === currentStep - 1
-                ? "h-4 w-8 bg-primary-green border-4 border-green-400"
-                : "h-4 w-8 bg-gray-200"
-            }`}
+            className={`mx-1 rounded-full  ${index === currentStep - 1
+              ? "h-4 w-8 bg-primary-green border-4 border-green-400"
+              : "h-4 w-8 bg-gray-200"
+              }`}
           />
         ))}
       </View>

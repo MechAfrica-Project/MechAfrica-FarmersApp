@@ -106,7 +106,8 @@ module.exports = {
       "expo-secure-store",
       "expo-audio",
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      "@react-native-community/datetimepicker"
     ],
     experiments: {
       typedRoutes: true

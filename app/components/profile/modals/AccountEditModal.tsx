@@ -4,8 +4,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useFarmerStore } from "@/stores/farmerStore";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import { toastSuccess } from "@/lib/toast";
-import DOBPicker from "../../onboarding/DOBSelect";
-import GenderSelect from "../../onboarding/GenderSelector";
+import DOBPicker from "@/app/components/onboarding/DOBSelect";
+import GenderSelect from "@/app/components/onboarding/GenderSelector";
 import React, { useState } from "react";
 import {
   Modal,

@@ -162,14 +162,21 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
       set({ loading: true, error: null });
       try {
         const data = await apiFetch<{ requests: Request[] }>(API_ENDPOINTS.REQUESTS);
-        const byId: Record<string, Request> = {};
-        for (const r of data.requests || []) byId[r.id] = r;
-        // Merge with existing local items (local items keep priority if ids clash)
-        set((s) => ({
-          byId: { ...byId, ...s.byId },
-          listsByStatus: computeListsByStatus({ ...byId, ...s.byId }),
-          loading: false,
-        }));
+        const serverById: Record<string, Request> = {};
+        for (const r of data.requests || []) serverById[r.id] = r;
+        // Server data wins; preserve only locally-queued (offline) items
+        set((s) => {
+          const localQueued: Record<string, Request> = {};
+          for (const [id, r] of Object.entries(s.byId)) {
+            if ((r as any)._queued) localQueued[id] = r;
+          }
+          const merged = { ...serverById, ...localQueued };
+          return {
+            byId: merged,
+            listsByStatus: computeListsByStatus(merged),
+            loading: false,
+          };
+        });
       } catch (err: any) {
         console.warn("fetchRequests failed", err);
         set({ loading: false, error: err?.message || "Failed to fetch requests" });

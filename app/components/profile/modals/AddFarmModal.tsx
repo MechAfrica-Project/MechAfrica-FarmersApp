@@ -105,10 +105,10 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
 
   const districts = region
     ? getDistrictsByRegion(region).map((d) => ({
-        label: d,
-        value: d,
-        icon: <MapPin size={18} color="#4B5563" />,
-      }))
+      label: d,
+      value: d,
+      icon: <MapPin size={18} color="#4B5563" />,
+    }))
     : [];
 
   return (
@@ -164,9 +164,8 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
               <Text className="text-sm font-semibold mb-1">Region</Text>
               <View className="border p-3 rounded-lg bg-gray-50">
                 <Text
-                  className={`text-gray-700 ${
-                    region ? "font-medium" : "text-gray-400"
-                  }`}
+                  className={`text-gray-700 ${region ? "font-medium" : "text-gray-400"
+                    }`}
                 >
                   {region || "Select Region"}
                 </Text>
@@ -182,9 +181,8 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
               <Text className="text-sm font-semibold mb-1">District</Text>
               <View className="border p-3 rounded-lg bg-gray-50">
                 <Text
-                  className={`text-gray-700 ${
-                    district ? "font-medium" : "text-gray-400"
-                  }`}
+                  className={`text-gray-700 ${district ? "font-medium" : "text-gray-400"
+                    }`}
                 >
                   {district || "Select District"}
                 </Text>
@@ -204,9 +202,8 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
                       key={crop}
                       onPress={() => toggleCrop(crop)}
                       activeOpacity={0.8}
-                      className={`flex-row items-center px-4 py-2 mr-2 mb-2 rounded-full ${
-                        selected ? "bg-green-700" : "bg-gray-100"
-                      }`}
+                      className={`flex-row items-center px-4 py-2 mr-2 mb-2 rounded-full ${selected ? "bg-green-700" : "bg-gray-100"
+                        }`}
                     >
                       <Sprout
                         size={14}
@@ -214,9 +211,8 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
                         className="mr-1"
                       />
                       <Text
-                        className={`text-sm font-semibold ${
-                          selected ? "text-white" : "text-gray-800"
-                        }`}
+                        className={`text-sm font-semibold ${selected ? "text-white" : "text-gray-800"
+                          }`}
                       >
                         {crop}
                       </Text>

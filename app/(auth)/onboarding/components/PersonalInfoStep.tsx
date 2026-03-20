@@ -4,7 +4,7 @@ import { useOnboardingStore } from "@/stores/onboardingStore";
 import React, { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import PhoneInput from "../../login/components/PhoneInput";
+import PhoneInput from "@/app/(auth)/login/components/PhoneInput";
 
 export default function PersonalInfoStep() {
   const { data, updateData } = useOnboardingStore();

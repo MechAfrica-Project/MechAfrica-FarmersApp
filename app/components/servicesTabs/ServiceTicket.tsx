@@ -10,7 +10,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
-import { formatDate } from "../../../utils/formatDate";
+import { formatDate } from "@/utils/formatDate";
 
 interface ServiceTicketProps {
   fullRequest: Request;
@@ -111,12 +111,12 @@ const ServiceTicket: React.FC<ServiceTicketProps> = ({
             </Text>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <View className={`${getHeaderStyle()} px-3 py-1 rounded-full`}>
-              <Text
-                className="text-white font-mulish font-semibold"
-                style={{ fontSize: smallFontSize }}
-              >
-                {getHeaderLabel()}
-              </Text>
+                <Text
+                  className="text-white font-mulish font-semibold"
+                  style={{ fontSize: smallFontSize }}
+                >
+                  {getHeaderLabel()}
+                </Text>
               </View>
               {/* Queued badge */}
               {(fullRequest as any)?._queued && (

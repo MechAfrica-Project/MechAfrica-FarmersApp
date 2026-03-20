@@ -1,5 +1,5 @@
 import React from 'react';
-import Notifications from './components/notifications/notifications';
+import Notifications from '@/app/components/notifications/notifications';
 
 // Lightweight routing wrapper so `/notifications` is a routable page
 export default function NotificationsRoute() {

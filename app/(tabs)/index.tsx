@@ -1,10 +1,10 @@
 import React from "react";
-import MultiToneBackground from "../components/general/MultiToneBackground";
-import NotificationBar from "../components/indexPage/NotificationBar";
-import WelcomeAndUpdates from "../components/indexPage/WelcomeAndUpdates";
-import ServicesCarousel from "../components/indexPage/ServicesCarousel";
+import MultiToneBackground from "@/app/components/general/MultiToneBackground";
+import NotificationBar from "@/app/components/indexPage/NotificationBar";
+import WelcomeAndUpdates from "@/app/components/indexPage/WelcomeAndUpdates";
+import ServicesCarousel from "@/app/components/indexPage/ServicesCarousel";
 import { servicesData } from "@/constants/servicesData";
-import ServiceBar from "../components/indexPage/ServiceBar";
+import ServiceBar from "@/app/components/indexPage/ServiceBar";
 
 const Index = () => {
   return (

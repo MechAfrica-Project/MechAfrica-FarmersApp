@@ -22,10 +22,10 @@ export default function LocationStep() {
 
   const districts = data.location.region
     ? getDistrictsByRegion(data.location.region).map((d) => ({
-        label: d,
-        value: d,
-        icon: <MapPin size={18} color="#4B5563" />,
-      }))
+      label: d,
+      value: d,
+      icon: <MapPin size={18} color="#4B5563" />,
+    }))
     : [];
 
   return (

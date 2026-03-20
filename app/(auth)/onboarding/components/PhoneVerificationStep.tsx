@@ -87,11 +87,11 @@ export default function PhoneVerificationStep() {
       }
       setLocalError(null);
       const success = await verifyOtp(codeToUse, { skipNavigation: true });
-    if (success) {
-      updateData({ personalInfo: { otpVerified: true } });
-    } else {
-      updateData({ personalInfo: { otpVerified: false } });
-    }
+      if (success) {
+        updateData({ personalInfo: { otpVerified: true } });
+      } else {
+        updateData({ personalInfo: { otpVerified: false } });
+      }
     },
     [code, updateData, verifyOtp]
   );
@@ -153,16 +153,16 @@ export default function PhoneVerificationStep() {
 
       <View className="flex flex-row justify-center mt-4">
         {timeLeft > 0 ? (
-            <Text className="text-primary-green font-mulish font-medium">
-              Resend in {timeLeft}s
+          <Text className="text-primary-green font-mulish font-medium">
+            Resend in {timeLeft}s
+          </Text>
+        ) : (
+          <TouchableOpacity onPress={handleSendCode} disabled={loading}>
+            <Text className="text-primary-green font-mulish font-medium underline">
+              {autoRequested ? "Send code again" : "Send code"}
             </Text>
-          ) : (
-            <TouchableOpacity onPress={handleSendCode} disabled={loading}>
-              <Text className="text-primary-green font-mulish font-medium underline">
-                {autoRequested ? "Send code again" : "Send code"}
-              </Text>
-            </TouchableOpacity>
-          )}
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );

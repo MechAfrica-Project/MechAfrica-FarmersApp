@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { ScrollView } from "react-native";
-import MultiToneBackground from "../components/general/MultiToneBackground";
-import MenuList from "../components/profile/MenuList";
-import ProfilePicture from "../components/profile/ProfilePicture";
+import MultiToneBackground from "@/app/components/general/MultiToneBackground";
+import MenuList from "@/app/components/profile/MenuList";
+import ProfilePicture from "@/app/components/profile/ProfilePicture";
 import { getAuthToken } from "@/lib/api";
 import { useFarmerStore } from "@/stores/farmerStore";
 

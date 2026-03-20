@@ -1,7 +1,7 @@
 import React from "react";
 import { icons } from "@/constants/icons";
 import { Tabs } from "expo-router";
-import TabBtns from "../components/tab/tabBtns";
+import TabBtns from "@/app/components/tab/tabBtns";
 
 const _layout = () => {
   const tabs = [
@@ -21,7 +21,7 @@ const _layout = () => {
           alignItems: "center",
         },
         tabBarStyle: {
-         
+
         },
       }}
     >
