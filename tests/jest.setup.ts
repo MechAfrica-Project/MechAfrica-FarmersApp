@@ -1,4 +1,8 @@
 // Basic Jest setup for tests. Use manual mocks under tests/__mocks__.
+// Load a local .env file into process.env for integration/local tests (simple parser)
+import * as fs from 'fs';
+import * as path from 'path';
+
 jest.setTimeout(10000);
 
 // Global __DEV__ mock for React Native environment checks
@@ -36,10 +40,6 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   clear: jest.fn(async () => { for (const k of Object.keys(__asyncStorageMock)) delete __asyncStorageMock[k]; return null; }),
   __INTERNAL__storage: __asyncStorageMock
 }));
-
-// Load a local .env file into process.env for integration/local tests (simple parser)
-import * as fs from 'fs';
-import * as path from 'path';
 
 try {
   const envPath = path.resolve(__dirname, '..', '.env');

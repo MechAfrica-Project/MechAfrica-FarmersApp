@@ -1,7 +1,7 @@
 // Tests for notificationStore.fetchNotifications
-jest.mock('@/lib/api', () => ({ apiFetch: jest.fn(), setAuthToken: jest.fn() }));
 import { apiFetch } from '@/lib/api';
 import { useNotificationStore } from '@/stores/notificationStore';
+jest.mock('@/lib/api', () => ({ apiFetch: jest.fn(), setAuthToken: jest.fn() }));
 
 describe('notificationStore behavior', () => {
   afterEach(() => {

@@ -282,7 +282,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: async (mode: "dev" | "prod" = "prod") => {
     // Unregister push notifications
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
+       
       const { unregisterPushToken } = require('@/lib/pushNotifications');
       await unregisterPushToken();
     } catch { }
