@@ -29,7 +29,7 @@ describe('authStore behavior', () => {
     (apiFetch as jest.Mock).mockResolvedValueOnce({ token: 'tok-1', user: { id: 'u1', name: 'User' } });
     const spy = jest.spyOn(SecureStore, 'setItemAsync').mockResolvedValue(undefined as unknown as void);
 
-    const res = await useAuthStore.getState().verifyOtp('0000');
+    const res = await useAuthStore.getState().verifyOtp('000000');
     expect(res).toBe(true);
     expect(setAuthToken).toHaveBeenCalledWith('tok-1');
     expect(spy).toHaveBeenCalled();
