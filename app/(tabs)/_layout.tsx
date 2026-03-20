@@ -2,8 +2,16 @@ import React from "react";
 import { icons } from "@/constants/icons";
 import { Tabs } from "expo-router";
 import TabBtns from "@/app/components/tab/tabBtns";
+import { usePushNotifications } from "@/utils/usePushNotifications";
 
 const _layout = () => {
+  // Initialize Push Notifications
+  usePushNotifications({
+    appType: "farmer",
+    enabled: true,
+    autoRegister: true,
+  });
+
   const tabs = [
     { name: "index", title: "Home", icon: icons.home },
     { name: "services", title: "Services", icon: icons.services },

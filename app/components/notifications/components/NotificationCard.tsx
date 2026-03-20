@@ -1,26 +1,29 @@
 import React, { useMemo } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { Trash2, Check } from "lucide-react-native";
-import { NotificationItem } from "@/stores/notificationStore";
-
-const typeBadgeStyles: Record<NotificationItem["type"], string> = {
-  request: "bg-green-100 text-green-800",
-  system: "bg-gray-100 text-gray-800",
-};
+import { 
+  UserNotification, 
+  isNotificationRead, 
+  formatNotificationTime, 
+  getNotificationTypeLabel, 
+  getNotificationTypeBadgeClass 
+} from "@/types/notification";
 
 type Props = {
-  item: NotificationItem;
+  item: UserNotification;
   onMarkRead: (id: string) => void;
   onRemove: (id: string) => void;
 };
 
 const NotificationCard: React.FC<Props> = ({ item, onMarkRead, onRemove }) => {
+  const isRead = isNotificationRead(item);
+  
   const containerClass = useMemo(
     () =>
       `p-4 rounded-2xl border ${
-        item.read ? "border-gray-200 bg-white" : "border-green-200 bg-green-50"
+        isRead ? "border-gray-200 bg-white" : "border-green-200 bg-green-50"
       } shadow-sm`,
-    [item.read]
+    [isRead]
   );
 
   return (
@@ -29,20 +32,24 @@ const NotificationCard: React.FC<Props> = ({ item, onMarkRead, onRemove }) => {
         <Text className="text-base font-bold text-green-900 flex-1 pr-2">
           {item.title}
         </Text>
-        <Text className="text-gray-500 text-xs">{item.time}</Text>
+        <Text className="text-gray-500 text-xs">
+          {item.created_at ? formatNotificationTime(item.created_at) : "Just now"}
+        </Text>
       </View>
 
-      <Text className="text-gray-700 mt-1">{item.body}</Text>
+      <Text className="text-gray-700 mt-1">{item.message}</Text>
 
       <View className="flex-row justify-between items-center mt-3">
         <View
-          className={`px-2 py-1 rounded-full ${typeBadgeStyles[item.type]}`}
+          className={`px-2 py-1 rounded-full ${getNotificationTypeBadgeClass(item.type)}`}
         >
-          <Text className="text-xs font-semibold capitalize">{item.type}</Text>
+          <Text className="text-xs font-semibold capitalize">
+            {getNotificationTypeLabel(item.type)}
+          </Text>
         </View>
 
         <View className="flex-row gap-2">
-          {!item.read && (
+          {!isRead && (
             <TouchableOpacity
               onPress={() => onMarkRead(item.id)}
               className="flex-row items-center gap-1 px-3 py-1 rounded-full bg-gray-100"

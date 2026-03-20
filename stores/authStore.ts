@@ -280,6 +280,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async (mode: "dev" | "prod" = "prod") => {
+    // Unregister push notifications
+    try {
+      const { unregisterPushToken } = require('@/lib/pushNotifications');
+      await unregisterPushToken();
+    } catch { }
+
     // Remove persisted token first
     try {
       await SecureStore.deleteItemAsync("token");
@@ -341,11 +347,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         await onboardingStore.loadFromStorage();
         const onboarding = onboardingStore.data;
 
-        if (onboarding.personalInfo?.name) {
+        if (onboarding.personalInfo?.firstName) {
           set({
             user: {
               id: "local",
-              name: onboarding.personalInfo.name,
+              name: `${onboarding.personalInfo.firstName} ${onboarding.personalInfo.lastName ?? ''}`.trim(),
               phone: onboarding.personalInfo.phone?.raw,
               avatar: onboarding.profilePicture,
             },

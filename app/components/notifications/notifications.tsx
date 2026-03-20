@@ -8,18 +8,13 @@ import UnreadBadge from "./components/UnreadBadge";
 import NotificationCard from "./components/NotificationCard";
 
 const Notifications = () => {
-  const { items, filter, setFilter, markAllRead, markRead, remove } =
+  const { items, filter, setFilter, markAllRead, markRead, deleteNotification, unreadCount } =
     useNotificationStore();
 
   const filtered = useMemo(() => {
     if (filter === "all") return items;
     return items.filter((n) => n.type === filter);
   }, [items, filter]);
-
-  const unreadCount = useMemo(
-    () => items.filter((n) => !n.read).length,
-    [items]
-  );
 
   return (
     <SafeAreaView
@@ -28,7 +23,7 @@ const Notifications = () => {
     >
       <View className="flex-1 px-4">
         <HeaderBar title="Notifications" onMarkAllRead={markAllRead} />
-        <FilterChips active={filter as any} onChange={setFilter as any} />
+        <FilterChips active={filter} onChange={setFilter} />
         <UnreadBadge count={unreadCount} />
 
         <FlatList
@@ -41,7 +36,7 @@ const Notifications = () => {
             <NotificationCard
               item={item}
               onMarkRead={markRead}
-              onRemove={remove}
+              onRemove={deleteNotification}
             />
           )}
         />

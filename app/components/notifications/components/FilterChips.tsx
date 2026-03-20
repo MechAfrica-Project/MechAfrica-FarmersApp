@@ -1,23 +1,27 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-
-type FilterType = "all" | "request" | "system";
+import { NotificationFilterType } from "@/types/notification";
 
 type Props = {
-  active: FilterType;
-  onChange: (val: FilterType) => void;
+  active: NotificationFilterType;
+  onChange: (val: NotificationFilterType) => void;
 };
 
 const FilterChips: React.FC<Props> = ({ active, onChange }) => {
-  const keys: FilterType[] = ["all", "request", "system"];
+  const keys: { label: string; value: NotificationFilterType }[] = [
+    { label: "All", value: "all" },
+    { label: "Request", value: "service_request" },
+    { label: "System", value: "system_update" },
+  ];
+
   return (
     <View className="flex-row flex-wrap gap-2 mb-3">
-      {keys.map((key) => {
-        const isActive = active === key;
+      {keys.map(({ label, value }) => {
+        const isActive = active === value;
         return (
           <TouchableOpacity
-            key={key}
-            onPress={() => onChange(key)}
+            key={value}
+            onPress={() => onChange(value)}
             className={`px-4 py-2 rounded-full ${
               isActive ? "bg-green-700" : "bg-gray-100"
             }`}
@@ -26,9 +30,9 @@ const FilterChips: React.FC<Props> = ({ active, onChange }) => {
             <Text
               className={`${
                 isActive ? "text-white" : "text-gray-800"
-              } font-semibold capitalize`}
+              } font-semibold`}
             >
-              {key}
+              {label}
             </Text>
           </TouchableOpacity>
         );
