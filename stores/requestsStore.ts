@@ -20,6 +20,7 @@ type RequestsState = {
   // Restore a request for undo flows
   restoreRequest: (req: Request) => void;
   addRequest: (req: Omit<Request, "id" | "status">) => Promise<void>;
+  updateRequestDetails: (id: string, extraComment?: string, voiceNoteUri?: string | null) => Promise<void>;
   fetchRequests: () => Promise<void>;
 };
 
@@ -178,6 +179,50 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
           const byId = { ...s.byId, [id]: newReq };
           return { byId, listsByStatus: computeListsByStatus(byId) };
         });
+      }
+    },
+
+    updateRequestDetails: async (id: string, extraComment?: string, voiceNoteUri?: string | null) => {
+      set({ loading: true, error: null });
+      try {
+        let finalVoiceNoteUrl = voiceNoteUri;
+
+        // If it's a local file URI, upload it first
+        if (voiceNoteUri && voiceNoteUri.startsWith("file://")) {
+          const formData = new FormData();
+          formData.append("file", {
+            uri: voiceNoteUri,
+            name: "voicenote_edit.m4a",
+            type: "audio/m4a",
+          } as any);
+
+          const uploadRes: any = await apiUpload(API_ENDPOINTS.UPLOADS, formData);
+          if (uploadRes && uploadRes.url) {
+            finalVoiceNoteUrl = uploadRes.url;
+          }
+        }
+
+        const payload: any = {};
+        if (extraComment !== undefined) payload.extra_comment = extraComment;
+        if (finalVoiceNoteUrl !== undefined) payload.voice_note_url = finalVoiceNoteUrl === null ? "" : finalVoiceNoteUrl; // Send empty string for deletion
+
+        const mergedResponse = await apiFetch<Request>(
+          `${API_ENDPOINTS.REQUESTS}/${id}/details`,
+          {
+            method: "PUT",
+            body: JSON.stringify(payload),
+          }
+        );
+
+        set((s) => {
+          const updatedReq = { ...s.byId[id], ...mergedResponse };
+          const byId = { ...s.byId, [id]: updatedReq };
+          return { byId, listsByStatus: computeListsByStatus(byId), loading: false };
+        });
+      } catch (err: any) {
+        console.error("Failed to update request:", err);
+        set({ loading: false, error: err?.message || "Failed to update request details" });
+        throw err;
       }
     },
 
