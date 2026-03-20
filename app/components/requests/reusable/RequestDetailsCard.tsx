@@ -40,17 +40,7 @@ const RequestDetailsCard: React.FC<RequestDetailsCardProps> = ({
 
     if (type === "pending") {
       return (
-        <View className="my-12 space-y-4">
-          {onEdit && (
-            <TouchableOpacity
-              onPress={onEdit}
-              className="bg-[#2196F3] py-3 rounded-full items-center"
-            >
-              <Text className="text-white font-semibold text-lg">
-                Edit Message & Audio
-              </Text>
-            </TouchableOpacity>
-          )}
+        <View className="my-12">
           <TouchableOpacity
             onPress={onCancel}
             className="bg-[#D32F2F] py-3 rounded-full items-center"
@@ -129,7 +119,7 @@ const RequestDetailsCard: React.FC<RequestDetailsCardProps> = ({
         )}
 
         <FarmerDetails service={request} />
-        <MessageFromFarmer request={request} />
+        <MessageFromFarmer request={request} onEdit={onEdit} />
         {renderActionButtons()}
       </ScrollView>
     </MultiToneBackground>

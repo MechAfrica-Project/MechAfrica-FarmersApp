@@ -8,12 +8,13 @@ interface MessageFromFarmerProps {
     messageFromFarmer?: string;
     voiceNoteUrl?: string;
   };
+  onEdit?: () => void;
 }
 
-const MessageFromFarmer = ({ request }: MessageFromFarmerProps) => {
+const MessageFromFarmer = ({ request, onEdit }: MessageFromFarmerProps) => {
   return (
     <View>
-      <TextMessage message={request?.messageFromFarmer} />
+      <TextMessage message={request?.messageFromFarmer} onEdit={onEdit} />
       {!!request?.voiceNoteUrl && <AudioMessage voiceNoteUrl={request.voiceNoteUrl} />}
     </View>
   );
