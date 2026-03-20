@@ -84,6 +84,10 @@ const AudioMessage = ({ voiceNoteUrl }: AudioMessageProps) => {
     if (isPlaying) {
       player.pause();
     } else {
+      // If playback has reached the end (within 100ms), auto-rewind to start
+      if (position >= duration - 100) {
+        player.seekTo(0);
+      }
       player.play();
     }
   };

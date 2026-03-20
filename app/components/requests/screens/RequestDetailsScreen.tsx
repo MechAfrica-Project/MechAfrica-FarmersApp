@@ -7,6 +7,7 @@ import { View, Text, TextInput, TouchableOpacity, Modal, ActivityIndicator } fro
 import { X, Trash2 } from "lucide-react-native";
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder, useAudioRecorderState } from "expo-audio";
 import VoiceRecorderButton from "../../general/VoiceRecorderButton";
+import AudioMessage from "../reusable/message/AudioMessage";
 import { toastError, toastSuccess } from '@/lib/toast';
 
 const RequestDetailsScreen = () => {
@@ -143,11 +144,16 @@ const RequestDetailsScreen = () => {
             
             <View className="bg-emerald-50/40 rounded-3xl py-7 mb-8 border border-emerald-100/50 items-center justify-center">
               <VoiceRecorderButton handleRecordVoice={handleRecordVoice} isRecording={recorderState.isRecording} />
-              <View className="mt-4 h-6 justify-center items-center">
+              <View className="mt-4 justify-center items-center w-full px-4">
                 {recorderState.isRecording ? (
                   <Text key="recording-label" className="text-emerald-600 font-semibold tracking-tight text-[15px]">Recording in progress...</Text>
                 ) : voiceNoteUri ? (
-                  <Text key="ready-label" className="text-emerald-700 font-semibold tracking-tight text-[15px]">Ready to overwrite existing audio</Text>
+                  <View className="w-full mt-2">
+                    <Text className="text-emerald-700 font-semibold tracking-tight text-[14px] text-center mb-3">
+                      Ready to overwrite existing audio
+                    </Text>
+                    <AudioMessage voiceNoteUrl={voiceNoteUri} />
+                  </View>
                 ) : (
                   <Text key="idle-label" className="text-slate-400 font-medium tracking-wide text-sm">Tap mic to record a brand new note</Text>
                 )}
