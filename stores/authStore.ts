@@ -343,25 +343,28 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (token) {
         setAuthToken(token);
 
-        // ✅ Ensure onboarding is loaded before using
-        const onboardingStore = useOnboardingStore.getState();
-        await onboardingStore.loadFromStorage();
-        const onboarding = onboardingStore.data;
+        // ✅ Optionally try to pre-fill user display data from onboarding if available
+        let userData: any = { id: "authenticated_user" };
+        try {
+          const onboardingStore = useOnboardingStore.getState();
+          await onboardingStore.loadFromStorage();
+          const onboarding = onboardingStore.data;
 
-        if (onboarding.personalInfo?.firstName) {
-          set({
-            user: {
+          if (onboarding?.personalInfo?.firstName) {
+            userData = {
               id: "local",
               name: `${onboarding.personalInfo.firstName} ${onboarding.personalInfo.lastName ?? ''}`.trim(),
               phone: onboarding.personalInfo.phone?.raw,
               avatar: onboarding.profilePicture,
-            },
-            token,
-            loading: false,
-          });
-        } else {
-          set({ loading: false });
-        }
+            };
+          }
+        } catch {}
+
+        set({
+          user: userData,
+          token,
+          loading: false,
+        });
       } else {
         set({ loading: false });
       }

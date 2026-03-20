@@ -10,7 +10,7 @@ import { useFarmerStore } from "@/stores/farmerStore";
 import { useNotificationStore } from "@/stores/notificationStore";
 import { useRequestsStore } from "@/stores/requestsStore";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, useSegments, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect } from "react";
 import { View } from "react-native";
@@ -21,6 +21,10 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const restoreSession = useAuthStore((s) => s.restoreSession);
+  const token = useAuthStore((s) => s.token);
+  const authLoading = useAuthStore((s) => s.loading);
+  const segments = useSegments();
+  const router = useRouter();
 
   const [fontsLoaded] = useFonts({
     MulishRegular: require("../assets/fonts/Mulish-Regular.ttf"),
@@ -37,8 +41,8 @@ export default function RootLayout() {
       await restoreSession();
 
       // If restoreSession set a token, sync core data in background
-      const token = useAuthStore.getState().token;
-      if (token) {
+      const currentToken = useAuthStore.getState().token;
+      if (currentToken) {
         const rs = useRequestsStore.getState();
         const fs = useFarmerStore.getState();
         const ns = useNotificationStore.getState();
@@ -51,6 +55,24 @@ export default function RootLayout() {
       }
     })();
   }, [restoreSession]);
+
+  // Global Auth Guard
+  useEffect(() => {
+    if (authLoading) return; // Wait until session restoration resolves
+
+    const inAuthGroup = segments[0] === '(auth)';
+    const isIndex = (segments as string[]).length === 0;
+
+    if (token) {
+      if (inAuthGroup || isIndex) {
+        // User has a token but is stuck on the login or welcome screen -> Auto redirect to tabs
+        router.replace('/(tabs)');
+      }
+    } else if (!token && !inAuthGroup && !isIndex) {
+      // User is logged out but trying to view protected screens -> Send to login
+      router.replace('/(auth)/login/signIn');
+    }
+  }, [token, authLoading, segments]);
 
   useEffect(() => {
     let stop: (() => void) | null = null;
