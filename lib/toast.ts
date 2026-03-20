@@ -1,3 +1,5 @@
+import { getNodeEnv } from './env';
+
 // Wrapper for react-native-toast-notifications using an imperative ref.
 // Expose a setter so the app's Root layout can register the provider ref.
 // Avoid importing types from native module in test environment — use a loose any type
@@ -60,9 +62,6 @@ export function setToastRef(ref: ToastRef | null) {
     }
   } catch {}
 }
-
-import { getNodeEnv } from './env';
-
 export type ToastOpts = {
   type?: 'success' | 'error' | 'info' | 'warning' | 'normal';
   text1: string;

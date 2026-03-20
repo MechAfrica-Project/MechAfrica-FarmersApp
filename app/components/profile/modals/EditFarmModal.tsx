@@ -101,7 +101,7 @@ const EditFarmModal = ({ visible, onClose, farm }: EditFarmModalProps) => {
         await updateFarm(updatedFarm);
         toastSuccess("Success", "Farm updated successfully.");
         onClose();
-      } catch (err) {
+      } catch {
         // Store shows toast on error; keep modal open for retry
       } finally {
         setSaving(false);

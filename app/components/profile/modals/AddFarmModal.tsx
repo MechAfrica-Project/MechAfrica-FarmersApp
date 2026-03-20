@@ -89,7 +89,7 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
         setDistrict("");
         setCropTypes([]);
         onClose();
-      } catch (err) {
+      } catch {
         // swallow - store shows toast on error; keep modal open for retry
       } finally {
         setSaving(false);

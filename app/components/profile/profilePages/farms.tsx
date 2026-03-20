@@ -65,7 +65,7 @@ const Farms = () => {
           // No token: keep local onboarding farm only
           console.debug('Farms screen: skipping fetchProfile - no auth token');
         }
-      } catch (e) {
+      } catch {
         // fallback: attempt fetch (defensive)
         try { fetchProfile(); } catch { }
       }

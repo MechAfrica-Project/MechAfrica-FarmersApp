@@ -4,7 +4,7 @@ import { Tabs } from "expo-router";
 import TabBtns from "@/app/components/tab/tabBtns";
 import { usePushNotifications } from "@/utils/usePushNotifications";
 
-const _layout = () => {
+const TabLayout = () => {
   // Initialize Push Notifications
   usePushNotifications({
     appType: "farmer",
@@ -50,4 +50,4 @@ const _layout = () => {
   );
 };
 
-export default _layout;
+export default TabLayout;
