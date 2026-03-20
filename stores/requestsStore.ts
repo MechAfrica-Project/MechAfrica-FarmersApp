@@ -36,9 +36,12 @@ const computeListsByStatus = (
 });
 
 // Helper to reliably translate backend snake_case nested models to frontend camelCase Request interface
-const mapBackendRequestToFrontend = (raw: any): Request => {
-  if (!raw) return {} as Request;
+const mapBackendRequestToFrontend = (rawInput: any): Request => {
+  if (!rawInput) return {} as Request;
   
+  // Unwrap standard Go APIResponse `{ data: ... }` envelope if wrapped
+  const raw = rawInput.data ?? rawInput;
+
   // If already mapped (fallback offline), return it directly
   if (raw.serviceTitle && raw.farmerName) return raw as Request;
 
@@ -55,7 +58,7 @@ const mapBackendRequestToFrontend = (raw: any): Request => {
     status: (raw.status as RequestStatus) || "pending",
     crop: raw.crop_type,
     messageFromFarmer: raw.extra_comment,
-    voiceNoteUrl: raw.voice_note_url,
+    voiceNoteUrl: raw.voiceNoteUrl || raw.voice_note_url,
   };
 };
 
