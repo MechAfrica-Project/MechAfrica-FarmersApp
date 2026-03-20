@@ -35,6 +35,7 @@ describe('processQueue mapping and send', () => {
     jest.doMock('@/stores/requestsStore', () => ({ useRequestsStore: mockReqStore }));
     jest.doMock('@/stores/farmerStore', () => ({ useFarmerStore: { getState: () => ({ farms: [] }), setState: jest.fn() } }));
 
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { enqueueRequest, processQueue, getQueue } = require('../lib/offlineQueue');
 
     // arrange: enqueue a request

@@ -1,4 +1,3 @@
-/* eslint-env jest */
 /* global jest */
 /* eslint-disable no-unused-vars */
 // Minimal mock for react-native-toast-notifications used in Jest
