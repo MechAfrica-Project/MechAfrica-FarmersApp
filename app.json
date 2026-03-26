@@ -1,5 +1,3 @@
-// NOTE: Dynamic configuration is provided by `app.config.js` which loads values from `.env`.
-// Do NOT place secrets (API keys) directly in this file; use `.env` or your CI/EAS secrets.
 {
   "expo": {
     "name": "Farmers App",
@@ -10,11 +8,16 @@
     "scheme": "farmers",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "updates": {
+      "url": "https://u.expo.dev/YOUR-PROJECT-ID-HERE"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "ios": {
       "bundleIdentifier": "com.mechafrica.farmer",
       "supportsTablet": true,
       "config": {
-        // Google Maps key injected at build-time via `app.config.js` (reads from .env)
         "googleMapsApiKey": ""
       },
       "infoPlist": {
@@ -34,7 +37,6 @@
       ],
       "config": {
         "googleMaps": {
-          // Android key injected at build-time via `app.config.js` (reads from .env)
           "apiKey": ""
         }
       }
@@ -70,6 +72,7 @@
       "expo-secure-store",
       "expo-audio",
       "expo-font",
+      "expo-updates",
       "expo-web-browser"
     ],
     "experiments": {

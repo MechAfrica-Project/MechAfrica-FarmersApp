@@ -16,6 +16,8 @@ import { useCallback, useEffect } from "react";
 import { View } from "react-native";
 import { useToast } from 'react-native-toast-notifications';
 import "./globals.css";
+import { useAppUpdateCheck } from "@/hooks/useAppUpdateCheck";
+import UpdateRequiredModal from "./components/general/UpdateRequiredModal";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,6 +27,15 @@ export default function RootLayout() {
   const authLoading = useAuthStore((s) => s.loading);
   const segments = useSegments();
   const router = useRouter();
+
+  // Initialize OTA and Store Version Update Checker
+  const {
+    storeUpdateRequired,
+    storeUpdateOptional,
+    storeUrl,
+    updateMessage,
+    dismissSoftUpdate,
+  } = useAppUpdateCheck('farmers');
 
   const [fontsLoaded] = useFonts({
     MulishRegular: require("../assets/fonts/Mulish-Regular.ttf"),
@@ -127,6 +138,15 @@ export default function RootLayout() {
         <OfflineQueueIndicator />
         <Stack screenOptions={{ headerShown: false }} />
         <RouterStateOverlay />
+
+        {/* App Version Check Modals */}
+        <UpdateRequiredModal
+          visible={storeUpdateRequired || storeUpdateOptional}
+          isForce={storeUpdateRequired}
+          message={updateMessage}
+          storeUrl={storeUrl}
+          onDismiss={dismissSoftUpdate}
+        />
       </View>
     </ToastProviderWrapper>
   );
