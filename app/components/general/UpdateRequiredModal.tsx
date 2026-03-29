@@ -11,7 +11,7 @@ type Props = {
   onDismiss: () => void; // Only called if isForce is false
 };
 
-const mechAfricaLogo = require('../../assets/images/mechafrica-square.png');
+const mechAfricaLogo = require('../../../assets/images/mechafrica.png');
 
 export default function UpdateRequiredModal({ visible, isForce, message, storeUrl, onDismiss }: Props) {
   const insets = useSafeAreaInsets();
@@ -36,11 +36,11 @@ export default function UpdateRequiredModal({ visible, isForce, message, storeUr
         <View style={styles.container}>
           <View style={[styles.card, { paddingBottom: insets.bottom + 24 }]}>
             <Image source={mechAfricaLogo} style={styles.logo} resizeMode="contain" />
-            
+
             <Text style={styles.title}>
               {isForce ? 'Update Required' : 'Update Available'}
             </Text>
-            
+
             <Text style={styles.message}>
               {message || "A new version of MechAfrica is available. Please update to continue getting the best experience."}
             </Text>
