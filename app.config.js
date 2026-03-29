@@ -112,11 +112,21 @@ module.exports = {
     experiments: {
       typedRoutes: true
     },
+    "updates": {
+      "url": "https://u.expo.dev/a7be253c-373b-49b4-a677-4c3e66514b41"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     extra: {
       // Expose API URL to the app (supports both old and new variable names for backward compatibility)
       apiUrl: env.resolveApiUrlRaw() || null,
-      apiBaseUrl: env.resolveApiUrlRaw() || null
-    }
+      apiBaseUrl: env.resolveApiUrlRaw() || null,
+      "eas": {
+        "projectId": "481cec85-cb63-4658-8d4f-7d240a57ff67"
+      }
+    },
+    "owner": "mechafrica"
   }
 };
 

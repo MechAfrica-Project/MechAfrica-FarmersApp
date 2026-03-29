@@ -77,12 +77,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
-    ,
+    },
     "extra": {
       "note": "Values (apiUrl, google maps keys) are loaded from app.config.js which reads .env; do not store secrets here.",
       "apiUrl": "EXPO_PUBLIC_API_BASE_URL (loaded via app.config.js)",
-      "apiBaseUrl": "EXPO_PUBLIC_API_BASE_URL (loaded via app.config.js)"
-    }
+      "apiBaseUrl": "EXPO_PUBLIC_API_BASE_URL (loaded via app.config.js)",
+      "eas": {
+        "projectId": "481cec85-cb63-4658-8d4f-7d240a57ff67"
+      }
+    },
+    "owner": "mechafrica"
   }
 }
