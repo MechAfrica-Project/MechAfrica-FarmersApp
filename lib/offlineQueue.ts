@@ -1,5 +1,6 @@
 import { getAuthToken } from '@/lib/api';
 import * as SecureStore from 'expo-secure-store';
+import Constants from 'expo-constants';
 import { API_ENDPOINTS } from './apiEndpoints';
 import { API_URL_PLACEHOLDER, getNodeEnv, resolveApiUrlRaw } from './env';
 
@@ -117,18 +118,25 @@ export async function processQueue() {
     if (!queue || queue.length === 0) return;
 
     const baseUrl = (() => {
-      const url = resolveApiUrlRaw();
+      // First try Constants (set at build time from app.config.js)
+      let url = Constants.expoConfig?.extra?.apiUrl;
+
+      // Fallback to resolveApiUrlRaw for development
+      if (!url) {
+        url = resolveApiUrlRaw();
+      }
+
       if (!url || url === API_URL_PLACEHOLDER) {
         if (getNodeEnv() !== 'production') {
-            console.warn('⚠️ EXPO_PUBLIC_API_BASE_URL (or EXPO_PUBLIC_API_URL) not set! Offline queue will use placeholder URL.');
-            console.warn('   Set this in your .env file. See .env.example for reference.');
-            return API_URL_PLACEHOLDER;
-          }
+          console.warn('⚠️ EXPO_PUBLIC_API_BASE_URL (or EXPO_PUBLIC_API_URL) not set! Offline queue will use placeholder URL.');
+          console.warn('   Set this in your .env file. See .env.example for reference.');
+          return API_URL_PLACEHOLDER;
+        }
         return null;
       }
       return url.replace(/\/$/, '');
     })();
-    
+
     if (!baseUrl) {
       processing = false;
       return;
@@ -138,7 +146,7 @@ export async function processQueue() {
       // prefer in-memory/AsyncStorage-backed token from api client
       token = getAuthToken() ?? null;
       if (!token) token = await SecureStore.getItemAsync('token');
-    } catch {}
+    } catch { }
 
     const remaining: QueuedRequest[] = [];
 
@@ -188,7 +196,7 @@ export async function processQueue() {
                   if (serverReq && serverReq.id) byId[serverReq.id] = serverReq;
                   reqStore.setState({ byId, listsByStatus: computeListsByStatusLocal(byId) } as any);
                 }
-              } catch {}
+              } catch { }
             }
 
             // Map for farmer farms
@@ -208,17 +216,17 @@ export async function processQueue() {
                   farms.push(serverFarm);
                   farmStore.setState({ farms } as any);
                 }
-              } catch {}
+              } catch { }
             }
           }
-        } catch {}
+        } catch { }
       } catch {
-          item.attempts = (item.attempts ?? 0) + 1;
-          if ((item.attempts ?? 0) >= 5) continue;
-          const backoff = Math.min(60000, 1000 * Math.pow(2, item.attempts ?? 1)) + Math.floor(Math.random() * 1000);
-          await delay(backoff);
-          remaining.push(item);
-        }
+        item.attempts = (item.attempts ?? 0) + 1;
+        if ((item.attempts ?? 0) >= 5) continue;
+        const backoff = Math.min(60000, 1000 * Math.pow(2, item.attempts ?? 1)) + Math.floor(Math.random() * 1000);
+        await delay(backoff);
+        remaining.push(item);
+      }
     }
 
     await writeQueue(remaining);
@@ -253,27 +261,34 @@ export async function retryQueueItem(id: string) {
   await writeQueue(remaining);
 
   const baseUrl = (() => {
-      const url = resolveApiUrlRaw();
-      if (!url || url === API_URL_PLACEHOLDER) {
-        if (getNodeEnv() !== 'production') {
-          console.warn('⚠️ EXPO_PUBLIC_API_BASE_URL (or EXPO_PUBLIC_API_URL) not set! Retry will use placeholder URL.');
-          console.warn('   Set this in your .env file. See .env.example for reference.');
-          return API_URL_PLACEHOLDER;
-        }
-        return null;
+    // First try Constants (set at build time from app.config.js)
+    let url = Constants.expoConfig?.extra?.apiUrl;
+
+    // Fallback to resolveApiUrlRaw for development
+    if (!url) {
+      url = resolveApiUrlRaw();
+    }
+
+    if (!url || url === API_URL_PLACEHOLDER) {
+      if (getNodeEnv() !== 'production') {
+        console.warn('⚠️ EXPO_PUBLIC_API_BASE_URL (or EXPO_PUBLIC_API_URL) not set! Retry will use placeholder URL.');
+        console.warn('   Set this in your .env file. See .env.example for reference.');
+        return API_URL_PLACEHOLDER;
       }
-      return url.replace(/\/$/, '');
-    })();
-  
+      return null;
+    }
+    return url.replace(/\/$/, '');
+  })();
+
   if (!baseUrl) {
     return { ok: false, error: 'api_url_not_configured' };
   }
-  
+
   let token: string | null = null;
   try {
     token = getAuthToken() ?? null;
     if (!token) token = await SecureStore.getItemAsync('token');
-  } catch {}
+  } catch { }
 
   try {
     const res = await trySend(item, baseUrl, token ?? undefined);
@@ -302,12 +317,12 @@ export async function retryQueueItem(id: string) {
     // the queued state before any optional delay/backoff (helps tests and resilience).
     const newQueue = [item, ...remaining];
     // debug logs for test troubleshooting
-     
+
     if (getNodeEnv() !== 'production') {
       console.debug('[offlineQueue] retryQueueItem - requeuing item', item.id, 'queueBeforeWriteLength=', (await readQueue()).length);
     }
     await writeQueue(newQueue);
-     
+
     if (getNodeEnv() !== 'production') {
       console.debug('[offlineQueue] retryQueueItem - requeued item, queueAfterWriteLength=', (await readQueue()).length);
     }

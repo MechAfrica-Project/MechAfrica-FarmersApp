@@ -5,6 +5,7 @@ import { useUIStore } from "@/stores/uiStore";
 import { API_ENDPOINTS } from "./apiEndpoints";
 import { API_URL_PLACEHOLDER, resolveApiUrlRaw } from './env';
 import { UploadResult } from './types';
+import Constants from 'expo-constants';
 
 // offline enqueue helper: enqueue write requests when offline
 async function enqueueIfOffline(method: string, endpoint: string, body?: any) {
@@ -50,19 +51,27 @@ export async function setTokens(accessToken: string | null, refreshToken?: strin
     const mod = await import('@react-native-async-storage/async-storage');
     const AsyncStorage = (mod as any).default ?? mod;
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ accessToken: authToken, refreshToken: refreshTokenInMemory }));
-  } catch {}
+  } catch { }
 }
 
 export async function clearTokens() {
   authToken = null;
   refreshTokenInMemory = null;
-  try { const mod = await import('@react-native-async-storage/async-storage'); const AsyncStorage = (mod as any).default ?? mod; await AsyncStorage.removeItem(STORAGE_KEY); } catch {}
+  try { const mod = await import('@react-native-async-storage/async-storage'); const AsyncStorage = (mod as any).default ?? mod; await AsyncStorage.removeItem(STORAGE_KEY); } catch { }
 }
 
 export const getAuthToken = () => authToken;
 
 const getBaseUrl = () => {
-  const url = resolveApiUrlRaw();
+  // First, try to get from Constants (set at build time from app.config.js)
+  // This is critical for production builds where process.env is not available
+  let url = Constants.expoConfig?.extra?.apiUrl;
+
+  // Fallback to resolveApiUrlRaw for development
+  if (!url) {
+    url = resolveApiUrlRaw();
+  }
+
   if (!url || url === API_URL_PLACEHOLDER) {
     const isDev =
       (typeof __DEV__ !== 'undefined' && __DEV__) ||
@@ -179,7 +188,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
       let parsed: any = undefined;
       try {
         parsed = JSON.parse(text);
-      } catch {}
+      } catch { }
       const message = parsed?.message ?? text ?? `API error: ${res.status}`;
       // show toast for non-2xx responses
       toastError('Request failed', message);
@@ -308,7 +317,7 @@ export async function apiUpload<T>(endpoint: string, formData: FormData): Promis
   if (!res.ok) {
     const text = await res.text();
     let parsed: any = undefined;
-    try { parsed = JSON.parse(text); } catch {}
+    try { parsed = JSON.parse(text); } catch { }
     const message = parsed?.message ?? `Upload error: ${res.status}`;
     toastError('Upload failed', message);
     throw new ApiError(message, res.status, parsed);
