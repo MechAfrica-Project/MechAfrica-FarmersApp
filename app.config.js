@@ -34,7 +34,8 @@ module.exports = {
         googleMapsApiKey: iosMapsKey
       },
       infoPlist: {
-        NSLocationWhenInUseUsageDescription: "We need your location to show your farm location on the map."
+        NSLocationWhenInUseUsageDescription: "We need your location to show your farm location on the map.",
+        "ITSAppUsesNonExemptEncryption": false
       }
       ,
       splash: {
@@ -129,4 +130,3 @@ module.exports = {
     "owner": "mechafrica"
   }
 };
-

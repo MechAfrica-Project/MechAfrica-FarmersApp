@@ -72,7 +72,7 @@ const getBaseUrl = () => {
     url = resolveApiUrlRaw();
   }
 
-  if (!url || url === API_URL_PLACEHOLDER) {
+  if (!url) {
     const isDev =
       (typeof __DEV__ !== 'undefined' && __DEV__) ||
       process.env.NODE_ENV !== 'production';
@@ -81,12 +81,8 @@ const getBaseUrl = () => {
         "⚠️ API_URL (or EXPO_PUBLIC_API_BASE_URL / EXPO_PUBLIC_API_URL) not set! Using placeholder. Set this in your .env file."
       );
       console.warn("   See .env.example for reference.");
-      return API_URL_PLACEHOLDER;
-    } else {
-      throw new Error(
-        "API URL not configured. Please set API_URL (or EXPO_PUBLIC_API_BASE_URL / EXPO_PUBLIC_API_URL) in your .env file."
-      );
     }
+    return API_URL_PLACEHOLDER;
   }
   return url.replace(/\/$/, "");
 };

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { AppState, AppStateStatus, Platform } from 'react-native';
 import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
-import api from '../lib/api';
+import { apiFetch } from '../lib/api';
 
 export type AppVersionCheckState = {
   isChecking: boolean;
@@ -46,7 +46,7 @@ export function useAppUpdateCheck(appName: 'farmers' | 'providers') {
       // 1. Check Store Version (Native binary updates)
       // expo-constants is always available; falls back to '1.0.0' in dev builds
       const currentVersion = Constants.expoConfig?.version ?? '1.0.0';
-      const response = await api.get(`/app/version?app=${appName}`) as any;
+      const response = await apiFetch<any>(`/app/version?app=${appName}`);
 
       const {
         min_version,
