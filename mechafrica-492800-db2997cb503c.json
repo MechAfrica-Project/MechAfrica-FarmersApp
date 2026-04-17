@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "mechafrica-492800",
+  "private_key_id": "db2997cb503c8c1e4f99c3711cfbaa87c374c1e4",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCtD0VxfmQdfUye\n+BvAC07UBl2aYm3nFivYW7u52DNzK3bBfneMbOC+/Zsv2vIgh+KEK+SN5BSeUWb7\ng7+b6+yQAeVqiFQaU3dYEycp6HEK4bEY4R+UnlIgToq9WeEX5+XF1Iw6PlIa3lY0\nx5Hi/DII3gjgWRmvb0Uu6nsUY1wY4Du1OyUwwMhuTI8gGYVEmhgS7Ya9c9Iu6p80\nHqZERooai+VFCyR/BFs31f2x9mzzOPvEFNOXQa/MrIK/q80mi44Mn8/VE2WZ8jxf\nzuiMr1eX5EI24Mft49wfh+HfGvmOo0vJ0gqM9hkgwYkSzo/9whHaOHcsFGVxTKka\nmYdhooOhAgMBAAECggEADmBAAmovjqARoPyHEJxX3WbUeH5P9yP5OzE+nlTyjDEK\nfc8fxvVl85OtZCut1Kw5EcX0J+HQISktsvvKK12NMpbHvCJsSx4PIkzAAnwVxOPD\n8odD+HRw6dBgd9OLLnFT/eu2xOFXsHXzBxIjgS22SdSI+/sG1lMZ1giCNiq9VC8M\nXk8JUei64R/hZoENKXpCefLQJEDg7jmyFX1RM0IYBeHq/G1ogfMr8f2W0MhS0vdE\nkeLLdtiy37ni5jHKvhg77x8fDGSJ2Sf6zMheavEN3Oroe8d8OuMs4e19FBGsjp9q\n6vFGGAY2getIpMQnqRfHvR+WTNB5QnQNBopxDaaImQKBgQDds2sgOF2FxzlFqddD\nCq/L8CqaOyl2AO2ArerXUTFwi+41jOM2rvM/52Z5yBZw/xSzkS4nbcFd7lIaNr5n\nPeR26J0PJvNeYULHli512TrpvV/QPdv3AgjK4R0IfjLnXSxzIKdP0xCnLLqDjwle\nHbvirWEFmDT/rrmHHF0cWDfKKQKBgQDH1WRUjz3YgrPUKYZwuxRtK+lU6LS6xgtC\nN8W64Pz5uTjDY2DP+jPxrGZIyzoX3C3ZfMBeD86jZgU4UI+jCFFpr1N3PzkG/qq4\nfpfl5icpXx2mvdXzgcgjvJktrTaYBNopyck+J1WKfj0DUGUrzCXcv4JXWWXx538w\nqPeH1wuMuQKBgGWneP1DGw7WNJqOr9dbtRPLwZ0Kd45WCpCwLjggUI0MfGMtgJl4\nSq0Ii2JXroKNU46qiQEnQDyzpA3FADUSmgkzy6BA+eJSsm4VnKQIwQyf+qjfVFbE\nJgfwhIF6bBjODi2T0WO2obIlvjfIhEEVXSso2I3aJqL+GK+s/7yZbqtRAoGAdq1D\nZXigSRnuRFzY69Ae5GsEqpl848ND4nKO6lo9wuz+SgOV9k3oVWmGYUrYWF05mYUe\nFX6bwKyRAw3NEAyblQE7t4EDlCTgLKt5+F3D+izzxhfNnU0BGEAkVF0fJA8VpWWi\nL1ha0+H+yB4Rx335Km1NsiR0h8Js5fAi+Th8MnkCgYBWo2WYT8bNuNswj7OgTXof\nNCldW28BdxIcCCLUw3SkUUGK4w+vD+6tWORLFWYB1RcRA/sUKDTYBh2Ha3aNoRRZ\nqoMzyEdzcZOzNv4cjP4LwXXadfiQ6t4rTPbXWxMUU2/+XHxH/2btMju6RUHkzLCA\nThjpW7jBsIyu1UQmTXxWjA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "provider@mechafrica-492800.iam.gserviceaccount.com",
+  "client_id": "115440443343663176595",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/provider%40mechafrica-492800.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

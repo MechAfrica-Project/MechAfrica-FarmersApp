@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "updates": {
-      "url": "https://u.expo.dev/YOUR-PROJECT-ID-HERE"
+      "url": "https://u.expo.dev/481cec85-cb63-4658-8d4f-7d240a57ff67"
     },
     "runtimeVersion": {
       "policy": "appVersion"
@@ -73,7 +73,8 @@
       "expo-audio",
       "expo-font",
       "expo-updates",
-      "expo-web-browser"
+      "expo-web-browser",
+      "./plugins/withAdiRegistration.js"
     ],
     "experiments": {
       "typedRoutes": true

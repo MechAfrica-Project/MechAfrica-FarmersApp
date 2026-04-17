@@ -114,7 +114,7 @@ module.exports = {
       typedRoutes: true
     },
     "updates": {
-      "url": "https://u.expo.dev/a7be253c-373b-49b4-a677-4c3e66514b41"
+      "url": "https://u.expo.dev/481cec85-cb63-4658-8d4f-7d240a57ff67"
     },
     "runtimeVersion": {
       "policy": "appVersion"
