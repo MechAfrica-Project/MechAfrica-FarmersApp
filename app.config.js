@@ -108,7 +108,9 @@ module.exports = {
       "expo-audio",
       "expo-font",
       "expo-web-browser",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-updates",
+      "./plugins/withAdiRegistration.js"
     ],
     experiments: {
       typedRoutes: true
