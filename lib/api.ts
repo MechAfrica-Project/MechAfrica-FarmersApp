@@ -28,17 +28,17 @@ export const setAuthToken = (token: string | null) => {
   authToken = token;
 };
 
-const STORAGE_KEY = '@mechafrica:auth';
+import * as SecureStore from 'expo-secure-store';
+
+const ACCESS_KEY = 'mechafrica_accessToken';
+const REFRESH_KEY = 'mechafrica_refreshToken';
 
 export async function loadTokensFromStorage(): Promise<void> {
   try {
-    const mod = await import('@react-native-async-storage/async-storage');
-    const AsyncStorage = (mod as any).default ?? mod;
-    const raw = await AsyncStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    const parsed = JSON.parse(raw);
-    authToken = parsed?.accessToken ?? null;
-    refreshTokenInMemory = parsed?.refreshToken ?? null;
+    const access = await SecureStore.getItemAsync(ACCESS_KEY);
+    const refresh = await SecureStore.getItemAsync(REFRESH_KEY);
+    authToken = access;
+    refreshTokenInMemory = refresh;
   } catch {
     // ignore
   }
@@ -48,16 +48,25 @@ export async function setTokens(accessToken: string | null, refreshToken?: strin
   authToken = accessToken ?? null;
   if (typeof refreshToken !== 'undefined') refreshTokenInMemory = refreshToken ?? null;
   try {
-    const mod = await import('@react-native-async-storage/async-storage');
-    const AsyncStorage = (mod as any).default ?? mod;
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ accessToken: authToken, refreshToken: refreshTokenInMemory }));
-  } catch { }
+    if (authToken) await SecureStore.setItemAsync(ACCESS_KEY, authToken);
+    else await SecureStore.deleteItemAsync(ACCESS_KEY);
+    
+    if (refreshTokenInMemory) await SecureStore.setItemAsync(REFRESH_KEY, refreshTokenInMemory);
+    else await SecureStore.deleteItemAsync(REFRESH_KEY);
+  } catch (err) {
+    if (__DEV__) console.warn('Failed to save tokens', err);
+  }
 }
 
 export async function clearTokens() {
   authToken = null;
   refreshTokenInMemory = null;
-  try { const mod = await import('@react-native-async-storage/async-storage'); const AsyncStorage = (mod as any).default ?? mod; await AsyncStorage.removeItem(STORAGE_KEY); } catch { }
+  try { 
+    await SecureStore.deleteItemAsync(ACCESS_KEY);
+    await SecureStore.deleteItemAsync(REFRESH_KEY);
+  } catch (err) {
+    if (__DEV__) console.warn('Failed to clear tokens', err);
+  }
 }
 
 export const getAuthToken = () => authToken;
@@ -92,8 +101,13 @@ export class ApiError extends Error {
   body?: any;
   constructor(message: string, status?: number, body?: any) {
     super(message);
+    this.name = 'ApiError';
     this.status = status;
     this.body = body;
+  }
+  
+  toString() {
+    return `${this.name}: ${this.status ? `[${this.status}] ` : ''}${this.message}`;
   }
 }
 
@@ -165,7 +179,18 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
     // if enqueue failed silently, proceed to try remote fetch (will fail)
   }
   try {
-    const makeRequest = async () => await fetch(`${baseUrl}${endpoint}`, { ...options, headers });
+    const makeRequest = async () => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60000); // 60s timeout for slow AI endpoints
+      try {
+        const response = await fetch(`${baseUrl}${endpoint}`, { ...options, headers, signal: controller.signal });
+        clearTimeout(timeout);
+        return response;
+      } catch (err) {
+        clearTimeout(timeout);
+        throw err;
+      }
+    };
 
     let res = await makeRequest();
 
@@ -175,7 +200,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
       if (refreshed) {
         // attach new auth header and retry
         if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-        res = await fetch(`${baseUrl}${endpoint}`, { ...options, headers });
+        res = await makeRequest();
       }
     }
 
@@ -184,10 +209,19 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
       let parsed: any = undefined;
       try {
         parsed = JSON.parse(text);
-      } catch { }
+      } catch {
+        if (__DEV__) console.warn('Could not parse error response JSON:', text);
+      }
       const message = parsed?.message ?? text ?? `API error: ${res.status}`;
-      // show toast for non-2xx responses
-      toastError('Request failed', message);
+      
+      if (__DEV__) {
+        console.warn(`[API] ${options.method || 'GET'} ${endpoint} failed with ${res.status}: ${message}`);
+      }
+
+      // show toast for non-2xx responses unless suppressed
+      if (!(options as any).suppressToast) {
+        toastError('Request failed', message);
+      }
       throw new ApiError(message, res.status, parsed);
     }
 
@@ -220,12 +254,10 @@ export type MinimalUser = { id: string; name?: string; phone?: string; email?: s
 export const auth = {
   sendOtp: (phone: string, country?: string) => apiFetch<{ ok: boolean }>(API_ENDPOINTS.AUTH_SEND_OTP, {
     method: "POST",
-    // Send both variants to be compatible with different backend contracts
     body: JSON.stringify({ Phone: phone, phone_number: phone, phone: phone, Country: country }),
   }),
   verifyOtp: (phone: string, code: string) => apiFetch<{ token: string; user?: MinimalUser }>(API_ENDPOINTS.AUTH_VERIFY_OTP, {
     method: "POST",
-    // Send both OTP and otp plus phone variants to maximize compatibility
     body: JSON.stringify({
       Phone: phone,
       phone_number: phone,
@@ -234,6 +266,7 @@ export const auth = {
       otp: code,
       code: code,
       verification_code: code,
+      role: "farmer",
     }),
   }),
 };

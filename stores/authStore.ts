@@ -1,7 +1,8 @@
 // stores/authStore.ts
 import { PhoneValue } from "@/app/(auth)/login/components/PhoneInput";
 import { COUNTRIES } from "@/constants/countries";
-import { apiFetch, setAuthToken, setTokens } from "@/lib/api";
+import { apiFetch, clearTokens, loadTokensFromStorage, setAuthToken, setTokens } from "@/lib/api";
+import { getNormalizedPhone } from "@/utils/normalizePhone";
 import { API_ENDPOINTS } from "@/lib/apiEndpoints";
 import { toastError } from '@/lib/toast';
 import { useDebugStore } from "@/stores/debugStore";
@@ -53,25 +54,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return;
     }
 
-    // Ensure phone is in E.164 format for backend compatibility.
-    const getNormalized = (p: PhoneValue) => {
-      if (!p) return "";
-      let raw = p.raw ?? "";
-      if (raw.startsWith("+")) return raw;
-      // If number starts with leading 0 (local format), strip it
-      if (raw.startsWith("0")) raw = raw.replace(/^0+/, "");
-      // find country dial code
-      const c = COUNTRIES.find((x) => x.code === p.country);
-      if (c && c.dialCode) return `${c.dialCode}${raw}`;
-      // fallback: prefix plus
-      return `+${raw}`;
-    };
-    const normalizedPhone = getNormalized(phone);
+    const normalizedPhone = getNormalizedPhone(phone);
 
     set({ loading: true, error: null });
     try {
-      // Align with backend contract: expects `Phone` (capitalized)
-      // Include several common key variants to maximize backend compatibility
       const payload = {
         Phone: normalizedPhone,
         phone_number: normalizedPhone,
@@ -152,16 +138,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (!phone?.valid) throw new Error("No valid phone set");
 
       // Call backend to verify OTP and receive token + user
-      const getNormalized = (p: PhoneValue) => {
-        if (!p) return "";
-        let raw = p.raw ?? "";
-        if (raw.startsWith("+")) return raw;
-        if (raw.startsWith("0")) raw = raw.replace(/^0+/, "");
-        const c = COUNTRIES.find((x) => x.code === p.country);
-        if (c && c.dialCode) return `${c.dialCode}${raw}`;
-        return `+${raw}`;
-      };
-      const normalizedPhone = getNormalized(phone);
+      const normalizedPhone = getNormalizedPhone(phone);
 
       // Ensure code is exactly 6 digits (trim any whitespace)
       const cleanCode = code.trim();
@@ -170,7 +147,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       const payload = {
-        // Send several common key variants for compatibility with different backends
         Phone: normalizedPhone,
         phone_number: normalizedPhone,
         phone: normalizedPhone,
@@ -242,9 +218,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw new Error(`Invalid verification response: missing token (${respSummary})`);
       }
 
-      // Persist token to both SecureStore (legacy) and unified token storage
-      try { await SecureStore.setItemAsync("token", newToken); } catch { }
-      // Persist using new setTokens (will save to AsyncStorage and in-memory)
+      // Persist using new setTokens (will save to SecureStore and in-memory)
       try { await setTokens(newToken, newRefresh ?? null); } catch { }
       // Keep backwards-compatible in-memory token setter
       setAuthToken(newToken);
@@ -253,7 +227,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const onboardingStore = useOnboardingStore.getState();
       await onboardingStore.loadFromStorage();
 
-      set({ user: data.user ?? null, token: data.token, loading: false });
+      set({ user: data.user ?? null, token: newToken, loading: false });
 
       // After successful verification, kick off background synces (non-blocking)
       try {
@@ -289,28 +263,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     // Remove persisted token first
     try {
-      await SecureStore.deleteItemAsync("token");
+      await clearTokens();
+      await SecureStore.deleteItemAsync("token"); // Legacy clear
     } catch { }
     setAuthToken(null);
     set({ user: null, token: null });
 
+    // Clear all other stores
+    try {
+      (await import("@/stores/farmerStore")).useFarmerStore.getState().reset?.();
+      (await import("@/stores/requestsStore")).useRequestsStore.getState().reset?.();
+      (await import("@/stores/notificationStore")).useNotificationStore.getState().clear?.();
+    } catch { }
+
     if (mode === "dev") {
       // Dev: show sign-in and capture router state to debug store
-      try {
-        router.replace("/(auth)/login/signIn");
-      } catch {
-        try {
-          router.replace("/");
-          router.push("/(auth)/login/signIn");
-        } catch {
-          try {
-            router.replace("/(auth)/login/signIn");
-          } catch { }
-        }
-      }
+      setTimeout(() => {
+        try { router.dismissAll(); router.replace("/(auth)/login/signIn"); } catch { }
+      }, 0);
 
       try {
-
         const anyRouter: any = router as any;
         const maybeGetState = anyRouter.getState || anyRouter.getRootState || anyRouter.getInitialState;
         const state = typeof maybeGetState === "function" ? maybeGetState() : undefined;
@@ -322,14 +294,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       } catch { }
     } else {
       // Prod: conservative navigation to sign-in and index as previous route
-      try {
-        router.replace("/");
-        router.push("/(auth)/login/signIn");
-      } catch {
-        try {
-          router.replace("/(auth)/login/signIn");
-        } catch { }
-      }
+      setTimeout(() => {
+        try { router.dismissAll(); router.replace("/(auth)/login/signIn"); } catch { }
+      }, 0);
     }
   },
 
@@ -338,8 +305,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       // Prefer the token already loaded into api client memory, fall back to SecureStore
       const { getAuthToken } = await import('@/lib/api');
+      await loadTokensFromStorage();
       let token = getAuthToken();
-      if (!token) token = await SecureStore.getItemAsync("token");
+      if (!token) token = await SecureStore.getItemAsync("token"); // Legacy fallback
       if (token) {
         setAuthToken(token);
 

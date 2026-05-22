@@ -1,7 +1,6 @@
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { Calendar } from "lucide-react-native";
-import moment from "moment";
 import React, { useEffect, useReducer } from "react";
 import { Platform, Text, TouchableOpacity, View } from "react-native";
 
@@ -15,6 +14,15 @@ type Action =
   | { type: "setDob"; payload: Date }
   | { type: "setShowPicker"; payload: boolean };
 
+const formatDOB = (date: Date) => {
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const m = months[date.getMonth()];
+  const d = date.getDate();
+  const y = date.getFullYear();
+  const suffix = d % 10 === 1 && d !== 11 ? 'st' : d % 10 === 2 && d !== 12 ? 'nd' : d % 10 === 3 && d !== 13 ? 'rd' : 'th';
+  return `${m} ${d}${suffix}, ${y}`;
+};
+
 const DOBPicker = ({ label = "Date of Birth" }) => {
   const moreInfo = useOnboardingStore((state) => state.data.moreInfo);
   const updateData = useOnboardingStore((state) => state.updateData);
@@ -25,8 +33,8 @@ const DOBPicker = ({ label = "Date of Birth" }) => {
         const dob = action.payload;
         const today = new Date();
         let age = today.getFullYear() - dob.getFullYear();
-        const m = today.getMonth() - dob.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+        const mMonth = today.getMonth() - dob.getMonth();
+        if (mMonth < 0 || (mMonth === 0 && today.getDate() < dob.getDate())) age--;
         return { ...state, dob, age };
       case "setShowPicker":
         return { ...state, showPicker: action.payload };
@@ -73,7 +81,7 @@ const DOBPicker = ({ label = "Date of Birth" }) => {
       >
         <Text className={`text-base ${state.dob ? "text-gray-800" : "text-gray-400"}`}>
           {state.dob
-            ? moment(state.dob).format("MMMM Do, YYYY") + ` (${state.age} yrs)`
+            ? formatDOB(state.dob) + ` (${state.age} yrs)`
             : "Select your date of birth"}
         </Text>
         <Calendar size={20} className="text-gray-400" />

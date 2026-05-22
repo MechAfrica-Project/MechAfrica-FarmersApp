@@ -40,7 +40,8 @@ async function readQueue(): Promise<QueuedRequest[]> {
     const raw = await AsyncStorage.getItem(QUEUE_KEY);
     if (!raw) return [];
     return JSON.parse(raw) as QueuedRequest[];
-  } catch {
+  } catch (err) {
+    if (__DEV__) console.warn('Failed to read offline queue', err);
     return [];
   }
 }
@@ -50,8 +51,8 @@ async function writeQueue(queue: QueuedRequest[]) {
     const mod = await import('@react-native-async-storage/async-storage');
     const AsyncStorage = (mod as any).default ?? mod;
     await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
-  } catch {
-    // ignore
+  } catch (err) {
+    if (__DEV__) console.warn('Failed to write offline queue', err);
   }
 }
 
@@ -145,8 +146,9 @@ export async function processQueue() {
     try {
       // prefer in-memory/AsyncStorage-backed token from api client
       token = getAuthToken() ?? null;
-      if (!token) token = await SecureStore.getItemAsync('token');
-    } catch { }
+    } catch (err) {
+      if (__DEV__) console.warn('Failed to get token for offline queue', err);
+    }
 
     const remaining: QueuedRequest[] = [];
 
@@ -219,8 +221,11 @@ export async function processQueue() {
               } catch { }
             }
           }
-        } catch { }
-      } catch {
+        } catch (err) {
+          if (__DEV__) console.warn('Failed to process offline sync response mapping', err);
+        }
+      } catch (err) {
+        if (__DEV__) console.warn(`Request failed in offline queue, will retry. Endpoint: ${item.endpoint}`, err);
         item.attempts = (item.attempts ?? 0) + 1;
         if ((item.attempts ?? 0) >= 5) continue;
         const backoff = Math.min(60000, 1000 * Math.pow(2, item.attempts ?? 1)) + Math.floor(Math.random() * 1000);
@@ -288,7 +293,9 @@ export async function retryQueueItem(id: string) {
   try {
     token = getAuthToken() ?? null;
     if (!token) token = await SecureStore.getItemAsync('token');
-  } catch { }
+  } catch (err) {
+    if (__DEV__) console.warn('Failed to get token for retry', err);
+  }
 
   try {
     const res = await trySend(item, baseUrl, token ?? undefined);

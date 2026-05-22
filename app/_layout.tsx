@@ -1,6 +1,7 @@
 import CustomToast from "@/app/components/general/CustomToast";
 import OfflineQueueIndicator from "@/app/components/general/OfflineQueueIndicator";
 import RouterStateOverlay from "@/app/components/general/RouterStateOverlay";
+import ErrorBoundary from "@/app/components/general/ErrorBoundary";
 import ToastProviderWrapper from '@/app/components/ui/ToastProviderWrapper';
 import { loadTokensFromStorage } from '@/lib/api';
 import { startNetworkMonitoring } from "@/lib/network";
@@ -134,12 +135,13 @@ export default function RootLayout() {
     >
       {/* Register provider's imperative API to our lib/toast via hook inside the provider */}
       <ToastRegistrar />
-      <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-        <OfflineQueueIndicator />
-        <Stack screenOptions={{ headerShown: false }} />
-        <RouterStateOverlay />
+      <ErrorBoundary>
+        <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+          <OfflineQueueIndicator />
+          <Stack screenOptions={{ headerShown: false }} />
+          <RouterStateOverlay />
 
-        {/* App Version Check Modals */}
+          {/* App Version Check Modals */}
         <UpdateRequiredModal
           visible={storeUpdateRequired || storeUpdateOptional}
           isForce={storeUpdateRequired}
@@ -147,7 +149,8 @@ export default function RootLayout() {
           storeUrl={storeUrl}
           onDismiss={dismissSoftUpdate}
         />
-      </View>
+        </View>
+      </ErrorBoundary>
     </ToastProviderWrapper>
   );
 }

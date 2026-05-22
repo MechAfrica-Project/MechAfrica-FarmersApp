@@ -141,7 +141,7 @@ export const useTipsStore = create<TipsState>((set, get) => ({
     if (!token) return;
 
     try {
-      await apiFetch(endpoints.tipView(tipId), { method: "POST" });
+      await apiFetch(endpoints.tipView(tipId), { method: "POST", suppressToast: true } as RequestInit);
 
       // Update local state
       set((state) => ({
@@ -150,7 +150,9 @@ export const useTipsStore = create<TipsState>((set, get) => ({
         ),
       }));
     } catch (err: any) {
-      console.error("Failed to mark tip as viewed:", err);
+      if (__DEV__) {
+        console.warn(`Failed to mark tip as viewed [${err?.status || 'Unknown'}]: ${err?.message || err}`);
+      }
     }
   },
 

@@ -21,19 +21,22 @@ type RequestsState = {
   restoreRequest: (req: Request) => void;
   addRequest: (req: Omit<Request, "id" | "status">) => Promise<void>;
   updateRequestDetails: (id: string, extraComment?: string, voiceNoteUri?: string | null) => Promise<void>;
+  updateRequestDetails: (id: string, extraComment?: string, voiceNoteUri?: string | null) => Promise<void>;
   fetchRequests: () => Promise<void>;
+  reset: () => void;
 };
 
 // helper removed (unused): indexById
 
 const computeListsByStatus = (
   byId: Record<string, Request>
-): Record<RequestStatus, Request[]> => ({
-  pending: Object.values(byId).filter((r) => r.status === "pending"),
-  ongoing: Object.values(byId).filter((r) => r.status === "ongoing"),
-  completed: Object.values(byId).filter((r) => r.status === "completed"),
-  cancelled: Object.values(byId).filter((r) => r.status === "cancelled"),
-});
+): Record<RequestStatus, Request[]> => {
+  const result: Record<RequestStatus, Request[]> = { pending: [], ongoing: [], completed: [], cancelled: [] };
+  for (const r of Object.values(byId)) {
+    if (result[r.status]) result[r.status].push(r);
+  }
+  return result;
+};
 
 // Helper to reliably translate backend snake_case nested models to frontend camelCase Request interface
 const mapBackendRequestToFrontend = (rawInput: any): Request => {
@@ -280,7 +283,10 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
       } catch (err: any) {
         console.warn("fetchRequests failed", err);
         set({ loading: false, error: err?.message || "Failed to fetch requests" });
+        set({ loading: false, error: err?.message || "Failed to fetch requests" });
       }
     },
+
+    reset: () => set({ byId: {}, listsByStatus: computeListsByStatus({}), error: null }),
   };
 });

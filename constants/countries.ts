@@ -16,5 +16,12 @@ export const COUNTRIES: Country[] = [
     flag: "🇬🇭",
     numberLength: 9,
   },
-  // Only Ghana is supported for now per product requirement
+  {
+    code: "NG", // Nigeria
+    name: "Nigeria",
+    dialCode: "+234",
+    flag: "🇳🇬",
+    numberLength: 10,
+  },
+  // add more countries later safely
 ];

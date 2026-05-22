@@ -181,7 +181,13 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
       set((s) => ({ currentStep: Math.max(0, Math.min(n, s.totalSteps - 1)) })),
 
     updateData: (patch: Partial<OnboardingData>) =>
-      set((s) => ({ data: deepMerge(s.data, patch) })),
+      set((s) => {
+        const newData = deepMerge(s.data, patch);
+        SecureStore.setItemAsync("onboardingData", JSON.stringify(newData)).catch((err) => {
+          if (__DEV__) console.warn('Failed to persist onboardingData', err);
+        });
+        return { data: newData };
+      }),
 
     reset: () => set({ currentStep: 0, data: defaultData }),
 
