@@ -4,7 +4,7 @@
     "slug": "mechafrica-farmers-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/mechafrica.png",
+    "icon": "./assets/images/mechafrica_square.jpg",
     "scheme": "farmers",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -27,7 +27,7 @@
     "android": {
       "package": "com.mechafrica.farmer",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/mechafrica.png",
+        "foregroundImage": "./assets/images/mechafrica_square.jpg",
         "backgroundColor": "#FCFF3B"
       },
       "edgeToEdgeEnabled": true,
@@ -51,7 +51,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#FCFF3B",
       "dark": {
-        "image": "./assets/images/mechafrica.png",
+        "image": "./assets/images/mechafrica_dark.png",
         "backgroundColor": "#000000"
       }
     },
@@ -63,7 +63,7 @@
           "backgroundColor": "#FCFF3B",
           "image": "./assets/images/mechafrica.png",
           "dark": {
-            "image": "./assets/images/mechafrica.png",
+            "image": "./assets/images/mechafrica_dark.png",
             "backgroundColor": "#000000"
           },
           "imageWidth": 200
@@ -73,7 +73,19 @@
       "expo-audio",
       "expo-font",
       "expo-updates",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/mechafrica-square.jpg",
+          "color": "#ffffff",
+          "sounds": [],
+          "android": {
+            "channelId": "default"
+          }
+        }
+      ],
       "expo-web-browser",
+      "@react-native-community/datetimepicker",
       "./plugins/withAdiRegistration.js"
     ],
     "experiments": {
