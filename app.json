@@ -4,7 +4,7 @@
     "slug": "mechafrica-farmers-app",
     "version": "1.1.2",
     "orientation": "portrait",
-    "icon": "./assets/images/mechafrica_square.jpg",
+    "icon": "./assets/images/mechafrica-square.jpg",
     "scheme": "farmers",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -28,7 +28,7 @@
     "android": {
       "package": "com.mechafrica.farmer",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/mechafrica_square.jpg",
+        "foregroundImage": "./assets/images/mechafrica-square.jpg",
         "backgroundColor": "#FCFF3B"
       },
       "edgeToEdgeEnabled": true,
