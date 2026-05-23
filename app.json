@@ -21,7 +21,8 @@
         "googleMapsApiKey": ""
       },
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "We need your location to show your farm location on the map."
+        "NSLocationWhenInUseUsageDescription": "We need your location to show your farm location on the map.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -92,9 +93,9 @@
       "typedRoutes": true
     },
     "extra": {
-      "note": "Values (apiUrl, google maps keys) are loaded from app.config.js which reads .env; do not store secrets here.",
-      "apiUrl": "EXPO_PUBLIC_API_BASE_URL (loaded via app.config.js)",
-      "apiBaseUrl": "EXPO_PUBLIC_API_BASE_URL (loaded via app.config.js)",
+      "note": "Values (apiUrl, google maps keys) are injected at build-time from env via app.config.js.",
+      "apiUrl": null,
+      "apiBaseUrl": null,
       "eas": {
         "projectId": "481cec85-cb63-4658-8d4f-7d240a57ff67"
       }
