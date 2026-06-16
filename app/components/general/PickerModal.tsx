@@ -106,7 +106,6 @@ const PickerModal = ({ visible, mode, value, onChange, onClose }: PickerModalPro
   if (Platform.OS === "android") {
     return (
       <DateTimePicker
-        key={`picker-${mode}-${pickerKey}`}
         value={displayValue}
         mode={mode}
         display="default"
@@ -131,7 +130,6 @@ const PickerModal = ({ visible, mode, value, onChange, onClose }: PickerModalPro
         >
           <View style={{ height: pickerHeight, justifyContent: "center" }}>
             <DateTimePicker
-              key={`picker-${mode}-${pickerKey}`}
               value={displayValue}
               mode={mode}
               display="spinner"
