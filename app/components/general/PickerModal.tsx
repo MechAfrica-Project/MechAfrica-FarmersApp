@@ -101,6 +101,22 @@ const PickerModal = ({ visible, mode, value, onChange, onClose }: PickerModalPro
     return null;
   }
 
+  // On Android, mounting DateTimePicker natively opens a Dialog.
+  // Wrapping it in a React Native Modal causes a double-popup.
+  if (Platform.OS === "android") {
+    return (
+      <DateTimePicker
+        key={`picker-${mode}-${pickerKey}`}
+        value={displayValue}
+        mode={mode}
+        display="default"
+        onChange={handlePickerChange}
+        minimumDate={mode === "date" ? new Date() : undefined}
+      />
+    );
+  }
+
+  // On iOS, DateTimePicker is an inline view, so we wrap it in a beautiful custom Modal
   return (
     <Modal visible={visible} transparent animationType="slide">
       <Pressable
@@ -110,7 +126,7 @@ const PickerModal = ({ visible, mode, value, onChange, onClose }: PickerModalPro
       >
         <Pressable
           style={{ marginHorizontal: modalPadding, width: screen.width * 0.9 }}
-          className="bg-white rounded-lg overflow-hidden"
+          className="bg-white rounded-xl overflow-hidden"
           onPress={(e) => e.stopPropagation()}
         >
           <View style={{ height: pickerHeight, justifyContent: "center" }}>
@@ -129,7 +145,7 @@ const PickerModal = ({ visible, mode, value, onChange, onClose }: PickerModalPro
           <Pressable
             onPress={handleDone}
             style={{ height: buttonHeight }}
-            className="bg-green-700 justify-center rounded-b-lg"
+            className="bg-green-700 justify-center rounded-b-xl"
           >
             <Text
               style={{ fontSize: buttonFontSize }}
