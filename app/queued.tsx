@@ -2,8 +2,11 @@ import { clearQueue, getQueue, processQueue, removeFromQueue, retryQueueItem } f
 import { toastError, toastInfo, toastSuccess } from '@/lib/toast';
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { ChevronLeft } from "lucide-react-native";
 
 export default function QueuedScreen() {
+  const router = useRouter();
   const [items, setItems] = useState<any[]>([]);
   const [busyIds, setBusyIds] = useState<Record<string, boolean>>({});
   const [globalBusy, setGlobalBusy] = useState(false);
@@ -55,7 +58,15 @@ export default function QueuedScreen() {
   return (
     <View style={{ flex: 1, padding: 16, paddingTop: 40, backgroundColor: "#f9fafb" }}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <Text style={{ fontSize: 20, fontWeight: "700" }}>Queued Items</Text>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Pressable 
+            onPress={() => router.back()} 
+            style={{ marginRight: 12, padding: 8, backgroundColor: "white", borderRadius: 9999, elevation: 1, shadowColor: "#000", shadowOffset: {width: 0, height: 1}, shadowOpacity: 0.05, shadowRadius: 2 }}
+          >
+            <ChevronLeft size={24} color="#374151" />
+          </Pressable>
+          <Text style={{ fontSize: 20, fontWeight: "700" }}>Queued Items</Text>
+        </View>
         <View style={{ flexDirection: "row" }}>
           <Pressable onPress={retryAll} style={{ marginRight: 8, backgroundColor: "#10B981", padding: 8, borderRadius: 8 }}>
             {globalBusy ? (

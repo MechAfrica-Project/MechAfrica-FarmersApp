@@ -44,7 +44,17 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
       prev.includes(crop) ? prev.filter((c) => c !== crop) : [...prev, crop]
     );
 
+  const isValid = 
+    farmName.trim() !== "" && 
+    farmSize.toString().trim() !== "" && 
+    region !== "" && 
+    district !== "" && 
+    cropTypes.length > 0;
+
+  const isButtonDisabled = saving || !isValid;
+
   const handleSave = () => {
+    if (!isValid) return;
     if (
       !farmName ||
       !farmSize ||
@@ -160,38 +170,43 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
             </View>
 
             {/* Region */}
-            <Pressable onPress={() => setRegionModal(true)} className="mt-5">
-              <Text className="text-sm font-semibold mb-1">Region</Text>
-              <View className="border p-3 rounded-lg bg-gray-50">
+            <TouchableOpacity 
+              onPress={() => setRegionModal(true)} 
+              className="mt-5"
+              activeOpacity={0.7}
+            >
+              <Text className="text-sm font-bold text-gray-800 mb-1 font-mulish">Region</Text>
+              <View className="border border-gray-200 p-4 rounded-2xl bg-gray-50 shadow-sm">
                 <Text
-                  className={`text-gray-700 ${region ? "font-medium" : "text-gray-400"
+                  className={`font-mulish ${region ? "text-gray-800 font-bold" : "text-gray-400 font-medium"
                     }`}
                 >
                   {region || "Select Region"}
                 </Text>
               </View>
-            </Pressable>
+            </TouchableOpacity>
 
             {/* District */}
-            <Pressable
+            <TouchableOpacity
               onPress={() => setDistrictModal(true)}
               disabled={!region}
               className="mt-4"
+              activeOpacity={0.7}
             >
-              <Text className="text-sm font-semibold mb-1">District</Text>
-              <View className="border p-3 rounded-lg bg-gray-50">
+              <Text className="text-sm font-bold text-gray-800 mb-1 font-mulish">District</Text>
+              <View className={`border p-4 rounded-2xl shadow-sm ${!region ? "border-gray-100 bg-gray-50 opacity-60" : "border-gray-200 bg-gray-50"}`}>
                 <Text
-                  className={`text-gray-700 ${district ? "font-medium" : "text-gray-400"
+                  className={`font-mulish ${district ? "text-gray-800 font-bold" : "text-gray-400 font-medium"
                     }`}
                 >
                   {district || "Select District"}
                 </Text>
               </View>
-            </Pressable>
+            </TouchableOpacity>
 
             {/* Crop Types */}
             <View className="mt-6">
-              <Text className="text-base font-semibold text-gray-800 mb-3">
+              <Text className="text-base font-bold text-gray-800 mb-3 font-mulish">
                 Crop Types
               </Text>
               <View className="flex-row flex-wrap">
@@ -202,16 +217,16 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
                       key={crop}
                       onPress={() => toggleCrop(crop)}
                       activeOpacity={0.8}
-                      className={`flex-row items-center px-4 py-2 mr-2 mb-2 rounded-full ${selected ? "bg-green-700" : "bg-gray-100"
+                      className={`flex-row items-center px-4 py-2 mr-2 mb-2 rounded-xl border ${selected ? "bg-emerald-700 border-emerald-700" : "bg-white border-gray-200 shadow-sm"
                         }`}
                     >
                       <Sprout
                         size={14}
                         color={selected ? "#fff" : "#4B5563"}
-                        className="mr-1"
+                        className="mr-2"
                       />
                       <Text
-                        className={`text-sm font-semibold ${selected ? "text-white" : "text-gray-800"
+                        className={`text-sm font-bold font-mulish ${selected ? "text-white" : "text-gray-700"
                           }`}
                       >
                         {crop}
@@ -224,24 +239,33 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
           </ScrollView>
 
           {/* Actions */}
-          <View className="flex-row justify-end mt-6">
-            <Pressable onPress={onClose} className="mr-3 px-4 py-2 rounded-lg" disabled={saving}>
-              <Text className="text-gray-600 font-medium">Cancel</Text>
-            </Pressable>
-            <Pressable
-              onPress={handleSave}
-              className="bg-green-600 px-6 py-2 rounded-lg"
+          <View className="flex-row items-center space-x-3 mt-6 pt-4 border-t border-gray-100">
+            <TouchableOpacity 
+              onPress={onClose} 
+              className="flex-1 py-4 bg-gray-50 rounded-2xl items-center border border-gray-200" 
               disabled={saving}
+              activeOpacity={0.7}
+            >
+              <Text className="text-gray-700 font-bold font-mulish text-base">Cancel</Text>
+            </TouchableOpacity>
+            
+            <View style={{ width: 12 }} />
+
+            <TouchableOpacity
+              onPress={handleSave}
+              className={`flex-1 py-4 rounded-2xl items-center shadow-sm ${isButtonDisabled ? "bg-gray-300 shadow-none" : "bg-emerald-700"}`}
+              disabled={isButtonDisabled}
+              activeOpacity={0.8}
             >
               {saving ? (
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-                  <Text className="text-white font-semibold">Saving...</Text>
+                  <Text className="text-white font-bold font-mulish text-base">Saving...</Text>
                 </View>
               ) : (
-                <Text className="text-white font-semibold">Save</Text>
+                <Text className={`font-bold font-mulish text-base ${isButtonDisabled ? "text-gray-500" : "text-white"}`}>Save Farm</Text>
               )}
-            </Pressable>
+            </TouchableOpacity>
           </View>
         </View>
       </KeyboardAvoidingView>

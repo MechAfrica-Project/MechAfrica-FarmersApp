@@ -1,39 +1,56 @@
 import React from "react";
-import { View, Text, ScrollView, TouchableOpacity, Dimensions } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { View, Text, ScrollView, TouchableOpacity, Dimensions, Pressable } from "react-native";
+import { useRouter } from "expo-router";
+import { ChevronLeft, ShieldCheck, AlertTriangle, Users } from "lucide-react-native";
 
 const { width } = Dimensions.get("window");
 
 // Reusable component for guidelines
-const GuidelineCard = ({ icon, text }: { icon: string; text: string }) => (
-  <View className="flex-row items-start bg-white p-4 rounded-xl shadow mb-3">
-    <Ionicons name={icon as any} size={28} color="#10B981" className="mr-3" />
-    <Text className="text-gray-700 text-base flex-1">{text}</Text>
+const GuidelineCard = ({ text }: { text: string }) => (
+  <View className="flex-row items-start bg-white p-4 rounded-2xl shadow-sm mb-3 border border-gray-100">
+    <View className="bg-green-50 p-2 rounded-full mr-3 mt-1">
+      <ShieldCheck size={20} color="#047857" />
+    </View>
+    <Text className="text-gray-700 text-sm flex-1 leading-5 font-mulish mt-1">
+      {text}
+    </Text>
   </View>
 );
 
 // Reusable component for action buttons
 const ActionButton = ({
-  icon,
+  icon: Icon,
   label,
   onPress,
+  bgClass = "bg-white",
+  iconBgClass = "bg-gray-50",
+  textClass = "text-gray-800",
+  iconColor = "#047857"
 }: {
-  icon: string;
+  icon: any;
   label: string;
   onPress?: () => void;
+  bgClass?: string;
+  iconBgClass?: string;
+  textClass?: string;
+  iconColor?: string;
 }) => (
   <TouchableOpacity
     onPress={onPress}
-    className="bg-green-800 rounded-xl py-4 mb-3 items-center"
-    style={{ width: width / 2 - 20 }}
+    className={`${bgClass} rounded-2xl p-5 mb-3 items-center shadow-sm border border-gray-100`}
+    style={{ width: (width / 2) - 24 }}
   >
-    <Ionicons name={icon as any} size={28} color="white" />
-    <Text className="text-white font-semibold mt-2 text-center">{label}</Text>
+    <View className={`${iconBgClass} p-3 rounded-full mb-3`}>
+      <Icon size={24} color={iconColor} />
+    </View>
+    <Text className={`${textClass} font-bold text-center text-sm font-mulish`}>
+      {label}
+    </Text>
   </TouchableOpacity>
 );
 
 const Security = () => {
+  const router = useRouter();
   const guidelines = [
     "Do not engage service providers off the platform to ensure security.",
     "Verify all service requests and payments through the app.",
@@ -42,29 +59,49 @@ const Security = () => {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      {/* Header */}
-      <View className="bg-green-800 pt-12 pb-5 px-4 rounded-b-3xl">
-        <Text className="text-white text-2xl font-bold">Security</Text>
-        <Text className="text-white/80 mt-1 text-sm">
+    <View className="flex-1 bg-gray-50">
+      {/* Header aligned with Farms screen */}
+      <View className="flex-row items-center px-4 pt-14 pb-2">
+        <Pressable 
+          onPress={() => router.back()} 
+          className="mr-3 p-2 bg-white rounded-full shadow-sm"
+        >
+          <ChevronLeft size={24} color="#374151" />
+        </Pressable>
+        <Text className="text-2xl font-bold text-gray-900 font-mulish">Security</Text>
+      </View>
+      <View className="px-4 mb-4">
+        <Text className="text-gray-500 text-sm font-mulish">
           Follow these guidelines to keep your farm and transactions safe
         </Text>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 32 }} className="px-4 mt-4">
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }} className="px-4 mt-2">
         {/* Guidelines */}
         {guidelines.map((text, index) => (
-          <GuidelineCard key={index} icon="shield-checkmark-outline" text={text} />
+          <GuidelineCard key={index} text={text} />
         ))}
 
         {/* Quick Actions */}
-        <Text className="text-gray-700 font-semibold mt-6 mb-2 text-lg">Quick Actions</Text>
+        <Text className="text-gray-900 font-bold mt-8 mb-4 text-lg font-mulish">
+          Quick Actions
+        </Text>
         <View className="flex-row flex-wrap justify-between">
-          <ActionButton icon="alert-circle-outline" label="Report Incident" />
-          <ActionButton icon="people-outline" label="Verified Service Providers" />
+          <ActionButton 
+            icon={AlertTriangle} 
+            label="Report Incident" 
+            iconBgClass="bg-red-50"
+            iconColor="#DC2626"
+          />
+          <ActionButton 
+            icon={Users} 
+            label="Verified Providers" 
+            iconBgClass="bg-green-50"
+            iconColor="#047857"
+          />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
