@@ -32,6 +32,7 @@ interface FarmerState {
   removeFarm: (id: string) => Promise<void>;
   // Restore a farm (used for Undo flows)
   restoreFarm: (farm: Farm) => void;
+  reset: () => void;
 }
 
 export const useFarmerStore = create<FarmerState>((set, get) => {
@@ -511,5 +512,6 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
         if (s.farms.find((f) => f.id === farm.id)) return { farms: s.farms };
         return { farms: [...s.farms, farm] };
       }),
+    reset: () => set({ profile: null, farms: [], selectedFarmId: null, selectedCrop: null, error: null }),
   };
 });

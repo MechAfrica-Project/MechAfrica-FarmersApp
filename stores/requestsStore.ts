@@ -21,7 +21,6 @@ type RequestsState = {
   restoreRequest: (req: Request) => void;
   addRequest: (req: Omit<Request, "id" | "status">) => Promise<void>;
   updateRequestDetails: (id: string, extraComment?: string, voiceNoteUri?: string | null) => Promise<void>;
-  updateRequestDetails: (id: string, extraComment?: string, voiceNoteUri?: string | null) => Promise<void>;
   fetchRequests: () => Promise<void>;
   reset: () => void;
 };
