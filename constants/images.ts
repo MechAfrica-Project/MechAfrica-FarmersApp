@@ -3,6 +3,7 @@ import mechafrica from "@/assets/images/mechafrica.png";
 import cereal from "@/assets/images/cereal.png";
 import farmerSales from "@/assets/images/farmerSales.png";
 import farmerWelcome from "@/assets/images/farmerWelcome.png";
+import farmerWelcomeLady from "@/assets/images/farmerWelcome_lady.png";
 import farmer from "@/assets/images/farmer.png";
 import harvesting from "@/assets/images/harvesting.png";
 import ploughing from "@/assets/images/ploughing.png";
@@ -25,6 +26,7 @@ export const images = {
   cereal,
   farmerSales,
   farmerWelcome,
+  farmerWelcomeLady,
   farmer,
   harvesting,
   ploughing,

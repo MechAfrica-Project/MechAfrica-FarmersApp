@@ -47,6 +47,15 @@ const WelcomeAndUpdates = () => {
     data.personalInfo?.lastName ||
     "";
 
+  // Get the farmer's gender from profile or onboarding data
+  const farmerGender =
+    profile?.moreInfo?.gender ||
+    data.moreInfo?.gender ||
+    "";
+
+  const isFemale = farmerGender.toLowerCase() === "female";
+  const welcomeImage = isFemale ? images.farmerWelcomeLady : images.farmerWelcome;
+
   // Animation for refresh button
   const spinValue = useRef(new Animated.Value(0)).current;
   const spinAnimation = useRef<Animated.CompositeAnimation | null>(null);
@@ -233,7 +242,7 @@ const WelcomeAndUpdates = () => {
 
       {/* Right section (farmer + maize) */}
       <View pointerEvents="none" className="absolute bottom-0 right-0 z-10">
-        <Image source={images.farmerWelcome} />
+        <Image source={welcomeImage} />
       </View>
       <View pointerEvents="none" className="absolute bottom-0 right-0">
         <Image source={images.cereal} style={{ height: 130, width: 130 }} />
