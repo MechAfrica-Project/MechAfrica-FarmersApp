@@ -2,7 +2,7 @@
 import PrimaryButton from "@/app/components/general/PrimaryButton";
 import { toastError } from '@/lib/toast';
 import { useAuthStore } from "@/stores/authStore";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation } from "expo-router";
 import React, { useEffect } from "react";
 import { Text, View } from "react-native";
 import AuthLayout from "./components/AuthLayout";
