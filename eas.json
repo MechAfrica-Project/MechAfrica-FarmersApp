@@ -13,6 +13,11 @@
     },
     "preview": {
       "channel": "preview",
+      "env": {
+        "NODE_ENV": "production",
+        "NODE_OPTIONS": "--max-old-space-size=4096",
+        "CI": "1"
+      },
       "android": {
         "buildType": "apk"
       },
