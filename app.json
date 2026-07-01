@@ -47,6 +47,16 @@
     },
     "plugins": [
       "expo-asset",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraPrefs": {
+              "org.gradle.jvmargs": "-Xmx3g -XX:MaxMetaspaceSize=512m"
+            }
+          }
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",
