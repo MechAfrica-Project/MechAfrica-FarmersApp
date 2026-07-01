@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
-import { getAuthToken } from '@/lib/apiClient';
+import { getAuthToken } from '@/lib/api';
 import { getApiUrlOrPlaceholder } from '@/lib/env';
 
 export interface WebSocketMessage {

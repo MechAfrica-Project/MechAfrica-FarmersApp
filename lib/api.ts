@@ -32,6 +32,7 @@ import * as SecureStore from 'expo-secure-store';
 
 const ACCESS_KEY = 'mechafrica_accessToken';
 const REFRESH_KEY = 'mechafrica_refreshToken';
+const DEFAULT_BASE = "https://mechafrica-backend.up.railway.app";
 
 export async function loadTokensFromStorage(): Promise<void> {
   try {
