@@ -258,10 +258,20 @@ export async function apiFetch<T>(endpoint: string, options: ApiRequestOptions =
     return text as unknown as T;
   } catch (err: any) {
     // Network or other unexpected errors
-    if (options.suppressToast !== true) {
-      toastError('Network error', err?.message ?? String(err));
+    const rawMsg = err?.message ?? String(err);
+    let userMsg = rawMsg;
+    if (rawMsg.includes('UnknownHostException') || rawMsg.includes('Network request failed') || rawMsg.includes('fetch failed')) {
+      userMsg = "You appear to be offline or the server is unreachable. Please check your connection.";
     }
-    throw err;
+
+    if (options.suppressToast !== true) {
+      toastError('Network error', userMsg);
+    }
+    if (err instanceof Error) {
+      err.message = userMsg;
+      throw err;
+    }
+    throw new Error(userMsg);
   }
 }
 

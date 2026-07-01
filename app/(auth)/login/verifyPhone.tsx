@@ -1,6 +1,7 @@
 import PrimaryButton from "@/app/components/general/PrimaryButton";
 import ShakeableView, { ShakeableViewRef } from "@/app/components/general/ShakeableView";
 import { useAuthStore } from "@/stores/authStore";
+import { AlertCircle } from "lucide-react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { OtpInput, OtpInputRef } from "react-native-otp-entry";
@@ -74,6 +75,8 @@ export default function VerifyPhone() {
       const success = await verifyOtp(codeToVerify);
       if (!success) {
         wrapperRef.current?.shake();
+        otpInputRef.current?.clear();
+        setCode("");
       }
     } finally {
       isVerifyingRef.current = false;
@@ -140,9 +143,12 @@ export default function VerifyPhone() {
             </ShakeableView>
 
             {error && (
-              <Text className="text-red-500 mb-3 text-center font-mulish">
-                {error}
-              </Text>
+              <View className="bg-red-50 px-4 py-3 rounded-2xl mb-5 flex-row items-center border border-red-100">
+                <AlertCircle size={18} color="#DC2626" />
+                <Text className="text-red-600 flex-1 ml-2 font-mulish text-sm leading-tight">
+                  {error}
+                </Text>
+              </View>
             )}
 
             {showRateLimitHint && (

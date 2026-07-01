@@ -1,9 +1,11 @@
 import PrimaryButton from "@/app/components/general/PrimaryButton";
+import ShakeableView, { ShakeableViewRef } from "@/app/components/general/ShakeableView";
 import { useAuthStore } from "@/stores/authStore";
 import { useOnboardingStore } from "@/stores/onboardingStore";
-import React, { useCallback, useEffect, useState } from "react";
+import { AlertCircle } from "lucide-react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-import { OtpInput } from "react-native-otp-entry";
+import { OtpInput, OtpInputRef } from "react-native-otp-entry";
 
 const RESEND_SECONDS = 30;
 
@@ -27,6 +29,9 @@ export default function PhoneVerificationStep() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [localError, setLocalError] = useState<string | null>(null);
   const [autoRequested, setAutoRequested] = useState(false);
+
+  const wrapperRef = useRef<ShakeableViewRef>(null);
+  const otpInputRef = useRef<OtpInputRef>(null);
 
   const phoneDisplay = phoneValue?.formatted || phoneValue?.raw || "";
   const cooldownRemaining = otpCooldownUntil ? Math.max(0, Math.ceil((otpCooldownUntil - Date.now()) / 1000)) : 0;
@@ -83,6 +88,7 @@ export default function PhoneVerificationStep() {
       const codeToUse = overrideCode ?? code;
       if (!codeToUse || codeToUse.length < 6) {
         setLocalError("Please enter the full verification code.");
+        wrapperRef.current?.shake();
         return;
       }
       setLocalError(null);
@@ -91,6 +97,9 @@ export default function PhoneVerificationStep() {
         updateData({ personalInfo: { otpVerified: true } });
       } else {
         updateData({ personalInfo: { otpVerified: false } });
+        wrapperRef.current?.shake();
+        otpInputRef.current?.clear();
+        setCode("");
       }
     },
     [code, updateData, verifyOtp]
@@ -105,30 +114,36 @@ export default function PhoneVerificationStep() {
       </Text>
 
       <View className="items-center mb-6">
-        <OtpInput
-          numberOfDigits={6}
-          type="numeric"
-          focusColor="#10B981"
-          hideStick
-          onTextChange={setCode}
-          onFilled={(val) => {
-            setCode(val);
-            handleVerify(val);
-          }}
-          textInputProps={{
-            className:
-              "border-gray-300 text-center text-xl font-bold rounded-2xl w-14 h-14 bg-white mx-1",
-          }}
-          textProps={{
-            allowFontScaling: false,
-          }}
-        />
+        <ShakeableView ref={wrapperRef}>
+          <OtpInput
+            ref={otpInputRef}
+            numberOfDigits={6}
+            type="numeric"
+            focusColor="#10B981"
+            hideStick
+            onTextChange={setCode}
+            onFilled={(val) => {
+              setCode(val);
+              handleVerify(val);
+            }}
+            textInputProps={{
+              className:
+                "border-gray-300 text-center text-xl font-bold rounded-2xl w-14 h-14 bg-white mx-1",
+            }}
+            textProps={{
+              allowFontScaling: false,
+            }}
+          />
+        </ShakeableView>
       </View>
 
       {(localError || globalError) && (
-        <Text className="text-red-500 text-center mb-3 font-mulish">
-          {localError || globalError}
-        </Text>
+        <View className="bg-red-50 px-4 py-3 rounded-2xl mb-5 flex-row items-center border border-red-100">
+          <AlertCircle size={18} color="#DC2626" />
+          <Text className="text-red-600 flex-1 ml-2 font-mulish text-sm leading-tight">
+            {localError || globalError}
+          </Text>
+        </View>
       )}
 
       {showRateLimitHint && (

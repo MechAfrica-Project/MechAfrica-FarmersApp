@@ -14,6 +14,7 @@ import SentRequests from "@/app/components/servicesTabs/SentRequests";
 import OnGoingRequests from "@/app/components/servicesTabs/OnGoingRequests";
 import CompletedRequests from "@/app/components/servicesTabs/CompletedRequests";
 import CancelledRequests from "@/app/components/servicesTabs/CancelledRequests";
+import { WifiOff } from "lucide-react-native";
 
 type TabType = "Sent" | "On-going" | "Completed" | "Cancelled";
 
@@ -25,6 +26,8 @@ const Requests = () => {
   const fetchRequests = useRequestsStore((s) => s.fetchRequests);
   const loading = useRequestsStore((s) => s.loading);
   const error = useRequestsStore((s) => s.error);
+  const byId = useRequestsStore((s) => s.byId);
+  const hasRequests = Object.keys(byId).length > 0;
   const [refreshing, setRefreshing] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
 
@@ -72,14 +75,16 @@ const Requests = () => {
       );
     }
 
-    // Show error state with retry option
-    if (error && !loading) {
+    // Show error state with retry option only if there is no cached data
+    if (error && !loading && !hasRequests) {
       return (
         <View className="flex-1 justify-center items-center px-6">
-          <Text className="text-red-500 text-center mb-4 font-mulish">{error}</Text>
+          <WifiOff size={48} color="#9CA3AF" strokeWidth={1.5} style={{ marginBottom: 16 }} />
+          <Text className="text-gray-800 font-semibold text-lg mb-2 font-mulish">No Connection</Text>
+          <Text className="text-gray-500 text-center mb-6 font-mulish">{error}</Text>
           <TouchableOpacity
             onPress={onRefresh}
-            className="bg-green-600 px-6 py-3 rounded-full"
+            className="bg-green-600 px-8 py-3 rounded-full flex-row items-center justify-center"
           >
             <Text className="text-white font-semibold">Retry</Text>
           </TouchableOpacity>
