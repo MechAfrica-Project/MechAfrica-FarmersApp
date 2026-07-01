@@ -156,7 +156,11 @@ async function doRefresh(): Promise<boolean> {
   }
 }
 
-export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+export interface ApiRequestOptions extends RequestInit {
+  suppressToast?: boolean;
+}
+
+export async function apiFetch<T>(endpoint: string, options: ApiRequestOptions = {}): Promise<T> {
   const baseUrl = getBaseUrl();
 
   // ensure we don't accidentally share headers reference
@@ -218,8 +222,19 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
         console.warn(`[API] ${options.method || 'GET'} ${endpoint} failed with ${res.status}: ${message}`);
       }
 
-      // show toast for non-2xx responses unless suppressed
-      if (!(options as any).suppressToast) {
+      // UX Overhaul: 4xx Client Errors (Form Validation, Bad Requests) should not show a global toast.
+      // They should be handled inline. 5xx Server Errors should show toasts.
+      const isClientError = res.status >= 400 && res.status < 500;
+      const userRequestedSuppress = options.suppressToast === true;
+      
+      let shouldSuppressToast = false;
+      if (userRequestedSuppress) {
+        shouldSuppressToast = true;
+      } else if (isClientError) {
+        shouldSuppressToast = true;
+      }
+      
+      if (!shouldSuppressToast && options.suppressToast !== true) {
         toastError('Request failed', message);
       }
       throw new ApiError(message, res.status, parsed);
@@ -242,7 +257,9 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
     return text as unknown as T;
   } catch (err: any) {
     // Network or other unexpected errors
-    toastError('Network error', err?.message ?? String(err));
+    if (options.suppressToast !== true) {
+      toastError('Network error', err?.message ?? String(err));
+    }
     throw err;
   }
 }

@@ -1,3 +1,4 @@
+import { useWebSocket } from '@/hooks/useWebSocket';
 import CustomToast from "@/app/components/general/CustomToast";
 import OfflineQueueIndicator from "@/app/components/general/OfflineQueueIndicator";
 import RouterStateOverlay from "@/app/components/general/RouterStateOverlay";
@@ -23,6 +24,8 @@ import UpdateRequiredModal from "./components/general/UpdateRequiredModal";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  useWebSocket();
+
   const restoreSession = useAuthStore((s) => s.restoreSession);
   const token = useAuthStore((s) => s.token);
   const authLoading = useAuthStore((s) => s.loading);
