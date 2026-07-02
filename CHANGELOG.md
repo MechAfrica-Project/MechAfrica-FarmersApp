@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/compare/v1.1.2...v1.2.0) (2026-07-02)
+
+
+### Features
+
+* add reset method to farmerStore and clean up redundant requestStore definition ([d7ff3b1](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/d7ff3b130f3e3082e0d4abce4452d40aa3654383))
+* display gender-specific welcome illustration based on farmer profile data ([83cb59a](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/83cb59a434f4f7c32f2c3ed00bf0e94b6f993b22))
+* implement farm validation and UI enhancements for add and edit modals ([b3207a6](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/b3207a69e43d8ee330f0d1542c83d1f01e608bae))
+* improve error handling and feedback with enhanced UI styling and offline state management across verification and request screens. ([a0f9288](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/a0f928835aeb5337ab6d7f352016bef4cab1661a))
+
+
+### Bug Fixes
+
+* remove redundant key props from DateTimePicker and update tsconfig compiler options ([f8872fd](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/f8872fd1898512537ea4f6ae8300ff54a40d42c9))
+* render DateTimePicker natively on Android and update modal styling to rounded-xl ([96eb544](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/96eb5447cff4d38a47f4f5d7580c15fd917a23cc))
+
+
+### Refactoring
+
+* enhance CustomToast and ErrorBoundary UI with blur effects, refined typography, and improved error messaging ([bdcedfe](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/bdcedfe6ff496ab1db1fa652571bdc0840363f47))
+* update navigation import from @react-navigation/native to expo-router ([3987b9d](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/3987b9d527bfe9dfaecb6bd8a850621c0a6f5c29))
+
 ### [1.1.3](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/compare/v1.1.2...v1.1.3) (2026-05-23)
 
 ### [1.1.2](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/compare/v1.1.1...v1.1.2) (2026-05-23)
