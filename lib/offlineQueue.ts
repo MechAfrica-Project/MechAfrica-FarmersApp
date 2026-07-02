@@ -1,4 +1,4 @@
-import { getAuthToken } from '@/lib/api';
+import { getAuthToken, uploadFile } from '@/lib/api';
 import * as SecureStore from 'expo-secure-store';
 import Constants from 'expo-constants';
 import { API_ENDPOINTS } from './apiEndpoints';
@@ -85,52 +85,33 @@ async function trySend(item: QueuedRequest, baseUrl: string, token?: string) {
   const isUpload = item.endpoint === API_ENDPOINTS.UPLOADS;
 
   if (isUpload && item.body && item.body.uri) {
-    const form = new FormData();
-    // @ts-ignore - RN FormData uses { uri, name, type }
-    form.append('file', { uri: item.body.uri, name: item.body.name ?? 'upload.jpg', type: item.body.type ?? 'image/jpeg' } as any);
-    // append other fields if present
-    if (item.body.fields && typeof item.body.fields === 'object') {
-      for (const k of Object.keys(item.body.fields)) form.append(k, item.body.fields[k]);
-    }
-
-    const headers: Record<string, string> = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-    const res = await fetch(url, { method: item.method, body: form as any, headers });
-    return res;
+    // Use the proven uploadFile() helper that uses @ts-ignore to bypass Expo winter-fetch issues
+    const uploadRes = await uploadFile(
+      item.endpoint,
+      { uri: item.body.uri, name: item.body.name ?? 'upload.jpg', type: item.body.type ?? 'image/jpeg' }
+    );
+    // Return a synthetic Response-like object so processQueue can handle it uniformly
+    return new Response(JSON.stringify(uploadRes), { status: 200 });
   }
 
   // Intercept payload to upload any local audio files before sending the JSON body
   if (!isUpload && item.body && typeof item.body === 'object') {
     const localUri = item.body.voiceNoteUrl || item.body.voice_note_url;
     if (typeof localUri === 'string' && localUri.startsWith('file://')) {
-      const form = new FormData();
-      // @ts-ignore
-      form.append('file', { uri: localUri, name: 'voicenote.m4a', type: 'audio/m4a' } as any);
-      
-      const uploadHeaders: Record<string, string> = {};
-      if (token) uploadHeaders['Authorization'] = `Bearer ${token}`;
-      
-      const uploadRes = await fetch(`${baseUrl}${API_ENDPOINTS.UPLOADS}`, {
-        method: 'POST',
-        headers: uploadHeaders,
-        body: form as any,
-      });
-
-      if (uploadRes.ok) {
-        try {
-          const uploadData = await uploadRes.json();
-          if (uploadData && uploadData.url) {
-            // Replace local URI with the remote URL
-            if (item.body.voiceNoteUrl) item.body.voiceNoteUrl = uploadData.url;
-            if (item.body.voice_note_url) item.body.voice_note_url = uploadData.url;
-          }
-        } catch (e) {
-          if (__DEV__) console.warn('Failed to parse audio upload response during offline sync', e);
+      try {
+        const uploadData: any = await uploadFile(
+          API_ENDPOINTS.UPLOADS,
+          { uri: localUri, name: 'voicenote.m4a', type: 'audio/m4a' }
+        );
+        if (uploadData && uploadData.url) {
+          // Replace local URI with the remote URL
+          if (item.body.voiceNoteUrl) item.body.voiceNoteUrl = uploadData.url;
+          if (item.body.voice_note_url) item.body.voice_note_url = uploadData.url;
         }
-      } else {
-        // If the upload fails (e.g. 500 error), we return the failed response so processQueue retries the whole item
-        return uploadRes;
+      } catch (e) {
+        if (__DEV__) console.warn('Failed to upload audio during offline sync', e);
+        // Rethrow so processQueue retries the whole item
+        throw e;
       }
     }
   }

@@ -6,6 +6,7 @@ import { API_ENDPOINTS } from "./apiEndpoints";
 import { API_URL_PLACEHOLDER, resolveApiUrlRaw } from './env';
 import { UploadResult } from './types';
 import Constants from 'expo-constants';
+import { uploadAsync, FileSystemUploadType } from 'expo-file-system/legacy';
 
 // offline enqueue helper: enqueue write requests when offline
 async function enqueueIfOffline(method: string, endpoint: string, body?: any) {
@@ -338,34 +339,65 @@ export const farmer = {
 };
 
 /**
- * Upload helper: performs multipart/form-data upload and returns parsed JSON.
- * Note: in React Native (Expo) FormData usage varies; pass `file` as { uri, name, type }.
+ * Upload helper: performs multipart/form-data upload using expo-file-system's
+ * uploadAsync, which bypasses the Expo winter-fetch layer entirely.
+ * This is the ONLY reliable way to upload local file:// URIs in Expo SDK 56+.
  */
 export async function uploadFile(endpoint: string, file: { uri: string; name?: string; type?: string }, fieldName = "file"): Promise<UploadResult | any> {
   const baseUrl = getBaseUrl();
-  const form = new FormData();
-  // @ts-ignore - React Native expects an object with uri/name/type
-  form.append(fieldName, { uri: file.uri, name: file.name ?? "upload.jpg", type: file.type ?? "image/jpeg" });
+  const url = `${baseUrl}${endpoint}`;
 
   const headers: Record<string, string> = {};
   if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
 
-  const res = await fetch(`${baseUrl}${endpoint}`, {
-    method: "POST",
-    body: form as any,
+  const res = await uploadAsync(url, file.uri, {
+    httpMethod: "POST",
+    uploadType: FileSystemUploadType.MULTIPART,
+    fieldName,
+    mimeType: file.type ?? "application/octet-stream",
+    parameters: {},
     headers,
   });
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new ApiError(text || `Upload failed: ${res.status}`, res.status);
+  if (res.status === 401) {
+    const refreshed = await doRefresh();
+    if (refreshed && authToken) {
+      headers["Authorization"] = `Bearer ${authToken}`;
+      const retryRes = await uploadAsync(url, file.uri, {
+        httpMethod: "POST",
+        uploadType: FileSystemUploadType.MULTIPART,
+        fieldName,
+        mimeType: file.type ?? "application/octet-stream",
+        parameters: {},
+        headers,
+      });
+      if (retryRes.status < 200 || retryRes.status >= 300) {
+        const message = `Upload error: ${retryRes.status}`;
+        toastError('Upload failed', message);
+        throw new ApiError(message, retryRes.status);
+      }
+      try {
+        return JSON.parse(retryRes.body);
+      } catch {
+        return retryRes.body;
+      }
+    }
+  }
+
+  if (res.status < 200 || res.status >= 300) {
+    let parsed: any = undefined;
+    try { parsed = JSON.parse(res.body); } catch { }
+    const message = parsed?.message ?? `Upload error: ${res.status}`;
+    toastError('Upload failed', message);
+    throw new ApiError(message, res.status);
   }
 
   try {
-    return (await res.json()) as UploadResult;
+    return JSON.parse(res.body);
   } catch {
-    return await res.text();
+    return res.body;
   }
+
 }
 
 export async function apiUpload<T>(endpoint: string, formData: FormData): Promise<T> {

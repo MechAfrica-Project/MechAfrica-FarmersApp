@@ -45,4 +45,6 @@ export type Request = {
   messageFromFarmer?: string;
   voiceNoteUrl?: string | null;
   asset?: Asset;
+  farmLatitude?: number;
+  farmLongitude?: number;
 };

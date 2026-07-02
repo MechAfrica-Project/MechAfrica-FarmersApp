@@ -1,4 +1,4 @@
-import { apiFetch, apiUpload } from "@/lib/api";
+import { apiFetch, uploadFile } from "@/lib/api";
 import { API_ENDPOINTS } from "@/lib/apiEndpoints";
 import { Request, RequestStatus } from "@/types/request";
 import { create } from "zustand";
@@ -54,6 +54,8 @@ const mapBackendRequestToFrontend = (rawInput: any): Request => {
     serviceDetails: raw.extra_comment || "",
     farmerName: raw.farmer ? `${raw.farmer.user?.first_name || raw.farmer.first_name || ""} ${raw.farmer.user?.last_name || raw.farmer.last_name || ""}`.trim() : "Unknown Farmer",
     farmLocation: raw.farmLocation || (raw.farmer?.farm_name) || raw.farm_name || "Unknown Farm",
+    farmLatitude: raw.farmLatitude ?? raw.latitude ?? raw.farmer?.latitude ?? raw.farm_latitude ?? undefined,
+    farmLongitude: raw.farmLongitude ?? raw.longitude ?? raw.farmer?.longitude ?? raw.farm_longitude ?? undefined,
     providerName: raw.service_provider?.company_name || "Unassigned",
     startDateTime: raw.start_date || new Date().toISOString(),
     endDateTime: raw.end_date || new Date().toISOString(),
@@ -160,23 +162,18 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
       try {
         let finalVoiceNoteUrl = req.voiceNoteUrl;
 
-        // If it's a local file URI from expo-audio, upload it first to our unified Supabase storage
+        // If it's a local file URI from expo-audio, upload it first
         if (finalVoiceNoteUrl && finalVoiceNoteUrl.startsWith("file://")) {
           try {
-            const formData = new FormData();
-            formData.append("file", {
-              uri: finalVoiceNoteUrl,
-              name: "voicenote.m4a",
-              type: "audio/m4a",
-            } as any);
-
-            const uploadRes: any = await apiUpload(API_ENDPOINTS.UPLOADS, formData);
+            const uploadRes: any = await uploadFile(
+              API_ENDPOINTS.UPLOADS,
+              { uri: finalVoiceNoteUrl, name: "voicenote.m4a", type: "audio/m4a" }
+            );
             if (uploadRes && uploadRes.url) {
               finalVoiceNoteUrl = uploadRes.url;
             }
           } catch (uploadErr) {
-            console.error("Audio upload failed:", uploadErr);
-            // Non-fatal: the request can still be submitted, but audio playback will fail remotely
+            console.error("Voice note upload failed:", uploadErr);
           }
         }
 
@@ -218,16 +215,16 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
 
         // If it's a local file URI, upload it first
         if (voiceNoteUri && voiceNoteUri.startsWith("file://")) {
-          const formData = new FormData();
-          formData.append("file", {
-            uri: voiceNoteUri,
-            name: "voicenote_edit.m4a",
-            type: "audio/m4a",
-          } as any);
-
-          const uploadRes: any = await apiUpload(API_ENDPOINTS.UPLOADS, formData);
-          if (uploadRes && uploadRes.url) {
-            finalVoiceNoteUrl = uploadRes.url;
+          try {
+            const uploadRes: any = await uploadFile(
+              API_ENDPOINTS.UPLOADS,
+              { uri: voiceNoteUri, name: "voicenote_edit.m4a", type: "audio/m4a" }
+            );
+            if (uploadRes && uploadRes.url) {
+              finalVoiceNoteUrl = uploadRes.url;
+            }
+          } catch (uploadErr) {
+            console.error("Audio upload failed:", uploadErr);
           }
         }
 

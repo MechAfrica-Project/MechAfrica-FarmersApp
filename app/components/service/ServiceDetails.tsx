@@ -2,6 +2,7 @@ import { servicesData } from "@/constants/servicesData";
 import { useFarmerStore } from "@/stores/farmerStore";
 import { useRequestsStore } from "@/stores/requestsStore";
 import { useServiceFlowStore } from "@/stores/serviceFlowStore";
+import { toastError } from "@/lib/toast";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
@@ -68,14 +69,25 @@ const ServiceDetails = () => {
               // assemble request from draft and small defaults
               const farmerName = profile?.personalInfo?.firstName || "Farmer";
 
-              // Use selected farm from draft, fallback to first farm
+              // Use selected farm from draft
               const selectedFarm = draft.farmId
                 ? farms.find(f => f.id === draft.farmId)
-                : farms[0];
-              const farmLocation = selectedFarm?.farmName || "Unknown farm";
+                : null;
+                
+              if (!selectedFarm) {
+                toastError("Required Field", "Please select a farm to proceed.");
+                return;
+              }
+              
+              const farmLocation = selectedFarm.farmName || "Unknown farm";
 
-              // Use selected crop from draft, fallback to first crop of selected farm
-              const selectedCrop = draft.crop || selectedFarm?.cropTypes?.[0];
+              // Use selected crop from draft
+              const selectedCrop = draft.crop;
+              
+              if (!selectedCrop) {
+                toastError("Required Field", "Please select a crop type to proceed.");
+                return;
+              }
 
               const newReq: any = {
                 serviceId: draft.serviceId || "",
@@ -84,7 +96,9 @@ const ServiceDetails = () => {
                 serviceImage: service?.image,
                 farmerName,
                 farmLocation,
-                farmId: draft.farmId || selectedFarm?.id,
+                farmLatitude: selectedFarm.latitude,
+                farmLongitude: selectedFarm.longitude,
+                farmId: selectedFarm.id,
                 providerName: "",
                 startDateTime: draft.startDate || new Date().toISOString(),
                 endDateTime: draft.endDate || new Date().toISOString(),

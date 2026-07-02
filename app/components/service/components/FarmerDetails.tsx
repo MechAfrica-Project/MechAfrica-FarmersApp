@@ -156,6 +156,7 @@ type DropdownButtonProps = {
   placeholder: string;
   onPress: () => void;
   disabled?: boolean;
+  required?: boolean;
 };
 
 const DropdownButton = ({
@@ -164,10 +165,11 @@ const DropdownButton = ({
   placeholder,
   onPress,
   disabled = false,
+  required = false,
 }: DropdownButtonProps) => (
   <View style={{ paddingVertical: 12 }}>
     <Text style={{ color: "#374151", fontWeight: "500", marginBottom: 4 }}>
-      {label}:
+      {label}{required && <Text style={{ color: "#EF4444" }}> *</Text>}:
     </Text>
     <TouchableOpacity
       onPress={onPress}
@@ -299,12 +301,7 @@ const FarmerDetails = ({
     dispatch({ type: "SET_CROP", payload: crop });
   };
 
-  const onChange = (event: any, selectedDate?: Date) => {
-    if (event?.type === "dismissed") {
-      setShowPicker({ type: null });
-      return;
-    }
-
+  const onValueChange = (event: any, selectedDate?: Date) => {
     if (selectedDate && showPicker.type) {
       const actionType = `SET_${showPicker.type.toUpperCase()}` as Action["type"];
       dispatch({ type: actionType, payload: selectedDate } as Action);
@@ -313,6 +310,10 @@ const FarmerDetails = ({
     if (Platform.OS === "android") {
       setShowPicker({ type: null });
     }
+  };
+
+  const onDismiss = () => {
+    setShowPicker({ type: null });
   };
 
   const dateTimeFields = [
@@ -356,6 +357,7 @@ const FarmerDetails = ({
         value={state.selectedFarm?.farmName}
         placeholder="Select Farm"
         onPress={() => setShowFarmModal(true)}
+        required={true}
       />
 
       {/* Crop Dropdown */}
@@ -365,6 +367,7 @@ const FarmerDetails = ({
         placeholder="Select Crop"
         onPress={() => setShowCropModal(true)}
         disabled={!state.selectedFarm}
+        required={true}
       />
 
       {/* Farm Selection Modal */}
@@ -395,7 +398,8 @@ const FarmerDetails = ({
           mode={showPicker.type.includes("Date") ? "date" : "time"}
           value={state[showPicker.type]}
           display={Platform.OS === "ios" ? "spinner" : "default"}
-          onChange={onChange}
+          onValueChange={onValueChange}
+          onDismiss={onDismiss}
         />
       )}
     </View>

@@ -16,7 +16,7 @@ const HeaderBar: React.FC<Props> = ({ title, onMarkAllRead }) => {
       <View className="flex-row items-center">
         <TouchableOpacity 
           onPress={() => router.back()} 
-          className="mr-3 p-2 bg-white rounded-full shadow-sm border border-gray-100"
+          className="mr-3 p-2 bg-white rounded-full shadow-sm"
           activeOpacity={0.6}
         >
           <ChevronLeft size={24} color="#374151" />

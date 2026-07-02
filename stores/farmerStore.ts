@@ -12,6 +12,8 @@ export type Farm = {
   cropTypes: string[];
   region: string;
   district: string;
+  latitude?: number;
+  longitude?: number;
 };
 
 interface FarmerState {
@@ -220,6 +222,8 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
           cropTypes: farm.cropTypes || farm.crop_types || [],
           region: farm.region || "Unknown Region",
           district: farm.district || "Unknown District",
+          latitude: farm.latitude ?? farm.location?.latitude ?? farm.lat ?? data.profile?.farmLocation?.latitude ?? undefined,
+          longitude: farm.longitude ?? farm.location?.longitude ?? farm.lng ?? data.profile?.farmLocation?.longitude ?? undefined,
         }));
 
         if (__DEV__) {
