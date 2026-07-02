@@ -20,6 +20,7 @@ import {
   View,
 } from "react-native";
 import InputField from "../../onboarding/InputField";
+import FarmLocationPicker from "../components/FarmLocationPicker";
 
 type EditFarmModalProps = {
   visible: boolean;
@@ -35,6 +36,8 @@ const EditFarmModal = ({ visible, onClose, farm }: EditFarmModalProps) => {
   const [region, setRegion] = useState("");
   const [district, setDistrict] = useState("");
   const [cropTypes, setCropTypes] = useState<string[]>([]);
+  const [latitude, setLatitude] = useState<number | undefined>();
+  const [longitude, setLongitude] = useState<number | undefined>();
   const [focused, setFocused] = useState<string | null>(null);
   const [regionModal, setRegionModal] = useState(false);
   const [districtModal, setDistrictModal] = useState(false);
@@ -48,6 +51,8 @@ const EditFarmModal = ({ visible, onClose, farm }: EditFarmModalProps) => {
       setRegion(farm.region || "");
       setDistrict(farm.district || "");
       setCropTypes(farm.cropTypes || []);
+      setLatitude(farm.latitude);
+      setLongitude(farm.longitude);
     }
   }, [farm, visible]);
 
@@ -72,6 +77,8 @@ const EditFarmModal = ({ visible, onClose, farm }: EditFarmModalProps) => {
     farmSize !== (farm?.farmSize?.toString() || "") || 
     region !== (farm?.region || "") || 
     district !== (farm?.district || "") || 
+    latitude !== farm?.latitude ||
+    longitude !== farm?.longitude ||
     cropsChanged;
 
   const isButtonDisabled = saving || !isValid || !hasChanges;
@@ -107,12 +114,13 @@ const EditFarmModal = ({ visible, onClose, farm }: EditFarmModalProps) => {
     }
 
     const updatedFarm: Farm = {
-      id: farm.id,
+      ...farm,
       farmName,
       farmSize: parseFloat(farmSize),
       region,
       district,
       cropTypes,
+      ...(latitude && longitude ? { latitude, longitude } : {})
     };
 
     (async () => {
@@ -201,6 +209,15 @@ const EditFarmModal = ({ visible, onClose, farm }: EditFarmModalProps) => {
                 Acre
               </Text>
             </View>
+
+            {/* Location Picker */}
+            <FarmLocationPicker
+              value={latitude && longitude ? { latitude, longitude } : null}
+              onChange={(coords) => {
+                setLatitude(coords.latitude);
+                setLongitude(coords.longitude);
+              }}
+            />
 
             {/* Region */}
             <TouchableOpacity 

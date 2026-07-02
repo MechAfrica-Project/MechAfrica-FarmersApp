@@ -117,7 +117,6 @@ const FarmLocationStep = () => {
             ref={mapRef}
             style={{ flex: 1 }}
             initialRegion={DEFAULT_REGION}
-            provider="google"
           >
             {state.marker && (
               <Marker

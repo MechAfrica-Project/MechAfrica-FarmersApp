@@ -48,6 +48,8 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
       cropTypes: onboardingData.farmInfo.cropTypes || [],
       region: onboardingData.location?.region || "Unknown Region",
       district: onboardingData.location?.district || "Unknown District",
+      latitude: onboardingData.farmLocation?.latitude,
+      longitude: onboardingData.farmLocation?.longitude,
     }
     : null;
 
@@ -258,6 +260,8 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
               cropTypes: backendOnboardingFarmInfo.cropTypes || [],
               region: data.profile?.location?.region || "Unknown Region",
               district: data.profile?.location?.district || "Unknown District",
+              latitude: data.profile?.farmLocation?.latitude,
+              longitude: data.profile?.farmLocation?.longitude,
             }
             : null;
 

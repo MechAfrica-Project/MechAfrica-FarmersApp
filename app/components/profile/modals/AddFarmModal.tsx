@@ -20,6 +20,7 @@ import {
   View,
 } from "react-native";
 import InputField from "../../onboarding/InputField";
+import FarmLocationPicker from "../components/FarmLocationPicker";
 
 type AddFarmModalProps = {
   visible: boolean;
@@ -34,6 +35,8 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
   const [region, setRegion] = useState("");
   const [district, setDistrict] = useState("");
   const [cropTypes, setCropTypes] = useState<string[]>([]);
+  const [latitude, setLatitude] = useState<number | undefined>();
+  const [longitude, setLongitude] = useState<number | undefined>();
   const [focused, setFocused] = useState<string | null>(null);
   const [regionModal, setRegionModal] = useState(false);
   const [districtModal, setDistrictModal] = useState(false);
@@ -84,6 +87,7 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
       region,
       district,
       cropTypes,
+      ...(latitude && longitude ? { latitude, longitude } : {})
     };
 
     // show a local saving state while addFarm resolves
@@ -98,6 +102,8 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
         setRegion("");
         setDistrict("");
         setCropTypes([]);
+        setLatitude(undefined);
+        setLongitude(undefined);
         onClose();
       } catch {
         // swallow - store shows toast on error; keep modal open for retry
@@ -168,6 +174,15 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
                 Acre
               </Text>
             </View>
+
+            {/* Location Picker */}
+            <FarmLocationPicker
+              value={latitude && longitude ? { latitude, longitude } : null}
+              onChange={(coords) => {
+                setLatitude(coords.latitude);
+                setLongitude(coords.longitude);
+              }}
+            />
 
             {/* Region */}
             <TouchableOpacity 
