@@ -78,15 +78,24 @@ const Requests = () => {
     // Show error state with retry option only if there is no cached data
     if (error && !loading && !hasRequests) {
       return (
-        <View className="flex-1 justify-center items-center px-6">
-          <WifiOff size={48} color="#9CA3AF" strokeWidth={1.5} style={{ marginBottom: 16 }} />
-          <Text className="text-gray-800 font-semibold text-lg mb-2 font-mulish">No Connection</Text>
-          <Text className="text-gray-500 text-center mb-6 font-mulish">{error}</Text>
+        <View className="flex-1 justify-center items-center px-6 pb-20">
+          <View className="w-24 h-24 rounded-full bg-red-50 flex items-center justify-center mb-6 shadow-sm shadow-red-100/50">
+            <WifiOff size={40} color="#EF4444" strokeWidth={1.5} />
+          </View>
+          <Text className="text-gray-900 font-bold text-2xl mb-3 font-mulish text-center">
+            You're offline
+          </Text>
+          <Text className="text-gray-500 text-center mb-8 font-mulish text-base leading-relaxed max-w-[280px]">
+            {error === "You appear to be offline or the server is unreachable. Please check your connection."
+              ? "We couldn't reach our servers. Please check your internet connection and try again."
+              : error}
+          </Text>
           <TouchableOpacity
             onPress={onRefresh}
-            className="bg-green-600 px-8 py-3 rounded-full flex-row items-center justify-center"
+            activeOpacity={0.8}
+            className="bg-primary-green px-8 py-4 rounded-2xl flex-row items-center justify-center w-full shadow-sm shadow-primary-green/30"
           >
-            <Text className="text-white font-semibold">Retry</Text>
+            <Text className="text-white font-bold text-base font-mulish">Try Again</Text>
           </TouchableOpacity>
         </View>
       );

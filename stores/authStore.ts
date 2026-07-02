@@ -83,7 +83,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
     } catch (err: any) {
       // Try to extract a useful message from the thrown error and detect rate-limits
-      let msg = err?.message ?? "Failed to send code";
+      let msg = err?.message || "Failed to send code";
+      if (msg.includes("Too Many Requests")) {
+        msg = "Too many attempts. Please wait a moment and try again.";
+      }
       try {
         if (err?.body) {
           const bodyObj = typeof err.body === 'string' ? JSON.parse(err.body || '{}') : err.body;
@@ -246,7 +249,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
       return true;
     } catch (err: any) {
-      const msg = err?.message ?? "Verification failed";
+      const msg = err?.message || "Verification failed";
       toastError('Verification failed', msg);
       set({ error: msg, loading: false });
       return false;

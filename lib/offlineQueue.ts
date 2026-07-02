@@ -345,4 +345,30 @@ export async function _test_setQueue(items: QueuedRequest[]) {
   await writeQueue(items);
 }
 
-export default { enqueueRequest, processQueue, getQueue, clearQueue, removeFromQueue, retryQueueItem, _test_setQueue };
+// ---- Cache helpers ----
+// Store and retrieve GET responses for offline fallback
+const CACHE_PREFIX = 'offline_cache_';
+
+export async function setCache(endpoint: string, data: any) {
+  try {
+    const mod = await import('@react-native-async-storage/async-storage');
+    const AsyncStorage = (mod as any).default ?? mod;
+    await AsyncStorage.setItem(CACHE_PREFIX + endpoint, JSON.stringify(data));
+  } catch (err) {
+    if (__DEV__) console.warn(`Failed to set cache for ${endpoint}`, err);
+  }
+}
+
+export async function getCache(endpoint: string) {
+  try {
+    const mod = await import('@react-native-async-storage/async-storage');
+    const AsyncStorage = (mod as any).default ?? mod;
+    const val = await AsyncStorage.getItem(CACHE_PREFIX + endpoint);
+    return val ? JSON.parse(val) : null;
+  } catch (err) {
+    if (__DEV__) console.warn(`Failed to get cache for ${endpoint}`, err);
+    return null;
+  }
+}
+
+export default { enqueueRequest, processQueue, getQueue, clearQueue, removeFromQueue, retryQueueItem, _test_setQueue, setCache, getCache };

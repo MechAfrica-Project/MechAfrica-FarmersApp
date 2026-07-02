@@ -226,6 +226,7 @@ export async function apiFetch<T>(endpoint: string, options: ApiRequestOptions =
       // UX Overhaul: 4xx Client Errors (Form Validation, Bad Requests) should not show a global toast.
       // They should be handled inline. 5xx Server Errors should show toasts.
       const isClientError = res.status >= 400 && res.status < 500;
+      const isAuthEndpoint = endpoint.includes('/auth/');
       const userRequestedSuppress = options.suppressToast === true;
       
       let shouldSuppressToast = false;
@@ -233,9 +234,11 @@ export async function apiFetch<T>(endpoint: string, options: ApiRequestOptions =
         shouldSuppressToast = true;
       } else if (isClientError) {
         shouldSuppressToast = true;
+      } else if (isAuthEndpoint) {
+        shouldSuppressToast = true; // Let authStore handle auth errors to avoid duplicate toasts
       }
       
-      if (!shouldSuppressToast && options.suppressToast !== true) {
+      if (!shouldSuppressToast) {
         toastError('Request failed', message);
       }
       throw new ApiError(message, res.status, parsed);
@@ -245,7 +248,12 @@ export async function apiFetch<T>(endpoint: string, options: ApiRequestOptions =
     const contentType = res.headers.get("content-type") ?? "";
     if (contentType.includes("application/json")) {
       try {
-        return (await res.json()) as T;
+        const parsedData = await res.json();
+        // If it's a successful GET, attempt to update cache (fire and forget)
+        if (method === 'GET' && !endpoint.includes('/auth/')) {
+          import('./offlineQueue').then(q => q.setCache(endpoint, parsedData)).catch(() => {});
+        }
+        return parsedData as T;
       } catch {
         const msg = "Failed to parse JSON response";
         toastError('Response error', msg);
@@ -257,6 +265,18 @@ export async function apiFetch<T>(endpoint: string, options: ApiRequestOptions =
     const text = await res.text();
     return text as unknown as T;
   } catch (err: any) {
+    // If it's a GET request and we failed, try to fallback to cache
+    if (method === 'GET' && !endpoint.includes('/auth/')) {
+      try {
+        const queue = await import('./offlineQueue');
+        const cached = await queue.getCache(endpoint);
+        if (cached !== null) {
+          if (__DEV__) console.log(`[API] Fallback to cache for ${endpoint}`);
+          return cached as T;
+        }
+      } catch { }
+    }
+
     // Network or other unexpected errors
     const rawMsg = err?.message ?? String(err);
     let userMsg = rawMsg;
@@ -264,7 +284,8 @@ export async function apiFetch<T>(endpoint: string, options: ApiRequestOptions =
       userMsg = "You appear to be offline or the server is unreachable. Please check your connection.";
     }
 
-    if (options.suppressToast !== true) {
+    const isAuthEndpoint = endpoint.includes('/auth/');
+    if (options.suppressToast !== true && !isAuthEndpoint) {
       toastError('Network error', userMsg);
     }
     if (err instanceof Error) {
