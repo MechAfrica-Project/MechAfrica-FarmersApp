@@ -100,6 +100,41 @@ async function trySend(item: QueuedRequest, baseUrl: string, token?: string) {
     return res;
   }
 
+  // Intercept payload to upload any local audio files before sending the JSON body
+  if (!isUpload && item.body && typeof item.body === 'object') {
+    const localUri = item.body.voiceNoteUrl || item.body.voice_note_url;
+    if (typeof localUri === 'string' && localUri.startsWith('file://')) {
+      const form = new FormData();
+      // @ts-ignore
+      form.append('file', { uri: localUri, name: 'voicenote.m4a', type: 'audio/m4a' } as any);
+      
+      const uploadHeaders: Record<string, string> = {};
+      if (token) uploadHeaders['Authorization'] = `Bearer ${token}`;
+      
+      const uploadRes = await fetch(`${baseUrl}${API_ENDPOINTS.UPLOADS}`, {
+        method: 'POST',
+        headers: uploadHeaders,
+        body: form as any,
+      });
+
+      if (uploadRes.ok) {
+        try {
+          const uploadData = await uploadRes.json();
+          if (uploadData && uploadData.url) {
+            // Replace local URI with the remote URL
+            if (item.body.voiceNoteUrl) item.body.voiceNoteUrl = uploadData.url;
+            if (item.body.voice_note_url) item.body.voice_note_url = uploadData.url;
+          }
+        } catch (e) {
+          if (__DEV__) console.warn('Failed to parse audio upload response during offline sync', e);
+        }
+      } else {
+        // If the upload fails (e.g. 500 error), we return the failed response so processQueue retries the whole item
+        return uploadRes;
+      }
+    }
+  }
+
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
