@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/compare/v1.2.0...v1.3.0) (2026-07-02)
+
+
+### Features
+
+* add automatic audio file upload to offline queue before JSON payload transmission ([30f2a31](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/30f2a31017069ed791a2ab00b89e35abab9d918b))
+* implement API request caching, offline fallback, and improved offline error UI ([244054c](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/244054cc2f3371360cb7d4bd174ce8df8cfa1b65))
+* refactor file uploads using expo-file-system, add location fields to requests, and implement map navigation for farm locations. ([68727fd](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/68727fdf9d907be704cd9a1d0066660d3271ca4f))
+
 ## [1.2.0](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/compare/v1.1.2...v1.2.0) (2026-07-02)
 
 
