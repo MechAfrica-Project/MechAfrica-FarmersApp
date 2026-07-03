@@ -471,13 +471,15 @@ function MapRoute({
       <Layer
         id={layerId}
         type="line"
-        style={{
-          lineColor: color,
-          lineWidth: width,
-          lineOpacity: opacity,
-          ...(dashArray && { lineDasharray: dashArray }),
-          lineJoin: "round",
-          lineCap: "round",
+        paint={{
+          "line-color": color,
+          "line-width": width,
+          "line-opacity": opacity,
+          ...(dashArray && { "line-dasharray": dashArray }),
+        }}
+        layout={{
+          "line-join": "round",
+          "line-cap": "round",
         }}
       />
     </GeoJSONSource>

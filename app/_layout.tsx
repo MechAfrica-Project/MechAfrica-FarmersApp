@@ -1,12 +1,11 @@
 import { useWebSocket } from '@/hooks/useWebSocket';
-import CustomToast from "@/app/components/general/CustomToast";
 import OfflineQueueIndicator from "@/app/components/general/OfflineQueueIndicator";
 import RouterStateOverlay from "@/app/components/general/RouterStateOverlay";
 import ErrorBoundary from "@/app/components/general/ErrorBoundary";
-import ToastProviderWrapper from '@/app/components/ui/ToastProviderWrapper';
+import Toast from "react-native-toast-message";
+import { toastConfig } from "./components/general/ToastConfig";
 import { loadTokensFromStorage } from '@/lib/api';
 import { startNetworkMonitoring } from "@/lib/network";
-import { setToastRef } from '@/lib/toast';
 import { useAuthStore } from "@/stores/authStore";
 import { useFarmerStore } from "@/stores/farmerStore";
 import { useNotificationStore } from "@/stores/notificationStore";
@@ -16,7 +15,6 @@ import { Stack, useSegments, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect } from "react";
 import { View } from "react-native";
-import { useToast } from 'react-native-toast-notifications';
 import "./globals.css";
 import { useAppUpdateCheck } from "@/hooks/useAppUpdateCheck";
 import UpdateRequiredModal from "./components/general/UpdateRequiredModal";
@@ -113,38 +111,13 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <ToastProviderWrapper
-      placement="top"
-      duration={4000}
-      offsetTop={50} // Adjusted for better positioning across devices
-      offsetBottom={40}
-      animationType="slide-in"
-      animationDuration={250} // Slightly faster animation
-      swipeEnabled={true}
-      renderToast={(toast: any) => (
-        <CustomToast
-          message={toast.message}
-          type={toast.type as 'success' | 'error' | 'info' | 'warning' | 'normal'}
-          title={toast.data?.title}
-          onDismiss={toast.onHide}
-          actions={toast.data?.actions}
-        />
-      )}
-      successColor="#10B981"
-      errorColor="#EF4444"
-      warningColor="#F59E0B"
-      infoColor="#3B82F6"
-      normalColor="#6B7280"
-    >
-      {/* Register provider's imperative API to our lib/toast via hook inside the provider */}
-      <ToastRegistrar />
-      <ErrorBoundary>
-        <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-          <OfflineQueueIndicator />
-          <Stack screenOptions={{ headerShown: false }} />
-          <RouterStateOverlay />
+    <ErrorBoundary>
+      <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+        <OfflineQueueIndicator />
+        <Stack screenOptions={{ headerShown: false }} />
+        <RouterStateOverlay />
 
-          {/* App Version Check Modals */}
+        {/* App Version Check Modals */}
         <UpdateRequiredModal
           visible={storeUpdateRequired || storeUpdateOptional}
           isForce={storeUpdateRequired}
@@ -152,21 +125,8 @@ export default function RootLayout() {
           storeUrl={storeUrl}
           onDismiss={dismissSoftUpdate}
         />
-        </View>
-      </ErrorBoundary>
-    </ToastProviderWrapper>
+      </View>
+      <Toast config={toastConfig} />
+    </ErrorBoundary>
   );
-}
-
-function ToastRegistrar() {
-  const toast = useToast();
-  useEffect(() => {
-    try {
-      setToastRef(toast as any);
-      return () => setToastRef(null);
-    } catch {
-      return;
-    }
-  }, [toast]);
-  return null;
 }
