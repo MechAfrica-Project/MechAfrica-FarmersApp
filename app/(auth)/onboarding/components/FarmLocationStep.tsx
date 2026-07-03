@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import React, { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
-import MapView, { Marker, Region } from "react-native-maps";
+import { Map, MapMarker } from "@/app/components/ui/map";
 
 type Coords = { latitude: number; longitude: number };
 
@@ -28,16 +28,10 @@ const reducer = (state: LocationState, action: Action): LocationState => {
   }
 };
 
-const DEFAULT_REGION: Region = {
-  latitude: 5.6037, // Accra fallback
-  longitude: -0.1870,
-  latitudeDelta: 0.1,
-  longitudeDelta: 0.1,
-};
+// DEFAULT_REGION removed since we are using inline center now
 
 const FarmLocationStep = () => {
   const { data, updateData } = useOnboardingStore();
-  const mapRef = useRef<MapView>(null);
 
   const [state, dispatch] = useReducer(reducer, {
     marker: data.farmLocation ?? null,
@@ -77,17 +71,7 @@ const FarmLocationStep = () => {
 
         dispatch({ type: "SET_MARKER", payload: coords });
 
-        // Animate instead of binding region to state
-        if (mapRef.current) {
-          mapRef.current.animateToRegion(
-            {
-              ...coords,
-              latitudeDelta: 0.02,
-              longitudeDelta: 0.02,
-            },
-            1000
-          );
-        }
+        // Camera automatically animates when center prop changes.
 
         // Reverse geocode city
         const places = await Location.reverseGeocodeAsync(coords);
@@ -113,24 +97,19 @@ const FarmLocationStep = () => {
       {/* Glow wrapper for map */}
       <View className="w-80 mt-4 h-80 rounded-full bg-yellow-100/40 items-center justify-center">
         <View className="w-72 h-72 rounded-full overflow-hidden">
-          <MapView
-            ref={mapRef}
-            style={{ flex: 1 }}
-            initialRegion={DEFAULT_REGION}
+          <Map
+            className="flex-1"
+            center={state.marker ? [state.marker.longitude, state.marker.latitude] : [-0.1870, 5.6037]}
+            zoom={state.marker ? 14 : 10}
+            showLoader={false}
           >
             {state.marker && (
-              <Marker
-                coordinate={state.marker}
-                draggable
-                onDragEnd={(e) =>
-                  dispatch({
-                    type: "SET_MARKER",
-                    payload: e.nativeEvent.coordinate,
-                  })
-                }
+              <MapMarker
+                coordinate={[state.marker.longitude, state.marker.latitude]}
+                onPress={() => console.log("Marker pressed")}
               />
             )}
-          </MapView>
+          </Map>
           {loading && (
             <View className="absolute inset-0 items-center justify-center bg-white/40">
               <ActivityIndicator size="large" color="black" />

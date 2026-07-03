@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import React, { useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
-import MapView, { Marker, Region } from "react-native-maps";
+import { Map, MapMarker } from "@/app/components/ui/map";
 
 type Coords = { latitude: number; longitude: number };
 
@@ -71,12 +71,7 @@ const FarmLocationPicker = ({ value, onChange }: FarmLocationPickerProps) => {
     );
   }
 
-  const region: Region = {
-    latitude: value.latitude,
-    longitude: value.longitude,
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
-  };
+  const center: [number, number] = [value.longitude, value.latitude];
 
   return (
     <View className="mt-5 mb-4">
@@ -95,18 +90,16 @@ const FarmLocationPicker = ({ value, onChange }: FarmLocationPickerProps) => {
       </View>
       
       <View className="h-48 w-full rounded-2xl overflow-hidden border border-gray-200 shadow-sm relative bg-gray-100">
-        <MapView
-          style={{ flex: 1 }}
-          region={hasMapReady ? region : undefined}
-          initialRegion={region}
-          onMapReady={() => setHasMapReady(true)}
+        <Map
+          className="flex-1"
+          center={center}
+          zoom={14}
         >
-          <Marker
-            coordinate={value}
-            draggable
-            onDragEnd={(e) => onChange(e.nativeEvent.coordinate)}
+          <MapMarker
+            coordinate={[value.longitude, value.latitude]}
+            onPress={() => console.log("Marker pressed")}
           />
-        </MapView>
+        </Map>
         <View className="absolute bottom-2 left-0 right-0 items-center pointer-events-none">
           <View className="bg-black/60 px-3 py-1 rounded-full">
             <Text className="text-white text-xs">Drag pin to adjust</Text>
