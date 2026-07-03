@@ -102,13 +102,13 @@ const FarmLocationStep = () => {
             center={state.marker ? [state.marker.longitude, state.marker.latitude] : [-0.1870, 5.6037]}
             zoom={state.marker ? 14 : 10}
             showLoader={false}
-            onRegionDidChange={(e) => {
-              if (e.geometry && e.geometry.coordinates) {
+            onRegionDidChange={(coords) => {
+              if (coords && coords.isUserInteraction) {
                 dispatch({
                   type: "SET_MARKER",
                   payload: {
-                    longitude: e.geometry.coordinates[0],
-                    latitude: e.geometry.coordinates[1],
+                    longitude: coords.longitude,
+                    latitude: coords.latitude,
                   },
                 });
               }

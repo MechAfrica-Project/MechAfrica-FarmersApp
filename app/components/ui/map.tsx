@@ -47,9 +47,29 @@ function useMap() {
   return context;
 }
 
+const googleStreetsStyle: StyleSpecification = {
+  version: 8,
+  sources: {
+    "google-streets": {
+      type: "raster",
+      tiles: ["https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"],
+      tileSize: 256,
+    },
+  },
+  layers: [
+    {
+      id: "google-streets",
+      type: "raster",
+      source: "google-streets",
+      minzoom: 0,
+      maxzoom: 22,
+    },
+  ],
+};
+
 const defaultStyles = {
-  dark: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
-  light: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+  dark: googleStreetsStyle,
+  light: googleStreetsStyle,
 };
 
 type MapStyleOption = string | StyleSpecification;
@@ -70,7 +90,7 @@ type MapProps = {
   /** Show loading indicator */
   showLoader?: boolean;
   /** Callback for when the map region changes */
-  onRegionDidChange?: (feature: GeoJSON.Feature<GeoJSON.Point>) => void;
+  onRegionDidChange?: (coords: { longitude: number; latitude: number; isUserInteraction?: boolean }) => void;
 };
 
 const DefaultLoader = () => (
@@ -90,9 +110,24 @@ function Map({
 }: MapProps) {
   const mapRef = useRef<MapRef | null>(null);
   const cameraRef = useRef<CameraRef | null>(null);
+  const lastUserCenterRef = useRef<[number, number] | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const { colorScheme } = useTheme();
   const theme = colorScheme === "dark" ? "dark" : "light";
+
+  useEffect(() => {
+    if (!isLoaded || !cameraRef.current) return;
+    
+    // Check if this center change was from the user dragging
+    const isFromUser = lastUserCenterRef.current && 
+      Math.abs(lastUserCenterRef.current[0] - center[0]) < 0.000001 &&
+      Math.abs(lastUserCenterRef.current[1] - center[1]) < 0.000001;
+
+    // If it wasn't from the user (e.g. from Geocoding search or initial GPS), fly to it
+    if (!isFromUser) {
+      cameraRef.current.flyTo({ center, duration: 1000, zoom });
+    }
+  }, [center[0], center[1], isLoaded]);
 
   const mapStyle =
     theme === "dark"
@@ -116,14 +151,22 @@ function Map({
           compass={false}
           logo={false}
           attribution={false}
-          onRegionDidChange={onRegionDidChange}
+          onRegionDidChange={(e: any) => {
+            if (onRegionDidChange && e?.nativeEvent?.center) {
+              if (e.nativeEvent.userInteraction) {
+                lastUserCenterRef.current = [e.nativeEvent.center[0], e.nativeEvent.center[1]];
+              }
+              onRegionDidChange({
+                longitude: e.nativeEvent.center[0],
+                latitude: e.nativeEvent.center[1],
+                isUserInteraction: e.nativeEvent.userInteraction,
+              });
+            }
+          }}
         >
           <Camera
             ref={cameraRef}
-            zoom={zoom}
-            center={center}
-            easing="fly"
-            duration={1000}
+            initialViewState={{ zoom, center }}
           />
           {children}
         </MapLibreMap>

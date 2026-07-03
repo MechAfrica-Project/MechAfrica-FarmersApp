@@ -88,11 +88,11 @@ const FarmLocationPicker = ({ value, onChange, searchQuery }: FarmLocationPicker
           className="flex-1"
           center={center}
           zoom={14}
-          onRegionDidChange={(e) => {
-            if (e.geometry && e.geometry.coordinates) {
+          onRegionDidChange={(coords) => {
+            if (coords && coords.isUserInteraction) {
               onChange({
-                longitude: e.geometry.coordinates[0],
-                latitude: e.geometry.coordinates[1],
+                longitude: coords.longitude,
+                latitude: coords.latitude,
               });
             }
           }}
