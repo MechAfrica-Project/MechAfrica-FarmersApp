@@ -10,7 +10,9 @@
     "updates": {
       "url": "https://u.expo.dev/481cec85-cb63-4658-8d4f-7d240a57ff67"
     },
-    "runtimeVersion": "1.3.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "ios": {
       "bundleIdentifier": "com.mechafrica.farmer",
       "supportsTablet": true,
