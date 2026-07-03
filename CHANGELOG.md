@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/compare/v1.3.0...v1.4.0) (2026-07-03)
+
+
+### Features
+
+* add development-simulator build profile and fix production indentation in eas.json ([66836a2](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/66836a2869f598db86c56c32e750cd8af29564f2))
+* implement auto-geocoding in FarmLocationPicker using address fields from farm modals ([70625c4](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/70625c4c06bf5644774739a957fd63195683951d))
+* update map styles to use custom Google Streets raster tiles ([a1aebfa](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/a1aebfa4fe1415c2cf5bdd08c35f67921d2802b2))
+
+
+### Bug Fixes
+
+* deduplicate notifications, standardize request payload construction, implement websocket event listeners, and update backend API URL ([98fed93](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/98fed9308a42a094853dcad11c61832fbe03b2aa))
+* restore maplibre plugin for EAS cloud build ([f7992f9](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/f7992f9753d40708c95d6798a1636162164301d3))
+
+
+### Refactoring
+
+* migrate FarmLocationPicker to custom Map wrapper and add maplibre dependency ([7481306](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/748130675ca0f54a193c2ddde6aedec05f14329d))
+* optimize map flyTo logic, improve WebSocket connection persistence with heartbeats, and update native map intent URLs ([677acc4](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/677acc472fac8cb2e56d6fef75b9e51fab0b558a))
+* replace dynamic markers with fixed center pins and region-based coordinate updates in map components ([b1f5aeb](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/b1f5aeb0d9dbf8d328d09f844793c700960d89ca))
+* update map styles to use voyager-gl for both light and dark themes ([747c29a](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/747c29a257e23f4bc38448c1b14f164fa2c2e8e8))
+
 ## [1.3.0](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/compare/v1.2.0...v1.3.0) (2026-07-02)
 
 
