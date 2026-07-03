@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import React, { useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
-import { Map, MapMarker } from "@/app/components/ui/map";
+import { Map } from "@/app/components/ui/map";
 
 type Coords = { latitude: number; longitude: number };
 
@@ -94,15 +94,22 @@ const FarmLocationPicker = ({ value, onChange }: FarmLocationPickerProps) => {
           className="flex-1"
           center={center}
           zoom={14}
-        >
-          <MapMarker
-            coordinate={[value.longitude, value.latitude]}
-            onPress={() => console.log("Marker pressed")}
-          />
-        </Map>
+          onRegionDidChange={(e) => {
+            if (e.geometry && e.geometry.coordinates) {
+              onChange({
+                longitude: e.geometry.coordinates[0],
+                latitude: e.geometry.coordinates[1],
+              });
+            }
+          }}
+        />
+        {/* Fixed Center Pin */}
+        <View className="absolute inset-0 items-center justify-center pointer-events-none">
+          <Ionicons name="location" size={40} color="#047857" style={{ marginTop: -20 }} />
+        </View>
         <View className="absolute bottom-2 left-0 right-0 items-center pointer-events-none">
           <View className="bg-black/60 px-3 py-1 rounded-full">
-            <Text className="text-white text-xs">Drag pin to adjust</Text>
+            <Text className="text-white text-xs">Drag map to adjust pin</Text>
           </View>
         </View>
       </View>

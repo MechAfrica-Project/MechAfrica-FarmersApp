@@ -69,6 +69,8 @@ type MapProps = {
   className?: string;
   /** Show loading indicator */
   showLoader?: boolean;
+  /** Callback for when the map region changes */
+  onRegionDidChange?: (feature: GeoJSON.Feature<GeoJSON.Point>) => void;
 };
 
 const DefaultLoader = () => (
@@ -84,6 +86,7 @@ function Map({
   zoom = 10,
   className,
   showLoader = true,
+  onRegionDidChange,
 }: MapProps) {
   const mapRef = useRef<MapRef | null>(null);
   const cameraRef = useRef<CameraRef | null>(null);
@@ -113,6 +116,7 @@ function Map({
           compass={false}
           logo={false}
           attribution={false}
+          onRegionDidChange={onRegionDidChange}
         >
           <Camera
             ref={cameraRef}

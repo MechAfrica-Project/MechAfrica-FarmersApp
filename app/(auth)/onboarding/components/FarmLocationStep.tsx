@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import React, { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
-import { Map, MapMarker } from "@/app/components/ui/map";
+import { Map } from "@/app/components/ui/map";
 
 type Coords = { latitude: number; longitude: number };
 
@@ -102,14 +102,24 @@ const FarmLocationStep = () => {
             center={state.marker ? [state.marker.longitude, state.marker.latitude] : [-0.1870, 5.6037]}
             zoom={state.marker ? 14 : 10}
             showLoader={false}
-          >
-            {state.marker && (
-              <MapMarker
-                coordinate={[state.marker.longitude, state.marker.latitude]}
-                onPress={() => console.log("Marker pressed")}
-              />
-            )}
-          </Map>
+            onRegionDidChange={(e) => {
+              if (e.geometry && e.geometry.coordinates) {
+                dispatch({
+                  type: "SET_MARKER",
+                  payload: {
+                    longitude: e.geometry.coordinates[0],
+                    latitude: e.geometry.coordinates[1],
+                  },
+                });
+              }
+            }}
+          />
+          {/* Fixed Center Pin */}
+          {state.marker && (
+            <View className="absolute inset-0 items-center justify-center pointer-events-none">
+              <Ionicons name="location" size={40} color="#047857" style={{ marginTop: -20 }} />
+            </View>
+          )}
           {loading && (
             <View className="absolute inset-0 items-center justify-center bg-white/40">
               <ActivityIndicator size="large" color="black" />
