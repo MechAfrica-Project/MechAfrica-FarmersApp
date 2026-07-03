@@ -10,11 +10,32 @@ type Coords = { latitude: number; longitude: number };
 type FarmLocationPickerProps = {
   value: Coords | null;
   onChange: (coords: Coords) => void;
+  searchQuery?: string;
 };
 
-const FarmLocationPicker = ({ value, onChange }: FarmLocationPickerProps) => {
+const FarmLocationPicker = ({ value, onChange, searchQuery }: FarmLocationPickerProps) => {
   const [loading, setLoading] = useState(false);
   const [hasMapReady, setHasMapReady] = useState(false);
+
+  // Auto geocode search query if provided and map hasn't been explicitly set yet
+  React.useEffect(() => {
+    if (searchQuery) {
+      const geocode = async () => {
+        try {
+          const results = await Location.geocodeAsync(searchQuery);
+          if (results.length > 0) {
+            onChange({
+              latitude: results[0].latitude,
+              longitude: results[0].longitude,
+            });
+          }
+        } catch (e) {
+          console.warn("Geocoding failed for", searchQuery);
+        }
+      };
+      geocode();
+    }
+  }, [searchQuery]);
 
   const fetchLocation = async () => {
     try {
@@ -44,34 +65,7 @@ const FarmLocationPicker = ({ value, onChange }: FarmLocationPickerProps) => {
     }
   };
 
-  if (!value) {
-    return (
-      <View className="mt-5 mb-4">
-        <Text className="text-sm font-bold text-gray-800 mb-2 font-mulish">
-          Farm Location (Optional)
-        </Text>
-        <TouchableOpacity
-          onPress={fetchLocation}
-          disabled={loading}
-          activeOpacity={0.7}
-          className="flex-row justify-center items-center py-3 border border-gray-200 rounded-xl bg-gray-50 shadow-sm"
-        >
-          {loading ? (
-            <ActivityIndicator size="small" color="#047857" />
-          ) : (
-            <>
-              <Ionicons name="location-outline" size={20} color="#047857" />
-              <Text className="text-teal-700 font-semibold ml-2">
-                Set GPS Location
-              </Text>
-            </>
-          )}
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  const center: [number, number] = [value.longitude, value.latitude];
+  const center: [number, number] = value ? [value.longitude, value.latitude] : [-0.1870, 5.6037]; // Default to Accra if null
 
   return (
     <View className="mt-5 mb-4">
@@ -83,9 +77,9 @@ const FarmLocationPicker = ({ value, onChange }: FarmLocationPickerProps) => {
           {loading ? (
             <ActivityIndicator size="small" color="#047857" />
           ) : (
-            <Ionicons name="refresh" size={16} color="#047857" />
+            <Ionicons name="locate-outline" size={16} color="#047857" />
           )}
-          <Text className="text-teal-700 font-medium text-xs ml-1">Refetch</Text>
+          <Text className="text-teal-700 font-medium text-xs ml-1">Use GPS</Text>
         </TouchableOpacity>
       </View>
       
@@ -112,6 +106,15 @@ const FarmLocationPicker = ({ value, onChange }: FarmLocationPickerProps) => {
             <Text className="text-white text-xs">Drag map to adjust pin</Text>
           </View>
         </View>
+      </View>
+      
+      <View className="mt-2 flex-row justify-between items-center px-1">
+        <Text className="text-xs text-gray-500 font-mono">
+          Lat: {value ? value.latitude.toFixed(6) : "0.000000"}
+        </Text>
+        <Text className="text-xs text-gray-500 font-mono">
+          Lng: {value ? value.longitude.toFixed(6) : "0.000000"}
+        </Text>
       </View>
     </View>
   );

@@ -182,6 +182,7 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
                 setLatitude(coords.latitude);
                 setLongitude(coords.longitude);
               }}
+              searchQuery={[district, region, "Ghana"].filter(Boolean).join(", ")}
             />
 
             {/* Region */}
