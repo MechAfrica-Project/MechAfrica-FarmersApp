@@ -85,7 +85,8 @@
       ],
       "expo-web-browser",
       "@react-native-community/datetimepicker",
-      "./plugins/withAdiRegistration.js"
+      "./plugins/withAdiRegistration.js",
+      "@maplibre/maplibre-react-native"
     ],
     "experiments": {
       "typedRoutes": true
