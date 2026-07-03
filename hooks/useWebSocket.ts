@@ -2,6 +2,9 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import { getAuthToken } from '@/lib/api';
 import { getApiUrlOrPlaceholder } from '@/lib/env';
+import { toastInfo, toastSuccess } from '@/lib/toast';
+import { useRequestsStore } from '@/stores/requestsStore';
+import { useNotificationStore } from '@/stores/notificationStore';
 
 export interface WebSocketMessage {
   type: string;
@@ -76,8 +79,32 @@ export function useWebSocket() {
           const msg: WebSocketMessage = JSON.parse(e.data);
           console.log('[WebSocket] Message received:', msg.type);
           
-          // Handle specific events globally (e.g. refresh data, show toast, etc.)
-          // In the future, we could trigger Zustand actions here.
+          // Handle specific events globally
+          if (msg.type === 'work_started') {
+            const providerName = msg.payload?.provider_name || 'Your provider';
+            toastInfo('Service In Progress', `${providerName} has started working on your request.`);
+            useRequestsStore.getState().fetchRequests?.();
+          } else if (msg.type === 'service_request_update') {
+            toastInfo('Request Update', `Your service request was updated.`);
+            useRequestsStore.getState().fetchRequests?.();
+          } else if (msg.type === 'request_accepted') {
+            toastSuccess('Request Accepted!', `A provider has accepted your request.`);
+            useRequestsStore.getState().fetchRequests?.();
+          } else if (msg.type === 'request_declined') {
+            toastInfo('Request Declined', `A provider declined your request.`);
+            useRequestsStore.getState().fetchRequests?.();
+          } else if (msg.type === 'work_completed') {
+            toastSuccess('Work Completed!', `Your service request has been marked as completed.`);
+            useRequestsStore.getState().fetchRequests?.();
+          } else if (msg.type === 'request_cancelled') {
+            toastInfo('Request Cancelled', `Your service request has been cancelled.`);
+            useRequestsStore.getState().fetchRequests?.();
+          }
+
+          // Trigger a silent refresh for notifications if it's a known event
+          if (['work_started', 'service_request_update', 'request_accepted', 'request_declined', 'work_completed', 'request_cancelled'].includes(msg.type)) {
+            useNotificationStore.getState().fetchNotifications?.(true);
+          }
         } catch (err) {
           console.error('[WebSocket] Error parsing message:', err);
         }

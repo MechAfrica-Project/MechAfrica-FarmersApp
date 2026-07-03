@@ -1,7 +1,7 @@
 // Centralized environment helpers
 // Use these functions to read environment variables consistently across the app.
 // Default to MechAfrica backend if no explicit API URL is provided.
-export const API_URL_PLACEHOLDER = 'https://mechafrica-backend.onrender.com';
+export const API_URL_PLACEHOLDER = 'https://mechafrica-backend.up.railway.app';
 
 // Canonical env names (prefer simple names). Keep backward compatibility with EXPO_PUBLIC_* variants.
 export function resolveApiUrlRaw(): string | null {

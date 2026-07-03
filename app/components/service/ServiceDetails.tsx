@@ -99,6 +99,7 @@ const ServiceDetails = () => {
                 farmLatitude: selectedFarm.latitude,
                 farmLongitude: selectedFarm.longitude,
                 farmId: selectedFarm.id,
+                farmSize: selectedFarm.farmSize,
                 providerName: "",
                 startDateTime: draft.startDate || new Date().toISOString(),
                 endDateTime: draft.endDate || new Date().toISOString(),

@@ -26,6 +26,17 @@ export type Asset = {
 
 export type RequestStatus = "pending" | "ongoing" | "completed" | "cancelled";
 
+export interface CreateServiceRequestPayload {
+  service_type: string;
+  farm_id: string; // The exact farm ID
+  farm_name: string; // Fallback
+  farm_size: number;
+  crop_type: string;
+  extra_comment?: string;
+  start_date: string;
+  end_date: string;
+}
+
 export type Request = {
   id: string;
   serviceId: string;
@@ -45,6 +56,13 @@ export type Request = {
   messageFromFarmer?: string;
   voiceNoteUrl?: string | null;
   asset?: Asset;
+  farm?: {
+    id: string;
+    farm_name: string;
+    latitude: number;
+    longitude: number;
+    farm_size: number;
+  };
   farmLatitude?: number;
   farmLongitude?: number;
 };

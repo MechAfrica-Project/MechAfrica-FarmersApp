@@ -53,9 +53,9 @@ const mapBackendRequestToFrontend = (rawInput: any): Request => {
     serviceTitle: raw.service_type || "Unknown Service",
     serviceDetails: raw.extra_comment || "",
     farmerName: raw.farmer ? `${raw.farmer.user?.first_name || raw.farmer.first_name || ""} ${raw.farmer.user?.last_name || raw.farmer.last_name || ""}`.trim() : "Unknown Farmer",
-    farmLocation: raw.farmLocation || (raw.farmer?.farm_name) || raw.farm_name || "Unknown Farm",
-    farmLatitude: raw.farmLatitude ?? raw.latitude ?? raw.farmer?.latitude ?? raw.farm_latitude ?? undefined,
-    farmLongitude: raw.farmLongitude ?? raw.longitude ?? raw.farmer?.longitude ?? raw.farm_longitude ?? undefined,
+    farmLocation: raw.farm?.farm_name || raw.farm_name || raw.farmLocation || (raw.farmer?.farm_name) || "Unknown Farm",
+    farmLatitude: raw.farm?.latitude ?? raw.farmLatitude ?? raw.latitude ?? raw.farmer?.latitude ?? raw.farm_latitude ?? undefined,
+    farmLongitude: raw.farm?.longitude ?? raw.farmLongitude ?? raw.longitude ?? raw.farmer?.longitude ?? raw.farm_longitude ?? undefined,
     providerName: raw.service_provider?.company_name || "Unassigned",
     startDateTime: raw.start_date || new Date().toISOString(),
     endDateTime: raw.end_date || new Date().toISOString(),
@@ -177,7 +177,19 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
           }
         }
 
-        const payload = { ...req, voiceNoteUrl: finalVoiceNoteUrl };
+        // Construct the payload the backend expects for MobileCreateRequestInput
+        const payload = {
+          serviceId: req.serviceId,
+          serviceTitle: req.serviceTitle,
+          farmId: (req as any).farmId || undefined,
+          farmLocation: req.farmLocation || "",
+          farmSize: (req as any).farmSize || 1, // Fallback to 1 if missing
+          crop: req.crop || "Unknown",
+          messageFromFarmer: req.messageFromFarmer || "",
+          voiceNoteUrl: finalVoiceNoteUrl || "",
+          startDateTime: req.startDateTime || new Date().toISOString(),
+          endDateTime: req.endDateTime || new Date().toISOString()
+        };
 
         const saved = await apiFetch<Request | { queued: true; queuedId: string }>(API_ENDPOINTS.REQUESTS, {
           method: "POST",
@@ -187,7 +199,7 @@ export const useRequestsStore = create<RequestsState>((set, get) => {
         // If the API wrapper enqueued the request while offline it returns { queued: true, queuedId }
         if ((saved as any)?.queued) {
           const id = Date.now().toString();
-          const newReq: any = { id, ...(payload as any), status: "pending", _queued: true, _queuedId: (saved as any).queuedId };
+          const newReq: any = { id, ...req, status: "pending", _queued: true, _queuedId: (saved as any).queuedId };
           set((s) => ({ byId: { ...s.byId, [id]: newReq }, listsByStatus: computeListsByStatus({ ...s.byId, [id]: newReq }) }));
           const { toastQueued } = await import('@/lib/toast');
           toastQueued("Saved offline", "Request queued for upload");

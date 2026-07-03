@@ -142,8 +142,14 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       const unreadCount = extractUnreadCount(response);
       const total = response.data?.total ?? notifications.length;
 
+      // Deduplicate items to prevent React key collision errors
+      const currentItems = refresh ? [] : state.items;
+      const existingIds = new Set(currentItems.map(item => item.id));
+      const newItems = notifications.filter(item => !existingIds.has(item.id));
+      const mergedItems = [...currentItems, ...newItems];
+
       set({
-        items: refresh ? notifications : [...state.items, ...notifications],
+        items: mergedItems,
         unreadCount,
         total,
         offset: refresh ? notifications.length : state.offset + notifications.length,

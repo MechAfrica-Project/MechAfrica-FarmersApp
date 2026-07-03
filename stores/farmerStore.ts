@@ -377,6 +377,8 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
               ...currentProfile?.location,
               region: farm.region,
               district: farm.district,
+              latitude: farm.latitude,
+              longitude: farm.longitude,
             },
           };
 
@@ -449,6 +451,8 @@ export const useFarmerStore = create<FarmerState>((set, get) => {
               region: farm.region,
               district: farm.district,
               cropTypes: farm.cropTypes,
+              latitude: farm.latitude,
+              longitude: farm.longitude,
             }),
           }
         );
