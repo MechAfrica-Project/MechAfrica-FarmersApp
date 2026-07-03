@@ -23,7 +23,7 @@
       },
       "distribution": "internal"
     },
-        "production": {
+    "production": {
       "channel": "production",
       "autoIncrement": true,
       "env": {
@@ -38,6 +38,14 @@
         "resourceClass": "m-medium",
         "image": "latest"
       }
+    },
+    "development-simulator": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "environment": "development"
     }
   },
   "submit": {
