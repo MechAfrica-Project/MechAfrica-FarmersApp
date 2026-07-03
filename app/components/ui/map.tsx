@@ -115,16 +115,19 @@ function Map({
   const { colorScheme } = useTheme();
   const theme = colorScheme === "dark" ? "dark" : "light";
 
+  const internalCenterRef = useRef<[number, number]>(center);
+
   useEffect(() => {
     if (!isLoaded || !cameraRef.current) return;
     
-    // Check if this center change was from the user dragging
-    const isFromUser = lastUserCenterRef.current && 
-      Math.abs(lastUserCenterRef.current[0] - center[0]) < 0.000001 &&
-      Math.abs(lastUserCenterRef.current[1] - center[1]) < 0.000001;
+    // Check if the new center prop is significantly different from where the map currently is.
+    // If it is, this means the parent component forced a new location (e.g., GPS button or search).
+    const isSignificantChange = 
+      Math.abs(internalCenterRef.current[0] - center[0]) > 0.00001 ||
+      Math.abs(internalCenterRef.current[1] - center[1]) > 0.00001;
 
-    // If it wasn't from the user (e.g. from Geocoding search or initial GPS), fly to it
-    if (!isFromUser) {
+    if (isSignificantChange) {
+      internalCenterRef.current = center;
       cameraRef.current.flyTo({ center, duration: 1000, zoom });
     }
   }, [center[0], center[1], isLoaded]);
@@ -153,13 +156,14 @@ function Map({
           attribution={false}
           onRegionDidChange={(e: any) => {
             if (onRegionDidChange && e?.nativeEvent?.center) {
-              if (e.nativeEvent.userInteraction) {
-                lastUserCenterRef.current = [e.nativeEvent.center[0], e.nativeEvent.center[1]];
-              }
+              const newCenter: [number, number] = [e.nativeEvent.center[0], e.nativeEvent.center[1]];
+              internalCenterRef.current = newCenter;
+              lastUserCenterRef.current = newCenter;
+              
               onRegionDidChange({
-                longitude: e.nativeEvent.center[0],
-                latitude: e.nativeEvent.center[1],
-                isUserInteraction: e.nativeEvent.userInteraction,
+                longitude: newCenter[0],
+                latitude: newCenter[1],
+                isUserInteraction: e.nativeEvent.userInteraction ?? true,
               });
             }
           }}

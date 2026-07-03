@@ -25,11 +25,15 @@ const FarmerDetails = ({ service }: any) => {
   ];
 
   const openMap = (lat: number, lng: number, label: string) => {
-    const scheme = Platform.select({ ios: "maps:0,0?q=", android: "geo:0,0?q=" });
     const latLng = `${lat},${lng}`;
+    const encodedLabel = encodeURIComponent(label);
+    
+    // For iOS, the most reliable way to drop a pin with a label at exact coordinates 
+    // is using Apple Maps 'll' (center) and 'q' (search/label) with the http scheme.
+    // For Android, 'geo:0,0?q=lat,lng(label)' drops a pin at lat,lng with the given label.
     const url = Platform.select({
-      ios: `${scheme}${label}@${latLng}`,
-      android: `${scheme}${latLng}(${label})`
+      ios: `http://maps.apple.com/?ll=${latLng}&q=${encodedLabel}`,
+      android: `geo:0,0?q=${latLng}(${encodedLabel})`
     });
 
     if (url) {

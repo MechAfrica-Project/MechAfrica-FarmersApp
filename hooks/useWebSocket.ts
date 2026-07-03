@@ -15,12 +15,32 @@ export function useWebSocket() {
   const [isConnected, setIsConnected] = useState(false);
   const reconnectTimeout = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttempts = useRef(0);
+  const pingInterval = useRef<NodeJS.Timeout | null>(null);
   const MAX_RECONNECT_ATTEMPTS = 5;
 
+  const connectRef = useRef<() => Promise<void>>(async () => {});
+
+  const scheduleReconnect = useCallback(() => {
+    if (reconnectAttempts.current < MAX_RECONNECT_ATTEMPTS) {
+      const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
+      reconnectAttempts.current++;
+      console.log(`[WebSocket] Reconnecting in ${delay}ms...`);
+      reconnectTimeout.current = setTimeout(() => connectRef.current?.(), delay);
+    }
+  }, []);
+
   const connect = useCallback(async () => {
+    // Prevent multiple concurrent connection attempts
+    if (ws.current) return;
+    // Set a flag to prevent race conditions during the async getAuthToken
+    ws.current = 'connecting' as any;
+
     try {
       const token = await getAuthToken();
-      if (!token) return;
+      if (!token) {
+        ws.current = null;
+        return;
+      }
 
       const baseUrl = getApiUrlOrPlaceholder();
       const wsUrl = baseUrl.replace('http://', 'ws://').replace('https://', 'wss://');
@@ -33,6 +53,22 @@ export function useWebSocket() {
         console.log('[WebSocket] Connected');
         setIsConnected(true);
         reconnectAttempts.current = 0;
+
+        // Subscribe to channels to receive notifications
+        if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+          ws.current.send(JSON.stringify({
+            type: 'subscribe',
+            payload: { channels: ['notifications', 'system_alert'] }
+          }));
+        }
+
+        // Send a ping every 30 seconds to keep the connection alive (Railway proxy timeout is 55s)
+        if (pingInterval.current) clearInterval(pingInterval.current);
+        pingInterval.current = setInterval(() => {
+          if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+            ws.current.send(JSON.stringify({ type: 'ping' }));
+          }
+        }, 30000);
       };
 
       ws.current.onmessage = (e) => {
@@ -55,31 +91,35 @@ export function useWebSocket() {
         console.log('[WebSocket] Disconnected');
         setIsConnected(false);
         ws.current = null;
+        if (pingInterval.current) {
+          clearInterval(pingInterval.current);
+          pingInterval.current = null;
+        }
         scheduleReconnect();
       };
     } catch (e) {
       console.error('[WebSocket] Setup error:', e);
+      ws.current = null;
     }
-  }, []);
+  }, [scheduleReconnect]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeout.current) {
       clearTimeout(reconnectTimeout.current);
     }
-    if (ws.current) {
-      ws.current.close();
-      ws.current = null;
+    if (pingInterval.current) {
+      clearInterval(pingInterval.current);
+      pingInterval.current = null;
     }
+    if (ws.current && ws.current !== 'connecting' as any) {
+      ws.current.close();
+    }
+    ws.current = null;
     setIsConnected(false);
   }, []);
 
-  const scheduleReconnect = useCallback(() => {
-    if (reconnectAttempts.current < MAX_RECONNECT_ATTEMPTS) {
-      const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
-      reconnectAttempts.current++;
-      console.log(`[WebSocket] Reconnecting in ${delay}ms...`);
-      reconnectTimeout.current = setTimeout(connect, delay);
-    }
+  useEffect(() => {
+    connectRef.current = connect;
   }, [connect]);
 
   useEffect(() => {
