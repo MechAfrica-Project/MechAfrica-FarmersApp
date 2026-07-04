@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "535752156097",
+    "project_id": "mechafrica-bb483",
+    "storage_bucket": "mechafrica-bb483.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:535752156097:android:10489c956a2956c2e10540",
+        "android_client_info": {
+          "package_name": "com.mechafrica.farmer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCm4D9dZsO-8ONFB30xCt9jV3RRtHaDYo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

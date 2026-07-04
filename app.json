@@ -26,6 +26,7 @@
     },
     "android": {
       "package": "com.mechafrica.farmer",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/mechafrica-square.png",
         "backgroundColor": "#FCFF3B"
