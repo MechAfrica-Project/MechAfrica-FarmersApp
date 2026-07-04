@@ -8,7 +8,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from "react-native";
+import { useAuthStore } from "@/stores/authStore";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Check } from "lucide-react-native";
 
@@ -47,6 +49,8 @@ const sections = [
 
 const TermsModal = ({ visible, onClose }: Props) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const acceptTerms = useAuthStore((state) => state.acceptTerms);
 
   if (!visible) return null;
 
@@ -139,20 +143,33 @@ const TermsModal = ({ visible, onClose }: Props) => {
               {/* Actions */}
               <View className="flex-row gap-4 mt-4">
                 <TouchableOpacity
-                  onPress={() => {
+                  disabled={isSubmitting}
+                  onPress={async () => {
                     if (activeIndex < sections.length - 1) {
-                      setActiveIndex(prev => prev + 1);
+                      setActiveIndex((prev) => prev + 1);
                     } else {
-                      onClose();
+                      try {
+                        setIsSubmitting(true);
+                        await acceptTerms();
+                        onClose();
+                      } catch (err) {
+                        // Let auth store handle error toast
+                      } finally {
+                        setIsSubmitting(false);
+                      }
                     }
                   }}
-                  className="flex-1 bg-green-600 py-3 rounded-xl items-center justify-center"
+                  className={`flex-1 py-3 rounded-xl items-center justify-center ${isSubmitting ? "bg-green-600/50" : "bg-green-600"}`}
                 >
-                  <Text className="text-white font-mulish font-bold">
-                    {activeIndex === sections.length - 1
-                      ? "Accept All"
-                      : "Next"}
-                  </Text>
+                  {isSubmitting ? (
+                    <ActivityIndicator color="white" size="small" />
+                  ) : (
+                    <Text className="text-white font-mulish font-bold">
+                      {activeIndex === sections.length - 1
+                        ? "Accept All"
+                        : "Next"}
+                    </Text>
+                  )}
                 </TouchableOpacity>
 
                 <TouchableOpacity

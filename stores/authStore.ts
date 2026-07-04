@@ -17,6 +17,7 @@ interface User {
   email?: string;
   phone?: string;
   avatar?: string;
+  terms_of_service_accepted?: boolean;
 }
 
 interface AuthState {
@@ -35,6 +36,7 @@ interface AuthState {
   verifyOtp: (code: string, options?: { skipNavigation?: boolean }) => Promise<boolean>;
   logout: (mode?: "dev" | "prod") => Promise<void>;
   restoreSession: () => Promise<void>;
+  acceptTerms: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -355,6 +357,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch {
       set({ user: null, token: null, loading: false });
       setAuthToken(null);
+    }
+  },
+
+  acceptTerms: async () => {
+    try {
+      set({ loading: true, error: null });
+      await apiFetch("/profile/accept-terms", {
+        method: "PUT",
+        body: JSON.stringify({}),
+      });
+
+      const { user } = get();
+      if (user) {
+        set({ user: { ...user, terms_of_service_accepted: true }, loading: false });
+      } else {
+        set({ loading: false });
+      }
+    } catch (err: any) {
+      if (__DEV__) {
+        console.log('[AuthStore] acceptTerms error:', err?.message);
+      }
+      set({ error: err?.message || 'Failed to accept terms', loading: false });
+      throw err;
     }
   },
 }));

@@ -9,13 +9,15 @@ import {
   Switch,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Bell, Mail, MessageSquare, Phone, Smartphone, Volume2, Clock, Moon } from 'lucide-react-native';
+import { BlurView } from 'expo-blur';
 import { router } from 'expo-router';
 import { notificationService } from '@/lib/notificationService';
 import { UserNotificationPreferences } from '@/types/notification';
-import { toastSuccess, toastError, toastConfirm } from '@/lib/toast';
+import { toastSuccess, toastError, toastInfo } from '@/lib/toast';
 
 // Default preferences structure
 const defaultPreferences: Partial<UserNotificationPreferences> = {
@@ -95,10 +97,10 @@ const SectionHeader: React.FC<{ title: string; subtitle?: string }> = ({
   title,
   subtitle,
 }) => (
-  <View className="mb-3 mt-6">
-    <Text className="text-lg font-bold text-gray-900">{title}</Text>
+  <View className="mb-3 mt-6 ml-2">
+    <Text className="text-lg font-bold text-gray-900 font-mulish tracking-tight">{title}</Text>
     {subtitle && (
-      <Text className="text-sm text-gray-500 mt-1">{subtitle}</Text>
+      <Text className="text-sm text-gray-500 mt-1 font-mulish">{subtitle}</Text>
     )}
   </View>
 );
@@ -112,15 +114,15 @@ const SettingToggle: React.FC<{
   disabled?: boolean;
   icon?: React.ReactNode;
 }> = ({ label, description, value, onValueChange, disabled, icon }) => (
-  <View className="flex-row items-center justify-between py-4 border-b border-gray-100">
+  <View className="flex-row items-center justify-between py-4 border-b border-black/5">
     <View className="flex-row items-center flex-1 pr-4">
-      {icon && <View className="mr-3">{icon}</View>}
+      {icon && <View className="mr-3 bg-green-100 p-2 rounded-full">{icon}</View>}
       <View className="flex-1">
-        <Text className={`text-base font-medium ${disabled ? 'text-gray-400' : 'text-gray-800'}`}>
+        <Text className={`text-base font-medium font-mulish ${disabled ? 'text-gray-400' : 'text-gray-800'}`}>
           {label}
         </Text>
         {description && (
-          <Text className={`text-sm mt-0.5 ${disabled ? 'text-gray-300' : 'text-gray-500'}`}>
+          <Text className={`text-sm mt-0.5 font-mulish ${disabled ? 'text-gray-300' : 'text-gray-500'}`}>
             {description}
           </Text>
         )}
@@ -131,7 +133,7 @@ const SettingToggle: React.FC<{
       onValueChange={onValueChange}
       disabled={disabled}
       trackColor={{ false: '#D1D5DB', true: '#86EFAC' }}
-      thumbColor={value ? '#166534' : '#9CA3AF'}
+      thumbColor={value ? '#166534' : '#f3f4f6'}
       ios_backgroundColor="#D1D5DB"
     />
   </View>
@@ -224,7 +226,7 @@ const NotificationSettings: React.FC = () => {
   // Handle back navigation
   const handleBack = useCallback(() => {
     if (hasChanges) {
-      toastConfirm(
+      Alert.alert(
         'Unsaved Changes',
         'You have unsaved changes. Do you want to save before leaving?',
         [
@@ -256,7 +258,7 @@ const NotificationSettings: React.FC = () => {
 
   // Show time picker info (placeholder - would use a proper time picker in production)
   const showTimePicker = useCallback((type: 'start' | 'end') => {
-    toastConfirm(
+    Alert.alert(
       `Set ${type === 'start' ? 'Start' : 'End'} Time`,
       'Time picker would appear here. For now, quiet hours are set to 10 PM - 6 AM.',
       [{ text: 'OK' }]
@@ -265,177 +267,207 @@ const NotificationSettings: React.FC = () => {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#166534" />
-          <Text className="text-gray-500 mt-4">Loading preferences...</Text>
-        </View>
-      </SafeAreaView>
+      <View className="flex-1 bg-[#F5F7FA]">
+        {/* Abstract Background Elements */}
+        <View className="absolute top-[-100] left-[-100] w-64 h-64 bg-green-400/20 rounded-full blur-3xl opacity-60" />
+        <View className="absolute bottom-[-50] right-[-50] w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl opacity-40" />
+        
+        <SafeAreaView className="flex-1" edges={['top', 'left', 'right']}>
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color="#166534" />
+            <Text className="text-gray-500 mt-4 font-mulish">Loading preferences...</Text>
+          </View>
+        </SafeAreaView>
+      </View>
     );
   }
 
   const notificationsEnabled = preferences.enable_notifications ?? true;
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-100">
-        <View className="flex-row items-center">
-          <TouchableOpacity
-            onPress={handleBack}
-            className="p-2 -ml-2 mr-2"
-            activeOpacity={0.7}
+    <View className="flex-1 bg-[#F5F7FA]">
+      {/* Abstract Background Elements for Premium Feel */}
+      <View className="absolute top-[-100] left-[-100] w-64 h-64 bg-green-400/20 rounded-full blur-3xl opacity-60" />
+      <View className="absolute top-[30%] right-[-50] w-56 h-56 bg-emerald-400/10 rounded-full blur-3xl opacity-50" />
+      <View className="absolute bottom-[-50] left-[20%] w-72 h-72 bg-green-500/10 rounded-full blur-3xl opacity-40" />
+
+      <SafeAreaView className="flex-1" edges={['top', 'bottom']}>
+        {/* Header */}
+        <View className="overflow-hidden pb-1 z-10">
+          <BlurView
+            intensity={80}
+            tint="light"
+            className="flex-row items-center justify-between px-4 py-3 border-b border-white/40 bg-white/40"
           >
-            <ArrowLeft size={24} color="#166534" />
-          </TouchableOpacity>
-          <Text className="text-xl font-bold text-gray-900">Notification Settings</Text>
-        </View>
-        {hasChanges && (
-          <TouchableOpacity
-            onPress={handleSave}
-            disabled={saving}
-            className="px-4 py-2 bg-green-700 rounded-full"
-            activeOpacity={0.8}
-          >
-            {saving ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <Text className="text-white font-semibold">Save</Text>
-            )}
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Master Toggle */}
-        <View className="bg-green-50 rounded-2xl p-4 mb-4">
-          <SettingToggle
-            label="Enable Notifications"
-            description="Turn all notifications on or off"
-            value={notificationsEnabled}
-            onValueChange={(value) => handlePreferenceChange('enable_notifications', value)}
-            icon={<Bell size={24} color="#166534" />}
-          />
-        </View>
-
-        {/* Notification Channels */}
-        <SectionHeader
-          title="Notification Channels"
-          subtitle="Choose how you want to receive notifications"
-        />
-        <View className="bg-white rounded-2xl border border-gray-100 px-4">
-          {channelConfigs.map((channel) => (
-            <SettingToggle
-              key={channel.key}
-              label={channel.label}
-              description={channel.description}
-              value={preferences[channel.key] ?? false}
-              onValueChange={(value) => handlePreferenceChange(channel.key, value)}
-              disabled={!notificationsEnabled}
-              icon={channel.icon}
-            />
-          ))}
-        </View>
-
-        {/* Quiet Hours */}
-        <SectionHeader
-          title="Quiet Hours"
-          subtitle="Silence notifications during specific times"
-        />
-        <View className="bg-white rounded-2xl border border-gray-100 p-4">
-          <SettingToggle
-            label="Enable Quiet Hours"
-            description="Pause notifications during set hours"
-            value={preferences.quiet_hours_enabled ?? false}
-            onValueChange={(value) => handlePreferenceChange('quiet_hours_enabled', value)}
-            disabled={!notificationsEnabled}
-            icon={<Moon size={20} color="#166534" />}
-          />
-
-          {preferences.quiet_hours_enabled && (
-            <View className="mt-4 space-y-3">
-              <TimePickerButton
-                label="Start Time"
-                value={preferences.quiet_hours_start ?? '22:00'}
-                onPress={() => showTimePicker('start')}
-                disabled={!notificationsEnabled}
-              />
-              <View className="h-2" />
-              <TimePickerButton
-                label="End Time"
-                value={preferences.quiet_hours_end ?? '06:00'}
-                onPress={() => showTimePicker('end')}
-                disabled={!notificationsEnabled}
-              />
+            <View className="flex-row items-center">
+              <TouchableOpacity
+                onPress={handleBack}
+                className="w-10 h-10 items-center justify-center rounded-full bg-white/60 border border-white/80 shadow-sm"
+                activeOpacity={0.7}
+              >
+                <ArrowLeft size={22} color="#166534" />
+              </TouchableOpacity>
+              <Text className="text-xl font-bold text-gray-900 font-mulish ml-3 tracking-tight">Notification Settings</Text>
             </View>
-          )}
+            {hasChanges && (
+              <TouchableOpacity
+                onPress={handleSave}
+                disabled={saving}
+                className="px-5 py-2.5 bg-green-700 rounded-full flex-row items-center"
+                activeOpacity={0.8}
+              >
+                {saving ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Text className="text-white font-bold font-mulish">Save</Text>
+                )}
+              </TouchableOpacity>
+            )}
+          </BlurView>
         </View>
 
-        {/* Additional Settings */}
-        <SectionHeader
-          title="Additional Settings"
-          subtitle="Customize your notification experience"
-        />
-        <View className="bg-white rounded-2xl border border-gray-100 px-4">
-          <SettingToggle
-            label="Weekend Notifications"
-            description="Receive notifications on weekends"
-            value={preferences.weekend_notifications ?? true}
-            onValueChange={(value) => handlePreferenceChange('weekend_notifications', value)}
-            disabled={!notificationsEnabled}
+        <ScrollView className="flex-1 px-4 mt-4" showsVerticalScrollIndicator={false}>
+          <SectionHeader
+            title="General Notifications"
+            subtitle="Control which types of notifications you want to receive"
           />
-          <SettingToggle
-            label="Personalized Content"
-            description="Receive notifications tailored to your activity"
-            value={preferences.personalized_content ?? true}
-            onValueChange={(value) => handlePreferenceChange('personalized_content', value)}
-            disabled={!notificationsEnabled}
-          />
-          <SettingToggle
-            label="Location-Based Alerts"
-            description="Get relevant notifications based on your location"
-            value={preferences.location_based_notifications ?? false}
-            onValueChange={(value) => handlePreferenceChange('location_based_notifications', value)}
-            disabled={!notificationsEnabled}
-          />
-          <SettingToggle
-            label="Keep Notification History"
-            description="Save notification history for later viewing"
-            value={preferences.notification_history ?? true}
-            onValueChange={(value) => handlePreferenceChange('notification_history', value)}
-            disabled={!notificationsEnabled}
-          />
-        </View>
 
-        {/* Test Notification Button */}
-        <View className="mt-8">
-          <TouchableOpacity
-            onPress={handleTestNotification}
-            disabled={!notificationsEnabled}
-            className={`py-4 rounded-xl items-center ${notificationsEnabled ? 'bg-gray-100' : 'bg-gray-50'
-              }`}
-            activeOpacity={0.7}
+          <BlurView
+            intensity={60}
+            tint="light"
+            className="rounded-3xl p-5 mb-5 overflow-hidden border border-white/60 bg-white/40"
           >
-            <Text
-              className={`font-semibold ${notificationsEnabled ? 'text-gray-700' : 'text-gray-400'
-                }`}
-            >
-              Send Test Notification
-            </Text>
-          </TouchableOpacity>
-        </View>
+            <SettingToggle
+              label="Enable Notifications"
+              description="Master switch for all notifications"
+              value={notificationsEnabled}
+              onValueChange={(val) => handlePreferenceChange('enable_notifications', val)}
+              icon={<Bell size={24} color="#166534" />}
+            />
+          </BlurView>
 
-        {/* Info text */}
-        <Text className="text-center text-gray-400 text-sm mt-6 px-4">
-          Note: Some notification preferences may be managed by your device settings.
-          Critical security alerts will always be delivered.
-        </Text>
-      </ScrollView>
-    </SafeAreaView>
+          {notificationsEnabled && (
+            <>
+              {/* Notification Channels */}
+              <SectionHeader
+                title="Notification Channels"
+                subtitle="Choose how you want to receive notifications"
+              />
+              <BlurView
+                intensity={60}
+                tint="light"
+                className="rounded-3xl px-5 py-2 mb-5 overflow-hidden border border-white/60 bg-white/40"
+              >
+                {channelConfigs.map((channel) => (
+                  <SettingToggle
+                    key={channel.key}
+                    label={channel.label}
+                    description={channel.description}
+                    value={preferences[channel.key] ?? false}
+                    onValueChange={(value) => handlePreferenceChange(channel.key, value)}
+                    disabled={!notificationsEnabled}
+                    icon={channel.icon}
+                  />
+                ))}
+              </BlurView>
+
+              {/* Quiet Hours */}
+              <SectionHeader
+                title="Quiet Hours"
+                subtitle="Mute non-urgent notifications during specific times"
+              />
+
+              <BlurView
+                intensity={60}
+                tint="light"
+                className="rounded-3xl p-5 mb-5 overflow-hidden border border-white/60 bg-white/40"
+              >
+                <SettingToggle
+                  label="Enable Quiet Hours"
+                  description="Notifications will be delivered silently"
+                  icon={<Moon size={20} color="#166534" />}
+                  value={preferences.quiet_hours_enabled ?? false}
+                  onValueChange={(value) => handlePreferenceChange('quiet_hours_enabled', value)}
+                  disabled={!notificationsEnabled}
+                />
+
+                {preferences.quiet_hours_enabled && (
+                  <View className="mt-4 flex-row gap-3">
+                    <View className="flex-1">
+                      <Text className="text-sm text-gray-500 mb-1 ml-1 font-mulish">Start Time</Text>
+                      <TimePickerButton
+                        label="Start Time"
+                        value={preferences.quiet_hours_start ?? '22:00'}
+                        onPress={() => showTimePicker('start')}
+                        disabled={!notificationsEnabled}
+                      />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-sm text-gray-500 mb-1 ml-1 font-mulish">End Time</Text>
+                      <TimePickerButton
+                        label="End Time"
+                        value={preferences.quiet_hours_end ?? '06:00'}
+                        onPress={() => showTimePicker('end')}
+                        disabled={!notificationsEnabled}
+                      />
+                    </View>
+                  </View>
+                )}
+              </BlurView>
+
+              {/* Additional Settings */}
+              <SectionHeader
+                title="Additional Settings"
+                subtitle="Customize your notification experience"
+              />
+              <BlurView
+                intensity={60}
+                tint="light"
+                className="rounded-3xl px-5 py-2 mb-5 overflow-hidden border border-white/60 bg-white/40"
+              >
+                <SettingToggle
+                  label="Weekend Notifications"
+                  description="Receive notifications on weekends"
+                  value={preferences.weekend_notifications ?? true}
+                  onValueChange={(value) => handlePreferenceChange('weekend_notifications', value)}
+                  disabled={!notificationsEnabled}
+                />
+                <SettingToggle
+                  label="Personalized Content"
+                  description="Receive notifications tailored to your activity"
+                  value={preferences.personalized_content ?? true}
+                  onValueChange={(value) => handlePreferenceChange('personalized_content', value)}
+                  disabled={!notificationsEnabled}
+                />
+                <SettingToggle
+                  label="Location-Based Alerts"
+                  description="Get relevant notifications based on your location"
+                  value={preferences.location_based_notifications ?? false}
+                  onValueChange={(value) => handlePreferenceChange('location_based_notifications', value)}
+                  disabled={!notificationsEnabled}
+                />
+                <SettingToggle
+                  label="Keep Notification History"
+                  description="Save notification history for later viewing"
+                  value={preferences.notification_history ?? true}
+                  onValueChange={(value) => handlePreferenceChange('notification_history', value)}
+                  disabled={!notificationsEnabled}
+                />
+              </BlurView>
+            </>
+          )}
+
+          {/* Bottom spacing */}
+          <View className="h-12" />
+
+          {/* Info text */}
+          <Text className="text-center text-gray-400 text-sm mt-6 px-4 font-mulish">
+            Note: Some notification preferences may be managed by your device settings.
+            Critical security alerts will always be delivered.
+          </Text>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 };
 

@@ -15,6 +15,7 @@ import OnGoingRequests from "@/app/components/servicesTabs/OnGoingRequests";
 import CompletedRequests from "@/app/components/servicesTabs/CompletedRequests";
 import CancelledRequests from "@/app/components/servicesTabs/CancelledRequests";
 import { WifiOff } from "lucide-react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 type TabType = "Sent" | "On-going" | "Completed" | "Cancelled";
 
@@ -30,6 +31,33 @@ const Requests = () => {
   const hasRequests = Object.keys(byId).length > 0;
   const [refreshing, setRefreshing] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
+
+  const { openRequestId } = useLocalSearchParams<{ openRequestId?: string }>();
+  const router = useRouter();
+
+  // Handle Push Notification Deep Links
+  useEffect(() => {
+    if (openRequestId && byId[openRequestId]) {
+      const fullRequest = byId[openRequestId];
+      let path: any;
+      switch (fullRequest.status) {
+        case "pending": path = "/components/requests/screens/RequestDetailsScreen"; break;
+        case "ongoing": path = "/components/requests/screens/OngoingDetailsScreen"; break;
+        case "completed": path = "/components/requests/screens/CompletedDetailsScreen"; break;
+        case "cancelled": path = "/components/requests/screens/CancelledDetailsScreen"; break;
+      }
+      if (path) {
+        // Clear param to avoid re-triggering if the tab rerenders
+        router.setParams({ openRequestId: "" });
+        setTimeout(() => {
+          router.push({
+            pathname: path,
+            params: { request: JSON.stringify(fullRequest) }
+          });
+        }, 100);
+      }
+    }
+  }, [openRequestId, byId]);
 
   // Fetch requests from backend when tab mounts
   useEffect(() => {

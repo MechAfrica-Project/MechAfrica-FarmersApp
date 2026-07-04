@@ -1,6 +1,8 @@
 import React, { useMemo } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { Trash2, Check } from "lucide-react-native";
+import { View, Text, TouchableOpacity, Animated, Pressable } from "react-native";
+import { Trash2, Check, ChevronRight } from "lucide-react-native";
+import { Swipeable } from "react-native-gesture-handler";
+import { BlurView } from "expo-blur";
 import { 
   UserNotification, 
   isNotificationRead, 
@@ -17,58 +19,107 @@ type Props = {
 
 const NotificationCard: React.FC<Props> = ({ item, onMarkRead, onRemove }) => {
   const isRead = isNotificationRead(item);
-  
+  const formattedTime = item.created_at ? formatNotificationTime(item.created_at) : "Just now";
+  const isActionable = !isRead;
+
   const containerClass = useMemo(
     () =>
-      `p-4 rounded-2xl border ${
-        isRead ? "border-gray-200 bg-white" : "border-green-200 bg-green-50"
-      } shadow-sm`,
+      `rounded-2xl border overflow-hidden my-2 mx-4 ${isRead
+        ? "border-white/60 bg-white/40"
+        : "border-green-200/60 bg-green-50/60"
+      }`,
     [isRead]
   );
 
+  const renderRightActions = (progress: any, dragX: any) => {
+    const scale = dragX.interpolate({
+      inputRange: [-100, 0],
+      outputRange: [1, 0],
+      extrapolate: "clamp",
+    });
+    return (
+      <TouchableOpacity 
+        onPress={() => onRemove(item.id)}
+        className="bg-red-500 justify-center items-end rounded-2xl my-2 px-6 shadow-sm"
+        style={{ width: 100 }}
+      >
+        <Animated.View style={{ transform: [{ scale }] }}>
+          <Trash2 size={24} color="#FFF" />
+        </Animated.View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderLeftActions = (progress: any, dragX: any) => {
+    if (isRead) return null;
+    const scale = dragX.interpolate({
+      inputRange: [0, 100],
+      outputRange: [0, 1],
+      extrapolate: "clamp",
+    });
+    return (
+      <TouchableOpacity 
+        onPress={() => onMarkRead(item.id)}
+        className="bg-green-600 justify-center items-start rounded-2xl my-2 px-6 shadow-sm"
+        style={{ width: 100 }}
+      >
+        <Animated.View style={{ transform: [{ scale }] }}>
+          <Check size={24} color="#FFF" />
+        </Animated.View>
+      </TouchableOpacity>
+    );
+  };
+
   return (
-    <View className={containerClass}>
-      <View className="flex-row justify-between items-start">
-        <Text className="text-base font-bold text-green-900 flex-1 pr-2">
-          {item.title}
-        </Text>
-        <Text className="text-gray-500 text-xs">
-          {item.created_at ? formatNotificationTime(item.created_at) : "Just now"}
-        </Text>
-      </View>
+    <Swipeable
+      renderRightActions={renderRightActions}
+      renderLeftActions={renderLeftActions}
+      overshootRight={false}
+      overshootLeft={false}
+    >
+      <Pressable
+        className={containerClass}
+        style={({ pressed }) => [
+          {
+            opacity: pressed ? 0.7 : 1,
+          },
+        ]}
+      >
+        <BlurView intensity={isRead ? 40 : 60} tint="light" className="p-4">
+          <View className="flex-row justify-between items-start">
+            <View className="flex-1 pr-2">
+              <Text
+                className={`text-base font-extrabold font-mulish ${isRead ? "text-gray-700" : "text-green-900"
+                  }`}
+                numberOfLines={2}
+              >
+                {item.title}
+              </Text>
+            </View>
+            <View className="flex-row items-center">
+              <Text className="text-gray-500 text-xs font-mulish">{formattedTime}</Text>
+              {isActionable && (
+                <ChevronRight size={16} color="#9ca3af" style={{ marginLeft: 4 }} />
+              )}
+            </View>
+          </View>
 
-      <Text className="text-gray-700 mt-1">{item.message}</Text>
-
-      <View className="flex-row justify-between items-center mt-3">
-        <View
-          className={`px-2 py-1 rounded-full ${getNotificationTypeBadgeClass(item.type)}`}
-        >
-          <Text className="text-xs font-semibold capitalize">
-            {getNotificationTypeLabel(item.type)}
+          <Text className={`mt-1 font-mulish ${isRead ? "text-gray-600" : "text-gray-700"}`} numberOfLines={3}>
+            {item.message}
           </Text>
-        </View>
 
-        <View className="flex-row gap-2">
-          {!isRead && (
-            <TouchableOpacity
-              onPress={() => onMarkRead(item.id)}
-              className="flex-row items-center gap-1 px-3 py-1 rounded-full bg-gray-100"
-              activeOpacity={0.8}
-            >
-              <Check size={14} color="#166534" />
-              <Text className="text-gray-700 text-sm font-semibold">Read</Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity
-            onPress={() => onRemove(item.id)}
-            className="flex-row items-center px-3 py-1 rounded-full bg-red-50"
-            activeOpacity={0.8}
-          >
-            <Trash2 size={16} color="#b91c1c" />
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+          <View className="flex-row justify-between items-center mt-4">
+            <View className={`px-2.5 py-1 rounded-md ${getNotificationTypeBadgeClass(item.type)}`}>
+              <Text className="text-xs font-bold uppercase tracking-widest font-mulish">{getNotificationTypeLabel(item.type)}</Text>
+            </View>
+
+            {!isRead && (
+              <View className="w-2 h-2 rounded-full bg-green-500 shadow-sm" />
+            )}
+          </View>
+        </BlurView>
+      </Pressable>
+    </Swipeable>
   );
 };
 

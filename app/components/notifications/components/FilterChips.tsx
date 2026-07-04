@@ -22,15 +22,17 @@ const FilterChips: React.FC<Props> = ({ active, onChange }) => {
           <TouchableOpacity
             key={value}
             onPress={() => onChange(value)}
-            className={`px-4 py-2 rounded-full ${
-              isActive ? "bg-green-700" : "bg-gray-100"
+            className={`px-5 py-2 rounded-full border ${
+              isActive 
+                ? "bg-green-700 border-green-700" 
+                : "bg-white/60 border-black/5"
             }`}
             activeOpacity={0.8}
           >
             <Text
               className={`${
-                isActive ? "text-white" : "text-gray-800"
-              } font-semibold`}
+                isActive ? "text-white" : "text-gray-600"
+              } font-bold text-sm tracking-wide`}
             >
               {label}
             </Text>

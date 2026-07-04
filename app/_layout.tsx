@@ -15,6 +15,7 @@ import { Stack, useSegments, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect } from "react";
 import { View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "./globals.css";
 import { useAppUpdateCheck } from "@/hooks/useAppUpdateCheck";
 import UpdateRequiredModal from "./components/general/UpdateRequiredModal";
@@ -111,22 +112,24 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <ErrorBoundary>
-      <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-        <OfflineQueueIndicator />
-        <Stack screenOptions={{ headerShown: false }} />
-        <RouterStateOverlay />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ErrorBoundary>
+        <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+          <OfflineQueueIndicator />
+          <Stack screenOptions={{ headerShown: false }} />
+          <RouterStateOverlay />
 
-        {/* App Version Check Modals */}
-        <UpdateRequiredModal
-          visible={storeUpdateRequired || storeUpdateOptional}
-          isForce={storeUpdateRequired}
-          message={updateMessage}
-          storeUrl={storeUrl}
-          onDismiss={dismissSoftUpdate}
-        />
-      </View>
-      <Toast config={toastConfig} />
-    </ErrorBoundary>
+          {/* App Version Check Modals */}
+          <UpdateRequiredModal
+            visible={storeUpdateRequired || storeUpdateOptional}
+            isForce={storeUpdateRequired}
+            message={updateMessage}
+            storeUrl={storeUrl}
+            onDismiss={dismissSoftUpdate}
+          />
+        </View>
+        <Toast config={toastConfig} />
+      </ErrorBoundary>
+    </GestureHandlerRootView>
   );
 }
