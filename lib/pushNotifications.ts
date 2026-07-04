@@ -84,7 +84,7 @@ async function setupAndroidChannels() {
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#166534',
-      sound: 'default',
+      sound: 'custom_sound.wav',
       enableVibrate: true,
       enableLights: true,
     });
@@ -94,7 +94,7 @@ async function setupAndroidChannels() {
       name: 'Service Requests',
       description: 'Notifications about service requests',
       importance: Notifications.AndroidImportance.HIGH,
-      sound: 'default',
+      sound: 'custom_sound.wav',
       enableVibrate: true,
       vibrationPattern: [0, 250, 250, 250],
       enableLights: true,
@@ -106,7 +106,7 @@ async function setupAndroidChannels() {
       name: 'Payments',
       description: 'Payment and transaction notifications',
       importance: Notifications.AndroidImportance.HIGH,
-      sound: 'default',
+      sound: 'custom_sound.wav',
       enableVibrate: true,
       enableLights: true,
       lightColor: '#10B981',
@@ -117,7 +117,7 @@ async function setupAndroidChannels() {
       name: 'System Alerts',
       description: 'Important system notifications',
       importance: Notifications.AndroidImportance.DEFAULT,
-      sound: 'default',
+      sound: 'custom_sound.wav',
     });
 
     // Weather alerts channel
@@ -125,7 +125,7 @@ async function setupAndroidChannels() {
       name: 'Weather Alerts',
       description: 'Weather warnings and alerts',
       importance: Notifications.AndroidImportance.HIGH,
-      sound: 'default',
+      sound: 'custom_sound.wav',
       enableVibrate: true,
       vibrationPattern: [0, 500, 250, 500],
       lightColor: '#F59E0B',
@@ -399,7 +399,7 @@ export async function scheduleLocalNotification(
       title,
       body,
       data: data || {},
-      sound: 'default',
+      sound: 'custom_sound.wav',
       priority: Notifications.AndroidNotificationPriority.HIGH,
     };
 

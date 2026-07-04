@@ -79,7 +79,9 @@
         {
           "icon": "./assets/images/mechafrica-square.png",
           "color": "#ffffff",
-          "sounds": [],
+          "sounds": [
+            "./assets/custom_sound.wav"
+          ],
           "android": {
             "channelId": "default"
           }
