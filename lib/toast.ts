@@ -137,6 +137,10 @@ export const toastInfo = (text1: string, text2?: string, visibilityTime?: number
   showInfoToast(text1, { description: text2, visibilityTime });
 };
 
+export const toastQueued = (text1: string, text2?: string, visibilityTime?: number) => {
+  showInfoToast(text1, { description: text2, visibilityTime });
+};
+
 export const dismissToasts = () => {
   hideToast();
 };
