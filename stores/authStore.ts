@@ -237,10 +237,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const rs = (await import("@/stores/requestsStore")).useRequestsStore.getState();
         const fs = (await import("@/stores/farmerStore")).useFarmerStore.getState();
         const ns = (await import("@/stores/notificationStore")).useNotificationStore.getState();
+        
+        // Setup push notifications
+        const pushPromise = (async () => {
+          try {
+            const { registerPushToken } = require('@/lib/pushNotifications');
+            await registerPushToken('farmer', true); // true = force refresh
+            console.log('[auth] Push token registered on login');
+          } catch (err) {
+            console.warn('[auth] Failed to register push token:', err);
+          }
+        })();
+
         Promise.allSettled([
           rs.fetchRequests ? rs.fetchRequests() : Promise.resolve(),
           fs.fetchProfile ? fs.fetchProfile() : Promise.resolve(),
           ns.fetchNotifications ? ns.fetchNotifications() : Promise.resolve(),
+          pushPromise,
         ]).catch(() => { });
       } catch { }
 
