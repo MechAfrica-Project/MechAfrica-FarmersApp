@@ -304,7 +304,7 @@ export type MinimalUser = { id: string; name?: string; phone?: string; email?: s
 export const auth = {
   sendOtp: (phone: string, country?: string) => apiFetch<{ ok: boolean }>(API_ENDPOINTS.AUTH_SEND_OTP, {
     method: "POST",
-    body: JSON.stringify({ Phone: phone, phone_number: phone, phone: phone, Country: country }),
+    body: JSON.stringify({ Phone: phone, phone_number: phone, phone: phone, Country: country, role: "farmer" }),
   }),
   verifyOtp: (phone: string, code: string) => apiFetch<{ token: string; user?: MinimalUser }>(API_ENDPOINTS.AUTH_VERIFY_OTP, {
     method: "POST",
