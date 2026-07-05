@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/compare/v1.4.0...v1.5.0) (2026-07-05)
+
+
+### Features
+
+* add EAS workflow for Android production builds and store submission ([6e55200](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/6e55200e4b1235df9c90a89e03a224ed5992265e))
+* add google-services.json and configure android googleServicesFile in app.json ([4082bd9](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/4082bd9a29b008ed99119965926fc43934d55fb9))
+* add toastQueued helper function to display queued information toasts ([5fd64d2](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/5fd64d22fb6322be5faa54fbf3bf159449883c34))
+* implement custom push notification sound across all notification channels ([2e7f578](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/2e7f57806ed1882d1ea3237b2b902178ba64663d))
+* redesign notification screen with blur effects, implement terms acceptance flow, and add request deep linking support ([4837703](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/4837703792f9c04dd28e67833c618ba9a8385c7e))
+* register push notification token upon successful user login ([48ef8a5](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/48ef8a542647a49785457bb478c4cc6e1e5db92a))
+
+
+### Refactoring
+
+* enhance UpdateRequiredModal with custom entrance animations and modernized UI styling ([4fd5a1e](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/4fd5a1e8a498f8497f751a8a6a85a9939cac63c3))
+* simplify toast management by migrating to react-native-toast-message and adding custom configuration ([8c573fa](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/8c573fa7889d19a85051d33fe498b140ce9639c3))
+
 ## [1.4.0](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/compare/v1.3.0...v1.4.0) (2026-07-03)
 
 
