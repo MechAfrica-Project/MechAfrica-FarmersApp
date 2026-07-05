@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Animated, Pressable } from "react-native"
 import { Trash2, Check, ChevronRight } from "lucide-react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { BlurView } from "expo-blur";
+import { router } from "expo-router";
 import { 
   UserNotification, 
   isNotificationRead, 
@@ -79,6 +80,16 @@ const NotificationCard: React.FC<Props> = ({ item, onMarkRead, onRemove }) => {
     >
       <Pressable
         className={containerClass}
+        onPress={() => {
+          if (!isRead) {
+            onMarkRead(item.id);
+          }
+          if (item.action_url) {
+            router.push(item.action_url as any);
+          } else if (item.metadata?.request_id) {
+            router.push(`/(tabs)/requests?openRequestId=${item.metadata.request_id}` as any);
+          }
+        }}
         style={({ pressed }) => [
           {
             opacity: pressed ? 0.7 : 1,
