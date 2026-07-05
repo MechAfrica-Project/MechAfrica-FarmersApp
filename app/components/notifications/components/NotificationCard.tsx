@@ -1,9 +1,10 @@
 import React, { useMemo } from "react";
 import { View, Text, TouchableOpacity, Animated, Pressable } from "react-native";
 import { Trash2, Check, ChevronRight } from "lucide-react-native";
-import { Swipeable } from "react-native-gesture-handler";
+import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { BlurView } from "expo-blur";
 import { router } from "expo-router";
+import * as Haptics from "expo-haptics";
 import { 
   UserNotification, 
   isNotificationRead, 
@@ -77,6 +78,17 @@ const NotificationCard: React.FC<Props> = ({ item, onMarkRead, onRemove }) => {
       renderLeftActions={renderLeftActions}
       overshootRight={false}
       overshootLeft={false}
+      onSwipeableOpen={(direction) => {
+        if (direction === "left") {
+          if (!isRead) {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            onMarkRead(item.id);
+          }
+        } else if (direction === "right") {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          onRemove(item.id);
+        }
+      }}
     >
       <Pressable
         className={containerClass}
