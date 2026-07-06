@@ -24,12 +24,7 @@ export default function SignIn() {
     return () => { };
   }, [navigation]);
 
-  // Show toast when authStore reports an error
-  useEffect(() => {
-    if (error) {
-      toastError('Sign in error', error);
-    }
-  }, [error]);
+  // We display errors inline below the phone input instead of using a toast
 
   return (
     <AuthLayout
@@ -49,7 +44,11 @@ export default function SignIn() {
           }}
         />
 
-        {/* errors are surfaced via toast messages */}
+        {error ? (
+          <Text className="text-red-500 font-mulish text-sm text-center mb-4 px-4">
+            {error}
+          </Text>
+        ) : null}
 
         <PrimaryButton
           title="Log in"

@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { View, Text, TouchableOpacity, Animated, Pressable } from "react-native";
 import { Trash2, Check, ChevronRight } from "lucide-react-native";
-import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import Swipeable from "react-native-gesture-handler/Swipeable";
 import { BlurView } from "expo-blur";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -61,7 +61,7 @@ const NotificationCard: React.FC<Props> = ({ item, onMarkRead, onRemove }) => {
     });
     return (
       <TouchableOpacity 
-        onPress={() => onMarkRead(item.id)}
+        onPress={() => onMarkRead?.(item.id)}
         className="bg-green-600 justify-center items-start rounded-2xl my-2 px-6 shadow-sm"
         style={{ width: 100 }}
       >
@@ -82,11 +82,11 @@ const NotificationCard: React.FC<Props> = ({ item, onMarkRead, onRemove }) => {
         if (direction === "left") {
           if (!isRead) {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            onMarkRead(item.id);
+            onMarkRead?.(item.id);
           }
         } else if (direction === "right") {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-          onRemove(item.id);
+          onRemove?.(item.id);
         }
       }}
     >
@@ -94,7 +94,7 @@ const NotificationCard: React.FC<Props> = ({ item, onMarkRead, onRemove }) => {
         className={containerClass}
         onPress={() => {
           if (!isRead) {
-            onMarkRead(item.id);
+            onMarkRead?.(item.id);
           }
           if (item.action_url) {
             router.push(item.action_url as any);

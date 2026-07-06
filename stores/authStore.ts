@@ -112,7 +112,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           }
         }
       } catch { }
-      toastError('Send failed', msg);
       set({ loading: false, error: msg });
       // rethrow so callers who `await sendPhone()` can react if needed
       throw err;
