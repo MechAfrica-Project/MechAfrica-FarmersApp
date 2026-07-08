@@ -41,7 +41,8 @@ const CompletedDetailsScreen: React.FC = () => {
           type: 'info',
           text1: 'Request deleted',
           visibilityTime: 5000,
-          placement: 'top',
+          position: 'top',
+          props: {
           actions: [
             {
               label: 'Undo',
@@ -51,6 +52,7 @@ const CompletedDetailsScreen: React.FC = () => {
               style: 'primary',
             },
           ],
+        }
         });
         router.back();
       }}

@@ -42,9 +42,10 @@ const CancelledDetailsScreen: React.FC = () => {
           type: 'info',
           text1: 'Request deleted',
           visibilityTime: 5000,
-          placement: 'top',
-          actions: [
-            {
+          position: 'top',
+          props: {
+            actions: [
+              {
               label: 'Undo',
               onPress: () => {
                 try { restoreRequest(snapshot); } catch {}
@@ -52,6 +53,7 @@ const CancelledDetailsScreen: React.FC = () => {
               style: 'primary',
             },
           ],
+          },
         });
         router.back();
       }}

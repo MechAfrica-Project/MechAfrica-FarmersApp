@@ -249,18 +249,20 @@ const Farms = () => {
                                   text1: 'Farm deleted',
                                   text2: undefined,
                                   visibilityTime: 5000,
-                                  placement: 'top',
-                                  actions: [
-                                    {
-                                      label: 'Undo',
-                                      onPress: () => {
-                                        try {
-                                          restoreFarm(snapshot);
-                                        } catch { }
+                                  position: 'top',
+                                  props: {
+                                    actions: [
+                                      {
+                                        label: 'Undo',
+                                        onPress: () => {
+                                          try {
+                                            restoreFarm(snapshot);
+                                          } catch { }
+                                        },
+                                        style: 'primary',
                                       },
-                                      style: 'primary',
-                                    },
-                                  ],
+                                    ],
+                                  },
                                 });
                               } catch { }
                               setBusyIds((s) => {
