@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/compare/v1.5.0...v1.6.0) (2026-07-09)
+
+
+### Features
+
+* implement navigation handling for notification press events with automatic read status updates ([01f7930](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/01f793048a9d48ef0af91d4ea0e290df6365b619))
+* include role field in OTP authentication request body ([683ef76](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/683ef761d1955b74efa6bbd98bacbb27d1e7005a))
+* migrate to ReanimatedSwipeable and add haptic feedback to notification swipe actions ([f34bd29](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/f34bd29c5ee49f80e95fbc7270f3cff79c972033))
+* update image type definitions to support specific React Native source types and SVG components ([b5f5c4c](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/b5f5c4cfdc25de7599dc9e80c3fe3ef70aab7cf4))
+
+
+### Refactoring
+
+* update NotificationCard dependencies, remove redundant toast triggers, and display authentication errors inline ([6d528ea](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/6d528eaf92eba657679970e63b03851195dc6949))
+* update toast notification configuration to use props object for actions and fix placement property name ([72a3d8b](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/72a3d8bf3879bef36a574e49329d86ed45a2cde6))
+
 ## [1.5.0](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/compare/v1.4.0...v1.5.0) (2026-07-05)
 
 
