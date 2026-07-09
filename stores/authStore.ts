@@ -18,6 +18,8 @@ interface User {
   phone?: string;
   avatar?: string;
   terms_of_service_accepted?: boolean;
+  gender?: string;
+  dob?: string;
 }
 
 interface AuthState {
@@ -230,6 +232,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Ensure onboarding store is loaded (some flows rely on it)
       const onboardingStore = useOnboardingStore.getState();
       await onboardingStore.loadFromStorage();
+
+      // If user exists in the ecosystem, pre-fill onboarding data (Progressive Profiling)
+      if (data.isExistingUser && data.user) {
+        const [firstName, ...lastNameParts] = (data.user.name || '').split(' ');
+        const lastName = lastNameParts.join(' ');
+        
+        onboardingStore.updateData({
+          personalInfo: {
+            ...onboardingStore.data.personalInfo,
+            firstName: firstName || '',
+            lastName: lastName || '',
+            otpVerified: true,
+          },
+          moreInfo: {
+            ...onboardingStore.data.moreInfo,
+            gender: data.user.gender as any,
+            dob: data.user.dob,
+          }
+        });
+      }
 
       set({ user: data.user ?? null, token: newToken, loading: false });
 
