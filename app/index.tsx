@@ -1,4 +1,4 @@
-import { images } from "@/types/images";
+import { images } from "@/constants/images";
 import { Link } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -8,7 +8,7 @@ export default function Index() {
     <View className="flex-1 relative">
       {/* Background Image */}
       <Image
-        source={images.welcomebg}
+        source={images.welcomeBg}
         className="absolute inset-0 w-full h-full z-0"
         resizeMode="cover"
       />

@@ -8,6 +8,7 @@ import { loadTokensFromStorage } from '@/lib/api';
 import { startNetworkMonitoring } from "@/lib/network";
 import { useAuthStore } from "@/stores/authStore";
 import { useFarmerStore } from "@/stores/farmerStore";
+import { useCatalogStore } from "@/stores/catalogStore";
 import { useNotificationStore } from "@/stores/notificationStore";
 import { useRequestsStore } from "@/stores/requestsStore";
 import { useFonts } from "expo-font";
@@ -51,6 +52,9 @@ export default function RootLayout() {
     (async () => {
       // Load persisted tokens into api client memory (AsyncStorage)
       try { await loadTokensFromStorage(); } catch { }
+
+      // Fetch public catalogs immediately
+      useCatalogStore.getState().fetchCatalogs().catch(() => {});
 
       await restoreSession();
 

@@ -1,4 +1,4 @@
-import { servicesData } from "@/constants/servicesData";
+import { useCatalogStore } from "@/stores/catalogStore";
 import { useServiceFlowStore } from "@/stores/serviceFlowStore";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
@@ -8,13 +8,14 @@ const ServiceStart = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams();
 
-  const service = servicesData.find((s) => s.id === id);
+  const { services } = useCatalogStore();
+  const service = services.find((s) => s.id === id);
 
   return (
     <ServiceDateTimePicker
       heading="When do you need this service?"
       subtext="Select the date and time you need the service."
-      heroImage={service?.image} // Pass service image here
+      heroImage={service?.imageUrl ? { uri: service.imageUrl } : undefined} // Pass service image here
       onConfirm={(date, time) => {
         const combinedStart = new Date(date);
         combinedStart.setHours(time.getHours(), time.getMinutes());

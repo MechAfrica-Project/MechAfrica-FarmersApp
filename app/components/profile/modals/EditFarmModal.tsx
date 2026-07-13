@@ -1,5 +1,5 @@
 import SelectModal from "@/app/components/general/SelectModal";
-import { cropOptions } from "@/constants/cropOptions";
+import { useCatalogStore } from "@/stores/catalogStore";
 import {
   getAllRegions,
   getDistrictsByRegion,
@@ -30,6 +30,8 @@ type EditFarmModalProps = {
 
 const EditFarmModal = ({ visible, onClose, farm }: EditFarmModalProps) => {
   const { updateFarm, farms } = useFarmerStore();
+  const { crops } = useCatalogStore();
+  const cropOptions = crops.map(c => c.name);
 
   const [farmName, setFarmName] = useState("");
   const [farmSize, setFarmSize] = useState("");

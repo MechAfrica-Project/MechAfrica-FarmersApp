@@ -1,4 +1,4 @@
-import { servicesData } from "@/constants/servicesData";
+import { useCatalogStore } from "@/stores/catalogStore";
 import { useFarmerStore } from "@/stores/farmerStore";
 import { useRequestsStore } from "@/stores/requestsStore";
 import { useServiceFlowStore } from "@/stores/serviceFlowStore";
@@ -24,7 +24,8 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const ServiceDetails = () => {
   const router = useRouter();
   const draft = useServiceFlowStore((s) => s.draft);
-  const service = servicesData.find((s) => s.id === draft.serviceId);
+  const { services } = useCatalogStore();
+  const service = services.find((s) => s.id === draft.serviceId);
   const farms = useFarmerStore((s) => s.farms);
   const profile = useFarmerStore((s) => s.profile);
 
@@ -39,18 +40,23 @@ const ServiceDetails = () => {
           contentContainerStyle={{ paddingVertical: 20, paddingHorizontal: 20 }}
         >
           {/* Service Image */}
-          {service?.image && (
+          {service?.imageUrl && (
             <Image
-              source={service.image}
+              source={{ uri: service.imageUrl }}
               style={{
-                width: SCREEN_WIDTH * 0.9,
-                height: SCREEN_WIDTH * 0.6,
-                borderRadius: 20,
-                alignSelf: "center",
+                width: SCREEN_WIDTH - 40,
+                height: 180,
+                borderRadius: 12,
+                marginBottom: 20,
               }}
               resizeMode="cover"
             />
           )}
+
+          <Text className="text-[28px] font-bold text-gray-800 mb-1">
+            {service?.name}
+          </Text>
+          <Text className="text-gray-500 mb-6">{service?.description}</Text>
 
           {/* Farmer Details */}
           <FarmerDetails
@@ -91,9 +97,9 @@ const ServiceDetails = () => {
 
               const newReq: any = {
                 serviceId: draft.serviceId || "",
-                serviceTitle: service?.title || "",
-                serviceDetails: service?.subtitle || "",
-                serviceImage: service?.image,
+                serviceTitle: service?.name || "",
+                serviceDetails: service?.description || "",
+                serviceImage: service?.imageUrl ? { uri: service?.imageUrl } : undefined,
                 farmerName,
                 farmLocation,
                 farmLatitude: selectedFarm.latitude,

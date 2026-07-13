@@ -3,11 +3,15 @@ import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Sprout } from "lucide-react-native";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import InputField from "@/app/components/onboarding/InputField";
-import { cropOptions } from "@/constants/cropOptions";
+import { useCatalogStore } from "@/stores/catalogStore";
 
 const FarmInfoStep = () => {
   const { data, updateData } = useOnboardingStore();
   const { farmInfo } = data;
+  const { crops } = useCatalogStore();
+  
+  // Extract just names to match the existing string[] type in farmInfo
+  const cropOptions = crops.map(c => c.name);
 
   const [focused, setFocused] = useState<string | null>(null);
 

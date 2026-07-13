@@ -19,6 +19,9 @@ import halfBg from "@/assets/images/half-bg.png";
 import tractor1 from "@/assets/images/tractor1.png";
 import tractor2 from "@/assets/images/tractor2.png";
 import farmField from "@/assets/images/farmField.png";
+import bagging from "@/assets/images/bagging.png";
+import fertilization from "@/assets/images/fertilization.png";
+import harrowing from "@/assets/images/harrowing.png";
 
 export const images = {
   welcomeBg,
@@ -41,5 +44,8 @@ export const images = {
   halfBg,
   tractor1,
   tractor2,
-  farmField
+  farmField,
+  bagging,
+  fertilization,
+  harrowing
 };

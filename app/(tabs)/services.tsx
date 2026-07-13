@@ -1,4 +1,4 @@
-import { servicesData } from "@/constants/servicesData";
+import { useCatalogStore } from "@/stores/catalogStore";
 import { useUIStore } from "@/stores/uiStore";
 import React from "react";
 import { FlatList } from "react-native";
@@ -9,10 +9,11 @@ import ServiceHeader from "@/app/components/service/components/ServiceHeader";
 const Services = () => {
   const search = useUIStore((s) => s.serviceSearch);
   const setSearch = useUIStore((s) => s.setServiceSearch);
+  const { services } = useCatalogStore();
 
   // Filter services globally here
-  const filteredServices = servicesData.filter((service) =>
-    service.title.toLowerCase().includes(search.toLowerCase())
+  const filteredServices = services.filter((service) =>
+    service.name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (

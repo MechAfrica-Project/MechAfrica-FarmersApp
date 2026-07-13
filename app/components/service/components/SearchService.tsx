@@ -3,13 +3,7 @@ import React from "react";
 import { FlatList } from "react-native";
 import ServiceCard from "../../general/ServiceCard";
 
-interface Service {
-  id: string;
-  title: string;
-  subtitle: string;
-  image: any;
-  rating: number;
-}
+import { Service } from "@/stores/catalogStore";
 
 interface SearchServiceProps {
   filteredServices: Service[];
@@ -24,10 +18,10 @@ const SearchService: React.FC<SearchServiceProps> = ({ filteredServices }) => {
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
         <ServiceCard
-          image={item.image}
-          title={item.title}
-          subtitle={item.subtitle}
-          rating={item.rating}
+          image={item.imageUrl ? { uri: item.imageUrl } : undefined as any}
+          title={item.name}
+          subtitle={item.description}
+          rating={4.9} // Hardcoded or omitted if not available in new model
           onPress={() =>
             router.push({
               pathname: "/components/service/serviceFlow/ServiceStart",

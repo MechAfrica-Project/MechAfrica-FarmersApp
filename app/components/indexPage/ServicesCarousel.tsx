@@ -3,13 +3,7 @@ import { View, FlatList, Dimensions } from "react-native";
 import ServiceCard from "../general/ServiceCard";
 import { useRouter } from "expo-router";
 
-interface Service {
-  id: string;
-  image: any;
-  title: string;
-  subtitle: string;
-  rating: number;
-}
+import { Service } from "@/stores/catalogStore";
 
 interface ServicesCarouselProps {
   services: Service[];
@@ -34,10 +28,10 @@ const ServicesCarousel: React.FC<ServicesCarouselProps> = ({ services }) => {
         contentContainerStyle={{ paddingHorizontal: 16 }}
         renderItem={({ item }) => (
           <ServiceCard
-            image={item.image}
-            title={item.title}
-            subtitle={item.subtitle}
-            rating={item.rating}
+            image={item.imageUrl ? { uri: item.imageUrl } : undefined as any}
+            title={item.name}
+            subtitle={item.description}
+            rating={4.9}
             onCarousel
             onPress={() =>
               router.push({
