@@ -30,7 +30,7 @@ type EditFarmModalProps = {
 
 const EditFarmModal = ({ visible, onClose, farm }: EditFarmModalProps) => {
   const { updateFarm, farms } = useFarmerStore();
-  const { crops } = useCatalogStore();
+  const { crops, fetchCatalogs } = useCatalogStore();
   const cropOptions = crops.map(c => c.name);
 
   const [farmName, setFarmName] = useState("");
@@ -55,6 +55,10 @@ const EditFarmModal = ({ visible, onClose, farm }: EditFarmModalProps) => {
       setCropTypes(farm.cropTypes || []);
       setLatitude(farm.latitude);
       setLongitude(farm.longitude);
+    }
+    // Re-fetch crops if they're empty when the modal opens
+    if (visible && crops.length === 0) {
+      fetchCatalogs();
     }
   }, [farm, visible]);
 

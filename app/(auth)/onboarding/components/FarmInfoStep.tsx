@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
 import { Sprout } from "lucide-react-native";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import InputField from "@/app/components/onboarding/InputField";
@@ -8,12 +8,19 @@ import { useCatalogStore } from "@/stores/catalogStore";
 const FarmInfoStep = () => {
   const { data, updateData } = useOnboardingStore();
   const { farmInfo } = data;
-  const { crops } = useCatalogStore();
+  const { crops, loading: cropsLoading, fetchCatalogs } = useCatalogStore();
   
   // Extract just names to match the existing string[] type in farmInfo
   const cropOptions = crops.map(c => c.name);
 
   const [focused, setFocused] = useState<string | null>(null);
+
+  // Re-fetch if crops haven't loaded yet (e.g. initial fetch failed)
+  useEffect(() => {
+    if (crops.length === 0 && !cropsLoading) {
+      fetchCatalogs();
+    }
+  }, []);
 
   // Toggle crop selection logic
   const toggleCrop = (crop: string) => {
@@ -103,32 +110,38 @@ const FarmInfoStep = () => {
         <Text className="text-base font-semibold text-gray-800 mb-3">
           Crop Type
         </Text>
-        <View className="flex-row flex-wrap">
-          {cropOptions.map((crop) => {
-            const selected = farmInfo?.cropTypes?.includes(crop);
-            return (
-              <TouchableOpacity
-                key={crop}
-                onPress={() => toggleCrop(crop)}
-                activeOpacity={0.8}
-                className={`flex-row items-center px-4 py-2 mr-2 mb-2 rounded-full ${selected ? "bg-green-700" : "bg-gray-100"
-                  }`}
-              >
-                <Sprout
-                  size={14}
-                  color={selected ? "#fff" : "#4B5563"} // Tailwind gray-600
-                  className="mr-1"
-                />
-                <Text
-                  className={`text-sm font-semibold ${selected ? "text-white" : "text-gray-800"
+        {cropsLoading && crops.length === 0 ? (
+          <ActivityIndicator size="small" color="#15803d" />
+        ) : crops.length === 0 ? (
+          <Text className="text-sm text-gray-400 italic">No crops available. Please check your connection.</Text>
+        ) : (
+          <View className="flex-row flex-wrap">
+            {cropOptions.map((crop) => {
+              const selected = farmInfo?.cropTypes?.includes(crop);
+              return (
+                <TouchableOpacity
+                  key={crop}
+                  onPress={() => toggleCrop(crop)}
+                  activeOpacity={0.8}
+                  className={`flex-row items-center px-4 py-2 mr-2 mb-2 rounded-full ${selected ? "bg-green-700" : "bg-gray-100"
                     }`}
                 >
-                  {crop}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+                  <Sprout
+                    size={14}
+                    color={selected ? "#fff" : "#4B5563"}
+                    className="mr-1"
+                  />
+                  <Text
+                    className={`text-sm font-semibold ${selected ? "text-white" : "text-gray-800"
+                      }`}
+                  >
+                    {crop}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
       </View>
     </ScrollView>
   );

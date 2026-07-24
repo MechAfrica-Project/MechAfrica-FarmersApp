@@ -152,7 +152,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw new Error(`OTP must be exactly 6 digits, got ${cleanCode.length}`);
       }
 
-      const payload = {
+      // Read the name the user entered in the PersonalInfo step, so the backend can
+      // store the real name on first registration rather than "New Farmer".
+      const onboardingData = useOnboardingStore.getState().data;
+      const firstName = onboardingData.personalInfo?.firstName?.trim() ?? "";
+      const lastName = onboardingData.personalInfo?.lastName?.trim() ?? "";
+
+      const payload: Record<string, string> = {
         Phone: normalizedPhone,
         phone_number: normalizedPhone,
         phone: normalizedPhone,
@@ -162,6 +168,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         verification_code: cleanCode,
         role: "farmer",
       };
+
+      // Only attach name fields if they are already filled (Personal Info step comes before Phone Verify)
+      if (firstName) payload.firstName = firstName;
+      if (lastName) payload.lastName = lastName;
 
       if (__DEV__) {
         console.debug('[auth] verifyOtp sending payload:', { ...payload, OTP: '******' });

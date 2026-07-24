@@ -7,7 +7,7 @@ import {
 import { Farm, useFarmerStore } from "@/stores/farmerStore";
 import { toastError, toastInfo } from "@/lib/toast";
 import { MapPin, Sprout } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -29,7 +29,7 @@ type AddFarmModalProps = {
 
 const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
   const { addFarm, farms } = useFarmerStore();
-  const { crops } = useCatalogStore();
+  const { crops, fetchCatalogs } = useCatalogStore();
   const cropOptions = crops.map(c => c.name);
 
   const [farmName, setFarmName] = useState("");
@@ -43,6 +43,13 @@ const AddFarmModal = ({ visible, onClose }: AddFarmModalProps) => {
   const [regionModal, setRegionModal] = useState(false);
   const [districtModal, setDistrictModal] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Re-fetch crops if they're empty when the modal opens
+  useEffect(() => {
+    if (visible && crops.length === 0) {
+      fetchCatalogs();
+    }
+  }, [visible]);
 
   const toggleCrop = (crop: string) =>
     setCropTypes((prev) =>
