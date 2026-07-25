@@ -2,7 +2,7 @@
   "expo": {
     "name": "Farmers App",
     "slug": "mechafrica-farmers-app",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "orientation": "portrait",
     "icon": "./assets/images/mechafrica-square.png",
     "scheme": "farmers",
@@ -26,6 +26,7 @@
     },
     "android": {
       "package": "com.mechafrica.farmer",
+      "versionCode": 21,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/mechafrica-square.png",
@@ -101,7 +102,6 @@
       "apiUrl": null,
       "apiBaseUrl": null,
       "eas": {
-        // "projectId": "481cec85-cb63-4658-8d4f-7d240a57ff67"
         "projectId": "a7be253c-373b-49b4-a677-4c3e66514b41"
       }
     },
