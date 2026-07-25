@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/compare/v1.6.0...v1.7.0) (2026-07-25)
+
+
+### Features
+
+* add gender and dob to auth store and implement progressive profiling for existing users while removing unused images type definition ([18a42ab](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/18a42abc2a6e6129105c83d0d35e6f2a9975d3b8))
+
+
+### Refactoring
+
+* migrate static constants to dynamic catalog store and fetch data on app initialization ([7e87446](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/7e874461a0a7498da83ea2bae0c025e9440a8689))
+
 ## [1.6.0](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/compare/v1.5.0...v1.6.0) (2026-07-09)
 
 
