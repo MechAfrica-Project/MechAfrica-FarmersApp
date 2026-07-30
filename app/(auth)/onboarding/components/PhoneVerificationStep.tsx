@@ -54,7 +54,7 @@ export default function PhoneVerificationStep() {
     setLocalError(null);
     updateData({ personalInfo: { otpVerified: false } });
     try {
-      await sendPhone({ skipNavigation: true });
+      await sendPhone({ skipNavigation: true, isSignUp: true });
       setTimeLeft(RESEND_SECONDS);
     } catch (err: any) {
       setLocalError(err?.message ?? "Failed to send code. Try again.");
@@ -92,7 +92,7 @@ export default function PhoneVerificationStep() {
         return;
       }
       setLocalError(null);
-      const success = await verifyOtp(codeToUse, { skipNavigation: true });
+      const success = await verifyOtp(codeToUse, { skipNavigation: true, isSignUp: true });
       if (success) {
         updateData({ personalInfo: { otpVerified: true } });
       } else {

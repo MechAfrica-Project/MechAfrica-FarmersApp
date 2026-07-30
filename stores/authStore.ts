@@ -34,8 +34,8 @@ interface AuthState {
   setOtpCooldown: (until: number | null) => void;
 
   setPhone: (val: PhoneValue) => void;
-  sendPhone: (options?: { skipNavigation?: boolean }) => Promise<void>;
-  verifyOtp: (code: string, options?: { skipNavigation?: boolean }) => Promise<boolean>;
+  sendPhone: (options?: { skipNavigation?: boolean, isSignUp?: boolean }) => Promise<void>;
+  verifyOtp: (code: string, options?: { skipNavigation?: boolean, isSignUp?: boolean }) => Promise<boolean>;
   logout: (mode?: "dev" | "prod") => Promise<void>;
   restoreSession: () => Promise<void>;
   acceptTerms: () => Promise<void>;
@@ -66,6 +66,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         Phone: normalizedPhone,
         phone_number: normalizedPhone,
         phone: normalizedPhone,
+        role: "farmer",
+        isSignUp: options?.isSignUp || false,
       };
       if (typeof __DEV__ !== 'undefined' && __DEV__) {
         try { console.debug('[auth] sendPhone payload:', payload); } catch { }
@@ -158,7 +160,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const firstName = onboardingData.personalInfo?.firstName?.trim() ?? "";
       const lastName = onboardingData.personalInfo?.lastName?.trim() ?? "";
 
-      const payload: Record<string, string> = {
+      const payload: Record<string, string | boolean> = {
         Phone: normalizedPhone,
         phone_number: normalizedPhone,
         phone: normalizedPhone,
@@ -169,6 +171,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         role: "farmer",
         accountCreatedVia: "mobile",
         account_created_via: "mobile",
+        isSignUp: options?.isSignUp || false,
       };
 
       // Only attach name fields if they are already filled (Personal Info step comes before Phone Verify)
@@ -325,6 +328,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       (await import("@/stores/farmerStore")).useFarmerStore.getState().reset?.();
       (await import("@/stores/requestsStore")).useRequestsStore.getState().reset?.();
       (await import("@/stores/notificationStore")).useNotificationStore.getState().clear?.();
+      useOnboardingStore.getState().reset(); // Clear onboarding secure storage to prevent data leaks
     } catch { }
 
     if (mode === "dev") {

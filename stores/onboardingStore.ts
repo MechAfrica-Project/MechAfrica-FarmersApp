@@ -189,7 +189,12 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => {
         return { data: newData };
       }),
 
-    reset: () => set({ currentStep: 0, data: defaultData }),
+    reset: () => {
+      set({ currentStep: 0, data: defaultData });
+      SecureStore.deleteItemAsync("onboardingData").catch((err) => {
+        if (__DEV__) console.warn('Failed to clear onboardingData', err);
+      });
+    },
 
     validateStep: (step?: number) => {
       const idx = typeof step === "number" ? step : get().currentStep;
