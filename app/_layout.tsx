@@ -80,9 +80,10 @@ export default function RootLayout() {
 
     const inAuthGroup = segments[0] === '(auth)';
     const isIndex = (segments as string[]).length === 0;
+    const isOnboarding = segments.includes('onboarding');
 
     if (token) {
-      if (inAuthGroup || isIndex) {
+      if ((inAuthGroup && !isOnboarding) || isIndex) {
         // User has a token but is stuck on the login or welcome screen -> Auto redirect to tabs
         router.replace('/(tabs)');
       }
