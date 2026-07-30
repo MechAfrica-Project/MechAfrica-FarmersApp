@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.8.0](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/compare/v1.7.0...v1.8.0) (2026-07-30)
+
+
+### Features
+
+* add isSignUp flag to OTP authentication flow and implement secure storage clearing on logout and onboarding reset ([d88dfe0](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/d88dfe0662301546af96924427bb5c0643938ec1))
+* add mobile account creation source fields to auth payload ([07a2860](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/07a28600af672de505c3348ca09caf4015325911))
+* add redirect button for provider account login errors in signIn screen ([d94441d](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/d94441d35c590902114b077b00b439f033b13dcb))
+
 ## [1.7.0](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/compare/v1.6.0...v1.7.0) (2026-07-25)
 
 
