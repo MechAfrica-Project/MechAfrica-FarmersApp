@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.8.1](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/compare/v1.8.0...v1.8.1) (2026-07-30)
+
+
+### Bug Fixes
+
+* prevent redirecting authenticated users away from onboarding flow ([3872b75](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/commit/3872b7505d8294db5c527478f0742de0524f2aa0))
+
 ## [1.8.0](https://github.com/MechAfrica-Project/MechAfrica-FarmersApp/compare/v1.7.0...v1.8.0) (2026-07-30)
 
 
