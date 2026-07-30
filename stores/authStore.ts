@@ -167,6 +167,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         code: cleanCode,
         verification_code: cleanCode,
         role: "farmer",
+        accountCreatedVia: "mobile",
+        account_created_via: "mobile",
       };
 
       // Only attach name fields if they are already filled (Personal Info step comes before Phone Verify)
