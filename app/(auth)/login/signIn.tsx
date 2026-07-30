@@ -2,7 +2,7 @@
 import PrimaryButton from "@/app/components/general/PrimaryButton";
 import { toastError } from '@/lib/toast';
 import { useAuthStore } from "@/stores/authStore";
-import { useNavigation } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { Text, View } from "react-native";
 import AuthLayout from "./components/AuthLayout";
@@ -15,6 +15,7 @@ export default function SignIn() {
   const loading = useAuthStore((s) => s.loading);
 
   const navigation = useNavigation();
+  const router = useRouter();
 
   useEffect(() => {
     // no-op: avoid intercepting navigation here to prevent interfering
@@ -49,6 +50,15 @@ export default function SignIn() {
             {error}
           </Text>
         ) : null}
+
+        {error?.toLowerCase().includes("account as a provider") && (
+          <PrimaryButton
+            title="Sign up as a Farmer instead"
+            onPress={() => router.push("/(auth)/onboarding/OnboardingLayout")}
+            textClassName="text-black"
+            className="bg-accent-yellow mb-4"
+          />
+        )}
 
         <PrimaryButton
           title="Log in"
