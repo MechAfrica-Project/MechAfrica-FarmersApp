@@ -2,11 +2,12 @@
 import React from "react";
 import { TouchableOpacity, GestureResponderEvent } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, Href } from "expo-router";
 
 type Props = {
   /** If provided, this will run instead of the default `router.back()` */
   onPress?: (event: GestureResponderEvent) => void;
+  fallbackHref?: Href;
   /** Icon color (default: "black") */
   color?: string;
   /** Accessibility label for the button (default: "Go back") */
@@ -15,6 +16,7 @@ type Props = {
 
 export default function BackButton({
   onPress,
+  fallbackHref = "/",
   color = "black",
   accessibilityLabel = "Go back",
 }: Props) {
@@ -25,12 +27,10 @@ export default function BackButton({
       onPress(e);
       return;
     }
-    // default behavior
-    try {
+    if (typeof router.canGoBack === "function" && router.canGoBack()) {
       router.back();
-    } catch {
-      // fallback to a safe route if back fails
-      router.replace("/(tabs)");
+    } else {
+      router.replace(fallbackHref as any);
     }
   };
 

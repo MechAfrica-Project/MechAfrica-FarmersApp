@@ -9,13 +9,14 @@ import {
 } from "react-native";
 import BackButton from "@/app/components/general/BackButton";
 import FooterNote from "@/app/components/general/FooterNote";
-import { Href } from "expo-router";
+import { Href, useRouter } from "expo-router";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
   title: string;
   subtitle?: React.ReactNode;
   backHref?: Href;
+  showBack?: boolean;
 }
 
 export default function AuthLayout({
@@ -23,7 +24,12 @@ export default function AuthLayout({
   title,
   subtitle,
   backHref = "/",
+  showBack = true,
 }: AuthLayoutProps) {
+  const router = useRouter();
+  const canGoBack = typeof router.canGoBack === "function" ? router.canGoBack() : false;
+  const shouldShowBack = showBack && canGoBack;
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View className="flex-1 bg-white">
@@ -38,16 +44,20 @@ export default function AuthLayout({
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            <View className="flex-1 pt-28 px-8">
-              {/* Back button */}
-              <BackButton />
+            <View className="flex-1 pt-20 px-8">
+              {/* Back button - only render if stack has a route to go back to */}
+              {shouldShowBack ? (
+                <BackButton fallbackHref={backHref} />
+              ) : (
+                <View className="h-6" />
+              )}
 
               {/* Header */}
-              <View className="my-[5rem]">
+              <View className="my-[4rem]">
                 <Text className="text-[2rem] mb-2 font-mulish font-black text-center">
                   {title}
                 </Text>
-                {subtitle && <View className="mb-10 ">{subtitle}</View>}
+                {subtitle && <View className="mb-10">{subtitle}</View>}
               </View>
 
               {/* Form / children */}
@@ -56,7 +66,7 @@ export default function AuthLayout({
           </ScrollView>
         </KeyboardAvoidingView>
 
-        {/* Footer*/}
+        {/* Footer */}
         <FooterNote showText />
       </View>
     </TouchableWithoutFeedback>

@@ -334,7 +334,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (mode === "dev") {
       // Dev: show sign-in and capture router state to debug store
       setTimeout(() => {
-        try { router.dismissAll(); router.replace("/(auth)/login/signIn"); } catch { }
+        try {
+          if (typeof router.canDismiss === "function" && router.canDismiss()) {
+            router.dismissAll();
+          }
+          router.replace("/(auth)/login/signIn");
+        } catch { }
       }, 0);
 
       try {
@@ -350,7 +355,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } else {
       // Prod: conservative navigation to sign-in and index as previous route
       setTimeout(() => {
-        try { router.dismissAll(); router.replace("/(auth)/login/signIn"); } catch { }
+        try {
+          if (typeof router.canDismiss === "function" && router.canDismiss()) {
+            router.dismissAll();
+          }
+          router.replace("/(auth)/login/signIn");
+        } catch { }
       }, 0);
     }
   },

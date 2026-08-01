@@ -83,6 +83,8 @@ export default function PhoneVerificationStep() {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
+  const nextStep = useOnboardingStore((s) => s.nextStep);
+
   const handleVerify = useCallback(
     async (overrideCode?: string) => {
       const codeToUse = overrideCode ?? code;
@@ -95,6 +97,10 @@ export default function PhoneVerificationStep() {
       const success = await verifyOtp(codeToUse, { skipNavigation: true, isSignUp: true });
       if (success) {
         updateData({ personalInfo: { otpVerified: true } });
+        // Smooth auto-advance to next step upon verification
+        setTimeout(() => {
+          nextStep();
+        }, 350);
       } else {
         updateData({ personalInfo: { otpVerified: false } });
         wrapperRef.current?.shake();
@@ -102,7 +108,7 @@ export default function PhoneVerificationStep() {
         setCode("");
       }
     },
-    [code, updateData, verifyOtp]
+    [code, updateData, verifyOtp, nextStep]
   );
 
   return (
@@ -127,6 +133,8 @@ export default function PhoneVerificationStep() {
               handleVerify(val);
             }}
             textInputProps={{
+              textContentType: "oneTimeCode",
+              autoComplete: "sms-otp",
               className:
                 "border-gray-300 text-center text-xl font-bold rounded-2xl w-14 h-14 bg-white mx-1",
             }}
@@ -153,17 +161,23 @@ export default function PhoneVerificationStep() {
       )}
 
       {otpVerified && (
-        <Text className="text-green-600 text-center mb-3 font-mulish">
-          Phone number verified!
+        <Text className="text-green-600 text-center mb-3 font-mulish font-bold">
+          ✓ Phone number verified!
         </Text>
       )}
 
       <PrimaryButton
-        title={otpVerified ? "Verified" : "Verify code"}
-        onPress={() => handleVerify()}
-        disabled={loading || otpVerified}
+        title={otpVerified ? "Next step →" : "Verify code"}
+        onPress={() => {
+          if (otpVerified) {
+            nextStep();
+          } else {
+            handleVerify();
+          }
+        }}
+        disabled={loading}
         loading={loading}
-        textClassName="text-white"
+        textClassName="text-white font-bold"
       />
 
       <View className="flex flex-row justify-center mt-4">

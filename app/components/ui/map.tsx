@@ -580,3 +580,6 @@ export { LocationManager };
     useMap
   };
 
+export default Map;
+
+
